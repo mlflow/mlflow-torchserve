@@ -14,20 +14,20 @@ from mlflow.exceptions import MlflowException
 f_target = "torchserve"
 f_deployment_id = "test"
 f_flavor = None
-f_model_uri = os.path.join("mlflow/pytorch/torchserve/tests/resources", "linear.pt")
+f_model_uri = os.path.join("tests/resources", "linear.pt")
 
 model_version = "1.0"
 model_file_path = os.path.join(
-    "mlflow/pytorch/torchserve/tests/resources", "linear_model.py"
+    "tests/resources", "linear_model.py"
 )
 handler_file_path = os.path.join(
-    "mlflow/pytorch/torchserve/tests/resources", "linear_handler.py"
+    "tests/resources", "linear_handler.py"
 )
 sample_input_file = os.path.join(
-    "mlflow/pytorch/torchserve/tests/resources", "sample.json"
+    "tests/resources", "sample.json"
 )
 sample_output_file = os.path.join(
-    "mlflow/pytorch/torchserve/tests/resources", "output.json"
+    "tests/resources", "output.json"
 )
 
 

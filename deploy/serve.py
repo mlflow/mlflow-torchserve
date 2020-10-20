@@ -461,7 +461,7 @@ def target_help():
     help_string = (
         "\nmlflow-torchserve plugin integrates torchserve to mlflow deployment pipeline. "
         "For detailed explanation and to see multiple examples, checkout the Readme at "
-        "README https://github.com/chauhang/mlflow/blob/master/README.rst \n\n"
+        "README https://github.com/mlflow/mlflow-torchserve/blob/master/README.md \n\n"
         "Following are the various options"
         "available using the existing "
         "mlflow deployments functions\n\n"

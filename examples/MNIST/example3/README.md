@@ -8,7 +8,7 @@ Install the required packages using the following command
 
 ## Installing Deployment plugin
 
-move to `mlflow/pytorch/torchserve` and run the following commands to install deployment plugin
+Run the following commands to install deployment plugin
 
 `python setup.py build`
 `python setup.py install`
