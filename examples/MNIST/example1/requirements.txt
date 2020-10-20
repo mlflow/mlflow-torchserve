@@ -1,0 +1,8 @@
+torch==1.6.0
+torchvision==0.7.0
+mlflow==1.11.0
+torchserve
+torch-model-archiver
+matplotlib
+numpy
+
