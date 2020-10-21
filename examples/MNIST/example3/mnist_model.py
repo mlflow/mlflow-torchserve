@@ -192,6 +192,10 @@ def main():
         "--tracking-uri", type=str, default="http://localhost:5000/", help="mlflow tracking uri"
     )
 
+    parser.add_argument(
+        "--model-save-path", type=str, default="models", help="Path to save mlflow model"
+    )
+
     args = parser.parse_args()
     print("Tracking URI: ", args.tracking_uri)
     mlflow.set_tracking_uri(args.tracking_uri)
@@ -224,7 +228,7 @@ def main():
         scheduler.step()
 
     if args.save_model:
-        mlflow.pytorch.log_model(model, artifact_path="model", requirements_file="requirements.txt",
+        mlflow.pytorch.save_model(model, path=args.model_save_path, requirements_file="requirements.txt",
                                  extra_files=["number_to_text.json"])
 
     if args.generate_sample_input:

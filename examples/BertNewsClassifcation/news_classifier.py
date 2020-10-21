@@ -360,6 +360,10 @@ if __name__ == "__main__":
         help="Custom vocab file",
     )
 
+    parser.add_argument(
+        "--model-save-path", type=str, default="models", help="Path to save mlflow model"
+    )
+
     args = parser.parse_args()
     print("Tracking URI: ", args.tracking_uri)
     mlflow.set_tracking_uri(args.tracking_uri)
@@ -386,9 +390,9 @@ if __name__ == "__main__":
     print("\n\n\n SAVING MODEL")
 
     if args.save_model:
-        mlflow.pytorch.log_model(
+        mlflow.pytorch.save_model(
             model,
-            artifact_path="model",
+            path=args.model_save_path,
             requirements_file="requirements.txt",
             extra_files=["class_mapping.json", "bert_base_cased_vocab.txt"],
         )
