@@ -30,7 +30,16 @@ requirments file and adds it as the `-r` argument in `torch-model-archiver` duri
 
 The mapping file is pushed into mlflow along with the model using `mlflow.pytorch` library. 
 
-Command: `python mnist_model.py --epochs 5`
+Command: 
+
+```
+python mnist_model.py \
+    --epochs 5 \
+    --batch-size 64 \
+    --lr 0.01 \
+    --tracking-uri http://localhost:5000 \
+    --save-model
+```
 
 This command will run the training process and exports the model into mlflow along with supporting extra files. 
 
@@ -47,6 +56,14 @@ Run the following command to create a new deployment named `mnist_test`.
 Since the model is exported to mlflow, set the --model-uri to the S3 path where model is logged. 
 
 `mlflow deployments  create --name mnist_test --target torchserve --model-uri <S3_MODEL_PATH> -C "MODEL_FILE=mnist_model.py" -C "HANDLER_FILE=mnist_handler.py"`
+
+Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
+is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
+
+If needed, version number can also be explicitly mentioned as a config variable.
+
+`mlflow deployments  create --name mnist_test --target torchserve --model-uri <S3_MODEL_PATH> -C "VERSION=5.0" "-C "MODEL_FILE=mnist_model.py" -C "HANDLER_FILE=mnist_handler.py"`
+
 
 ## Running prediction based on deployed model
 

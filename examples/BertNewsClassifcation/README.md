@@ -21,7 +21,7 @@ Run the `news_classifier.py` script which will fine tune the model based on play
 
 By default,  the script exports the model file as `bert_pytorch.pt` and generates a sample input file `sample.json`
 
-Command: `python news_classifier.py --epochs 5`
+Command: `python news_classifier.py --epochs 5 --tracking-uri http://localhost:5000 --num-samples=50000`
 
 By default this example logs the requirements(`requirements.txt`) and vocabulary file(`bert_base_cased_vocab.txt`) along with the model.
 
@@ -36,6 +36,14 @@ create an empty directory `model_store` and run the following command to start t
 Run the following command to create a new deployment named `news_classification_test`
 
 `mlflow deployments create -t torchserve -m <S3_MODEL_URI> --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER_FILE=news_classifier_handler.py"`
+
+Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
+is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
+
+If needed, version number can also be explicitly mentioned as a config variable.
+
+`mlflow deployments create -t torchserve -m <S3_MODEL_URI> --name news_classification_test -C "VERSION=5.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER_FILE=news_classifier_handler.py"`
+
 
 ## Running prediction based on deployed model
 

@@ -20,7 +20,15 @@ Run the `mnist_model.py` script which will perform training on MNIST handwritten
 
 By default,  the script exports the model file as `model_cnn.pt`
 
-Command: `python mnist_model.py --epochs 5`
+Command: 
+
+```
+python mnist_model.py \
+    --epochs 5 \
+    --batch-size 64 \
+    --lr 0.01 \
+    --save-model
+```
 
 ## Starting torchserve
 
@@ -41,5 +49,19 @@ This example demonstrates input as tensor (refer `predict.py` where images are c
 Run the following command to create and predict the output based on our test data - `test_data/one.png`
 
 `python predict.py`
+
+Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
+is not a mandatory argument for the plugin. For example, by running `predict.py`, a new deployment `mnist_test` is created with version 1.
+
+If needed, version number can also be explicitly mentioned as a config variable in `predict.py` as below.
+
+```
+config = {
+    'MODEL_FILE': "mnist_model.py",
+    'HANDLER_FILE': 'mnist_handler.py',
+    'VERSION': 5.0
+
+}
+```  
 
 MNIST model would predict the handwritten digit and the result will be printed in the console. 
