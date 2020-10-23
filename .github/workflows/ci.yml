@@ -38,4 +38,4 @@ jobs:
           which torch-model-archiver
           which mlflow deployments create --help
       - name: Run tests
-        run: pytest tests
+        run: pytest tests --color=yes --verbose
