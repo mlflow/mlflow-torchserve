@@ -36,5 +36,6 @@ jobs:
           pip install pytest==6.1.1
           which torchserve
           which torch-model-archiver
+          which mlflow deployments create --help
       - name: Run tests
         run: pytest tests
