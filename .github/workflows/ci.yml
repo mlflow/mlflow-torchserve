@@ -7,12 +7,55 @@ on:
     branches: [master]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - name: test
-        run: echo test
+      - name: Install dependencies
+        run: pip install black==20.8b1 flake8==3.8.4
+      - run: flake8 .
+      - run: black --check --line-length=100 .
+
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install Java
+        run: |
+          sudo apt-get install openjdk-11-jdk
+      - name: Check Java version
+        run: |
+          java -version
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pytest==6.1.1 torchvision
+      - name: Run torchserve example
+        run: |
+          set -x
+          git clone https://github.com/pytorch/serve.git
+          cd serve/examples/image_classifier/resnet_18
+          mkdir model_store
+          wget --no-verbose https://download.pytorch.org/models/resnet18-5c106cde.pth
+
+          torch-model-archiver \
+            --model-name resnet-18 \
+            --version 1.0 \
+            --model-file model.py \
+            --serialized-file resnet18-5c106cde.pth \
+            --handler image_classifier \
+            --export-path model_store \
+            --extra-files ../index_to_name.json
+
+          torchserve --start --model-store model_store --models resnet-18=resnet-18.mar || true
+          sleep 5
+          curl -s -X POST http://127.0.0.1:8080/predictions/resnet-18 -T ../kitten.jpg
+
+      - name: Run tests
+        run: pytest tests --color=yes --verbose
