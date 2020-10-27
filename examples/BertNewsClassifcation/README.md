@@ -15,7 +15,19 @@ Run the following commands to install deployment plugin
 
 ## Generating model file (.pt)
 
-This example uses the pretrained bert model to perform text classification on news reports. 
+This example illustrates, dumping additional artifacts such as `requirements.txt` and bert vocabulary `bert_base_uncased_vocab.txt`
+along with the model.
+
+`requirements_file` and `extra_files` argument in `mlflow.pytorch.log_model` facilitates to dump these additional artifacts along
+with the model into mlflow.
+
+This example performs news classification using Hugging Face bert model and requires `transformers` package to train and predict.
+`trasnformers` package is added as a requirement in `requirements.txt` and dumped along with the model using requirement argument. 
+
+Torchserve deployment plugin has the ability to detect and add these `requirements.txt` and the extra files. And hence, during the
+mar file generation, torchserve automatically bundles the `requirements.txt`and extra files along with model.
+
+Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log_model` are optional.
 
 Run the `news_classifier.py` script which will fine tune the model based on play store review comments. 
 
