@@ -54,7 +54,7 @@ jobs:
             --extra-files ../index_to_name.json
 
           torchserve --start --model-store model_store --models resnet-18=resnet-18.mar || true
-          sleep 5
+          sleep 10
           curl -s -X POST http://127.0.0.1:8080/predictions/resnet-18 -T ../kitten.jpg
           sleep 3
           torchserve --stop
