@@ -28,6 +28,7 @@ jobs:
           python-version: 3.7
       - name: Install Java
         run: |
+          sudo apt-get update
           sudo apt-get install openjdk-11-jdk
       - name: Check Java version
         run: |
