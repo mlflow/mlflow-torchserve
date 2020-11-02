@@ -114,7 +114,7 @@ class TorchServePlugin(BaseDeploymentClient):
             config=config_registration,
         )
 
-        return {"name": name, "flavor": flavor}
+        return {"name": name + "/" + str(version), "flavor": flavor}
 
     # pylint: disable=W0221
     def delete_deployment(self, name):
