@@ -140,9 +140,9 @@ class TorchServePlugin(BaseDeploymentClient):
         Update the deployment with the name given at --name from the specified target
         Using -C or --config additional parameters shall be updated for the corresponding model
 
-        :param name: Name and version number of the model. Version number is optional.
-                     Ex: "mnist" - Default version is updated based on config params
-                     "mnist/2.0" - mnist 2.0 version is updated based on config params
+        :param name: Name and version number of the model. Version number is optional. \n
+                     Ex: "mnist" - Default version is updated based on config params \n
+                     "mnist/2.0" - mnist 2.0 version is updated based on config params \n
         :param model_uri: Model uri cannot be updated and torchserve plugin doesnt use
                           this argument. Added to match base signature
         :param flavor: torchserve plugin doesnt use
@@ -218,10 +218,10 @@ class TorchServePlugin(BaseDeploymentClient):
         Print the detailed description of the deployment with the name given at --name
         in the specified target
 
-        :param name: Name and version of the model.
-                     Ex: "mnist/3.0" - gets the details of mnist model version 3.0
-                     "mnist" - gets the details of the default version of the model
-                     "mnist/all" - gets the details of all the versions of the same model
+        :param name: Name and version of the model. \n
+                     Ex: "mnist/3.0" - gets the details of mnist model version 3.0 \n
+                     "mnist" - gets the details of the default version of the model \n
+                     "mnist/all" - gets the details of all the versions of the same model \n
 
         :return: output - Returns a dict with deploy as key and info about the model specified as value
         """
@@ -241,9 +241,9 @@ class TorchServePlugin(BaseDeploymentClient):
         Predict using the inference api
         Takes dataframe, Tensor or json string as input and returns output as string
 
-        :param deployment_name: Name and version number of the deployment
-                                Ex: "mnist/2.0" - predict based on mnist version 2.0
-                                "mnist" - predict based on default version.
+        :param deployment_name: Name and version number of the deployment \n
+                                Ex: "mnist/2.0" - predict based on mnist version 2.0 \n
+                                "mnist" - predict based on default version. \n
         :param df: Dataframe object or json object as input
 
         :return: output - Returns the predicted value
