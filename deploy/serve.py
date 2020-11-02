@@ -117,23 +117,15 @@ class TorchServePlugin(BaseDeploymentClient):
         return {"name": name, "flavor": flavor}
 
     # pylint: disable=W0221
-    def delete_deployment(self, name, config=None):
+    def delete_deployment(self, name):
         """
         Delete the deployment with the name given at --name from the specified target
 
-        :param name: Name of the of the model
-        :param config: Configuration parameters like model file path, handler path
+        :param name: Name of the of the model with version number. For ex: "mnist/2.0"
 
         :return: None
         """
-
-        version = "1.0"
-        if config:
-            for key in config:
-                if key.upper() == "VERSION":
-                    version = str(config[key])
-
-        url = "{}/{}/{}/{}".format(self.management_api, "models", name, version)
+        url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
         resp = requests.delete(url)
         if resp.status_code != 200:
             raise Exception(
