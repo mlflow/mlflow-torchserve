@@ -223,26 +223,21 @@ class TorchServePlugin(BaseDeploymentClient):
             )
         return {"deploy": resp.text}
 
-    def predict(self, deployment_name, df, config=None):
+    def predict(self, deployment_name, df):
         """
         Predict using the inference api
         Takes dataframe, Tensor or json string as input and returns output as string
 
-        :param deployment_name: Name of the of the model
+        :param deployment_name: Name and version number of the deployment
+                                "mnist/2.0" - predict based on mnist version 2.0
+                                "mnist" - predict based on default version.
         :param df: Dataframe object or json object as input
-        :param config: Configuration parameters like model version
 
         :return: output - Returns the predicted value
         """
 
-        version = "1.0"
-        if config:
-            for key in config:
-                if key.upper() == "VERSION":
-                    version = str(config[key])
-
-        url = "{}/{}/{}/{}".format(
-            self.inference_api, "predictions", deployment_name, version
+        url = "{api}/{predictions}/{name}".format(
+            api=self.inference_api, predictions="predictions", name=deployment_name
         )
         if isinstance(df, pd.DataFrame):
             df = df.to_json(orient="records")[1:-1].replace("},{", "} {")
