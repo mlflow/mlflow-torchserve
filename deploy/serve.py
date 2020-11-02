@@ -205,12 +205,15 @@ class TorchServePlugin(BaseDeploymentClient):
         Print the detailed description of the deployment with the name given at --name
         in the specified target
 
-        :param name: Name of the of the model
+        :param name: Name and version of the model.
+                     "mnist/3.0" - gets the details of mnist model version 3.0
+                     "mnist" - gets the details of the default version of the model
+                     "mnist/all" - gets the details of all the versions of the same model
 
         :return: output - Returns a dict with deploy as key and info about the model specified as value
         """
 
-        url = "{}/{}/{}/{}".format(self.management_api, "models", name, "all")
+        url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
         resp = requests.get(url)
         if resp.status_code != 200:
             raise ValueError(
