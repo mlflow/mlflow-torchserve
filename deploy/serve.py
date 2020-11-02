@@ -140,9 +140,13 @@ class TorchServePlugin(BaseDeploymentClient):
         Update the deployment with the name given at --name from the specified target
         Using -C or --config additional parameters shall be updated for the corresponding model
 
-        :param name: Name of the of the model
-        :param model_uri: Serialized python file [.pt or .pth]
-        :param flavor: Flavor of the deployed model
+        :param name: Name and version number of the model. Version number is optional.
+                     Ex: "mnist" - Default version is updated based on config params
+                     "mnist/2.0" - mnist 2.0 version is updated based on config params
+        :param model_uri: Model uri cannot be updated and torchserve plugin doesnt use
+                          this argument. Added to match base signature
+        :param flavor: torchserve plugin doesnt use
+                          this argument. Added to match base signature
         :param config: Configuration parameters like model file path, handler path
 
         :return: output - Returns a dict with flavor as key
@@ -152,14 +156,23 @@ class TorchServePlugin(BaseDeploymentClient):
 
         if config is not None:
             for key in config:
-                query_path += "&" + key + "=" + str(config[key])
+                if key.lower() != "set-default":
+                    query_path += "&" + key + "=" + str(config[key])
 
-            query_path = query_path[1:]
+            if query_path:
+                query_path = query_path[1:]
 
-        url = "{}/{}/{}?{}".format(self.management_api, "models", name, query_path)
+        url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
+
+        if "set-default" in config:
+            url = "{url}/set-default".format(url=url)
+
+        if query_path:
+            url = "{url}?{query_path}".format(url=url, query_path=query_path)
+
         resp = requests.put(url)
 
-        if resp.status_code != 202:
+        if resp.status_code not in [200, 202]:
             raise Exception(
                 "Unable to update deployment with name %s. "
                 "Server returned status code %s and response: %s"
@@ -206,7 +219,7 @@ class TorchServePlugin(BaseDeploymentClient):
         in the specified target
 
         :param name: Name and version of the model.
-                     "mnist/3.0" - gets the details of mnist model version 3.0
+                     Ex: "mnist/3.0" - gets the details of mnist model version 3.0
                      "mnist" - gets the details of the default version of the model
                      "mnist/all" - gets the details of all the versions of the same model
 
@@ -229,7 +242,7 @@ class TorchServePlugin(BaseDeploymentClient):
         Takes dataframe, Tensor or json string as input and returns output as string
 
         :param deployment_name: Name and version number of the deployment
-                                "mnist/2.0" - predict based on mnist version 2.0
+                                Ex: "mnist/2.0" - predict based on mnist version 2.0
                                 "mnist" - predict based on default version.
         :param df: Dataframe object or json object as input
 
