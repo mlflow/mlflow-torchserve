@@ -98,12 +98,8 @@ def test(model, device, test_loader):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(
-                output, target, reduction="sum"
-            ).item()  # sum up batch loss
-            pred = output.argmax(
-                dim=1, keepdim=True
-            )  # get the index of the max log-probability
+            test_loss += F.nll_loss(output, target, reduction="sum").item()  # sum up batch loss
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -165,9 +161,7 @@ def main():
         default=False,
         help="quickly check a single pass",
     )
-    parser.add_argument(
-        "--seed", type=int, default=1, metavar="S", help="random seed (default: 1)"
-    )
+    parser.add_argument("--seed", type=int, default=1, metavar="S", help="random seed (default: 1)")
     parser.add_argument(
         "--log-interval",
         type=int,
@@ -190,7 +184,9 @@ def main():
 
     kwargs = {"batch_size": args.batch_size}
     if use_cuda:
-        kwargs.update({"num_workers": 1, "pin_memory": True, "shuffle": True},)
+        kwargs.update(
+            {"num_workers": 1, "pin_memory": True, "shuffle": True},
+        )
 
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]

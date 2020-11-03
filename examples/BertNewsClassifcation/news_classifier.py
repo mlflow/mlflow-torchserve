@@ -148,7 +148,7 @@ class NewsClassifier(nn.Module):
 
         self.df.columns = ["label", "title", "description"]
         self.df.sample(frac=1)
-        self.df = self.df.iloc[:self.NUM_SAMPLES_COUNT]
+        self.df = self.df.iloc[: self.NUM_SAMPLES_COUNT]
 
         self.df["label"] = self.df.label.apply(self.process_label)
 
@@ -167,10 +167,10 @@ class NewsClassifier(nn.Module):
         torch.manual_seed(RANDOM_SEED)
 
         self.df_train, self.df_test = train_test_split(
-            self.df, test_size=0.1, random_state=RANDOM_SEED, stratify=self.df['label']
+            self.df, test_size=0.1, random_state=RANDOM_SEED, stratify=self.df["label"]
         )
         self.df_val, self.df_test = train_test_split(
-            self.df_test, test_size=0.5, random_state=RANDOM_SEED, stratify=self.df_test['label']
+            self.df_test, test_size=0.5, random_state=RANDOM_SEED, stratify=self.df_test["label"]
         )
 
         self.train_data_loader = self.create_data_loader(
@@ -356,7 +356,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--save-model", action="store_true", default=True, help="For Saving the current Model",
+        "--save-model",
+        action="store_true",
+        default=True,
+        help="For Saving the current Model",
     )
 
     parser.add_argument(
