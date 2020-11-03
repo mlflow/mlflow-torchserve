@@ -6,7 +6,7 @@ import logging
 import os
 import pandas as pd
 import torch
-from pathlib import Path, PurePath
+from pathlib import Path
 
 import requests
 from deploy.config import Config
@@ -225,7 +225,8 @@ class TorchServePlugin(BaseDeploymentClient):
                      "mnist" - gets the details of the default version of the model \n
                      "mnist/all" - gets the details of all the versions of the same model \n
 
-        :return: output - Returns a dict with deploy as key and info about the model specified as value
+        :return: output - Returns a dict with deploy as key and info
+                          about the model specified as value
         """
 
         url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)

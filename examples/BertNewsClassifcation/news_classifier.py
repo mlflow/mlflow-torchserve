@@ -299,7 +299,8 @@ class NewsClassifier(nn.Module):
         :param model: Instance of the NewsClassifier class
         :param data_loader: Data loader for either test / validation dataset
 
-        :result: output - Returns prediction results, prediction probablities and corresponding values
+        :result: output - Returns prediction results,
+                          prediction probablities and corresponding values
         """
         model = model.eval()
 
@@ -348,7 +349,8 @@ if __name__ == "__main__":
         type=int,
         default=15000,
         metavar="N",
-        help="Number of samples to be used for training and evaluation steps (default: 15000) Maximum:100000",
+        help="Number of samples to be used for training "
+        "and evaluation steps (default: 15000) Maximum:100000",
     )
 
     parser.add_argument(
