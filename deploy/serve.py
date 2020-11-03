@@ -100,13 +100,14 @@ class TorchServePlugin(BaseDeploymentClient):
             handler_file=self.server_config["handler_file"],
             requirements=self.server_config["requirements"],
             extra_files=self.server_config["extra_files"],
-            model_uri=model_uri
+            model_uri=model_uri,
         )
 
         config_registration = {
             key: val
             for key, val in config.items()
-            if key.upper() not in ["VERSION", "MODEL_FILE", "HANDLER_FILE", "EXTRA_FILES", "REQUIREMENTS"]
+            if key.upper()
+            not in ["VERSION", "MODEL_FILE", "HANDLER_FILE", "EXTRA_FILES", "REQUIREMENTS"]
         }
 
         self.__register_model(
@@ -246,9 +247,7 @@ class TorchServePlugin(BaseDeploymentClient):
                 if key.upper() == "VERSION":
                     version = str(config[key])
 
-        url = "{}/{}/{}/{}".format(
-            self.inference_api, "predictions", deployment_name, version
-        )
+        url = "{}/{}/{}/{}".format(self.inference_api, "predictions", deployment_name, version)
         if isinstance(df, pd.DataFrame):
             df = df.to_json(orient="records")[1:-1].replace("},{", "} {")
 
@@ -258,13 +257,9 @@ class TorchServePlugin(BaseDeploymentClient):
             try:
                 data = json.loads(df)
             except TypeError as e:
-                raise TypeError(
-                    "Input data can either be dataframe or Json string: {}".format(e)
-                )
+                raise TypeError("Input data can either be dataframe or Json string: {}".format(e))
             except json.decoder.JSONDecodeError as e:
-                raise ValueError(
-                    "Unable to parse input json string: {}".format(e)
-                )
+                raise ValueError("Unable to parse input json string: {}".format(e))
 
         resp = requests.post(url, data)
         if resp.status_code != 200:
@@ -347,7 +342,7 @@ class TorchServePlugin(BaseDeploymentClient):
         if extra_files:
             extra_files_str = ""
             if type(extra_files) == str:
-                extra_files_str += str(extra_files).replace('\'', "")
+                extra_files_str += str(extra_files).replace("'", "")
                 if len(extra_files_list) > 0:
                     extra_files_str += ","
             if len(extra_files_list) > 0:
@@ -432,9 +427,7 @@ def run_local(name, model_uri, flavor=None, config=None):
     )
 
     for _ in range(10):
-        url = "http://localhost:{port}/ping".format(
-            port=_DEFAULT_TORCHSERVE_LOCAL_INFERENCE_PORT
-        )
+        url = "http://localhost:{port}/ping".format(port=_DEFAULT_TORCHSERVE_LOCAL_INFERENCE_PORT)
         try:
             resp = requests.get(url)
             if resp.status_code != 200:
