@@ -9,7 +9,7 @@ import torch
 from pathlib import Path
 
 import requests
-from deploy.config import Config
+from mlflow_torchserve.config import Config
 
 from mlflow.deployments import BaseDeploymentClient, get_deploy_client
 from mlflow.tracking.artifact_utils import _download_artifact_from_uri
