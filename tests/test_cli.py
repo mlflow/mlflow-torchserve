@@ -169,7 +169,7 @@ def test_predict_cli_success(deployment_name):
         cli.predict,
         ["--name", deployment_name, "--target", f_target, "--input-path", sample_input_file],
     )
-    assert res.stdout is not ""
+    assert res.stdout != ""
 
 
 @pytest.mark.parametrize("deployment_name", [f_deployment_id + "/1.0", f_deployment_name_version])
