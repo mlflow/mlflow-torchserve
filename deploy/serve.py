@@ -13,6 +13,7 @@ from deploy.config import Config
 
 from mlflow.deployments import BaseDeploymentClient, get_deploy_client
 from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+from mlflow.models.model import Model
 
 _logger = logging.getLogger(__name__)
 
@@ -283,9 +284,6 @@ class TorchServePlugin(BaseDeploymentClient):
         Generates mar file using the torch archiver in the specified model store path
         """
         valid_file_suffixes = [".pt", ".pth"]
-        requirements_file = "requirements.txt"
-        requirements_directory_name = "requirements"
-        extra_files_directory_name = "artifacts"
         extra_files_list = []
         req_file_path = None
 
@@ -307,20 +305,22 @@ class TorchServePlugin(BaseDeploymentClient):
                             if Path(name).suffix in valid_file_suffixes:
                                 model_path = os.path.join(root, name)
 
-                        for directory in dirs:
-                            if directory == extra_files_directory_name:
-                                dir_list = os.path.join(root, directory)
-                                for extra_file in os.listdir(dir_list):
-                                    extra_files_list.append(os.path.join(dir_list, extra_file))
-                                    if extra_files is None:
-                                        extra_files = True
+                    model = Model.load(model_config)
+                    model_json = json.loads(Model.to_json(model))
 
-                            if directory == requirements_directory_name:
-                                dir_list = os.path.join(root, directory)
-                                for requirements_file in os.listdir(dir_list):
-                                    req_file_path = os.path.join(dir_list, requirements_file)
-                                    if requirements is None:
-                                        requirements = True
+                    try:
+                        if model_json['flavors']['pytorch']['extra_files']:
+                            for extra_file in model_json['flavors']['pytorch']['extra_files']:
+                                extra_files_list.append(os.path.join(path, extra_file["path"]))
+                    except KeyError:
+                        pass
+
+                    try:
+                        if model_json['flavors']['pytorch']['requirements_file']:
+                            req_file_path = os.path.join(path, model_json['flavors']['pytorch']['requirements_file']['path'])
+                    except KeyError:
+                        pass
+
                     if model_path is None:
                         raise RuntimeError(
                             "Model file does not have a valid suffix. Expected to be one of "
@@ -343,23 +343,30 @@ class TorchServePlugin(BaseDeploymentClient):
                 model_name, version, model_file, model_uri, handler_file, model_store
             )
         )
+
+        extra_files_str = ""
+        if extra_files_list:
+            extra_files_str += ",".join(extra_files_list)
+
         if extra_files:
-            extra_files_str = ""
-            if type(extra_files) == str:
-                extra_files_str += str(extra_files).replace("'", "")
-                if len(extra_files_list) > 0:
-                    extra_files_str += ","
-            if len(extra_files_list) > 0:
-                extra_files_str += ",".join(extra_files_list)
+            if extra_files_list:
+                extra_files_str = "{base_string},{user_defined_string}".format(base_string=extra_files_str, user_defined_string=str(extra_files).replace('\'', ""))
+            else:
+                extra_files_str = str(extra_files).replace('\'', "")
+
+        if extra_files_str:
             cmd = "{cmd} --extra-files '{extra_files}'".format(cmd=cmd, extra_files=extra_files_str)
 
-        if req_file_path:
+        if requirements:
+            cmd = "{cmd} -r {path}".format(cmd=cmd, path=requirements)
+        elif req_file_path:
             cmd = "{cmd} -r {path}".format(cmd=cmd, path=req_file_path)
 
         return_code = subprocess.Popen(cmd, shell=True).wait()
         if return_code != 0:
             _logger.error(
-                "Error when attempting to load and parse JSON cluster spec from file %s", cmd,
+                "Error when attempting to load and parse JSON cluster spec from file %s",
+                cmd,
             )
             raise Exception("Unable to create mar file")
 
