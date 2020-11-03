@@ -112,7 +112,8 @@ class TorchServePlugin(BaseDeploymentClient):
         }
 
         self.__register_model(
-            mar_file_path=mar_file_path, config=config_registration,
+            mar_file_path=mar_file_path,
+            config=config_registration,
         )
 
         return {"name": name + "/" + str(version), "flavor": flavor}
@@ -309,15 +310,17 @@ class TorchServePlugin(BaseDeploymentClient):
                     model_json = json.loads(Model.to_json(model))
 
                     try:
-                        if model_json['flavors']['pytorch']['extra_files']:
-                            for extra_file in model_json['flavors']['pytorch']['extra_files']:
+                        if model_json["flavors"]["pytorch"]["extra_files"]:
+                            for extra_file in model_json["flavors"]["pytorch"]["extra_files"]:
                                 extra_files_list.append(os.path.join(path, extra_file["path"]))
                     except KeyError:
                         pass
 
                     try:
-                        if model_json['flavors']['pytorch']['requirements_file']:
-                            req_file_path = os.path.join(path, model_json['flavors']['pytorch']['requirements_file']['path'])
+                        if model_json["flavors"]["pytorch"]["requirements_file"]:
+                            req_file_path = os.path.join(
+                                path, model_json["flavors"]["pytorch"]["requirements_file"]["path"]
+                            )
                     except KeyError:
                         pass
 
@@ -350,9 +353,12 @@ class TorchServePlugin(BaseDeploymentClient):
 
         if extra_files:
             if extra_files_list:
-                extra_files_str = "{base_string},{user_defined_string}".format(base_string=extra_files_str, user_defined_string=str(extra_files).replace('\'', ""))
+                extra_files_str = "{base_string},{user_defined_string}".format(
+                    base_string=extra_files_str,
+                    user_defined_string=str(extra_files).replace("'", ""),
+                )
             else:
-                extra_files_str = str(extra_files).replace('\'', "")
+                extra_files_str = str(extra_files).replace("'", "")
 
         if extra_files_str:
             cmd = "{cmd} --extra-files '{extra_files}'".format(cmd=cmd, extra_files=extra_files_str)

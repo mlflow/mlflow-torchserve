@@ -1,4 +1,3 @@
-
 # IMPORTS SECTION #
 
 import logging
@@ -14,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # CLASS DEFINITION #
 
+
 class LinearRegressionHandler(object):
     def __init__(self):
         self.model = None
@@ -28,9 +28,7 @@ class LinearRegressionHandler(object):
 
         properties = ctx.system_properties
         self.device = torch.device(
-            "cuda:" + str(properties.get("gpu_id"))
-            if torch.cuda.is_available()
-            else "cpu"
+            "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu"
         )
         model_dir = properties.get("model_dir")
 
@@ -60,7 +58,7 @@ class LinearRegressionHandler(object):
         if image is None:
             image = data.get("body")
             image = image.decode("utf-8")
-            number = float(json.loads(image)['data'][0])
+            number = float(json.loads(image)["data"][0])
         else:
             number = float(image)
 
@@ -95,10 +93,10 @@ _service = LinearRegressionHandler()
 
 def handle(data, context):
 
-    '''
+    """
     Default handler for the inference api which takes two parameters data and context
     and returns the predicted output
-    '''
+    """
 
     if not _service.initialized:
         _service.initialize(context)

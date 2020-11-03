@@ -175,5 +175,8 @@ def test_predict_cli_success(deployment_name):
 @pytest.mark.parametrize("deployment_name", [f_deployment_id + "/1.0", f_deployment_name_version])
 def test_delete_cli_success(deployment_name):
     runner = CliRunner()
-    res = runner.invoke(cli.delete_deployment, ["--name", deployment_name, "--target", f_target],)
+    res = runner.invoke(
+        cli.delete_deployment,
+        ["--name", deployment_name, "--target", f_target],
+    )
     assert "Deployment {} is deleted".format(deployment_name) in res.stdout
