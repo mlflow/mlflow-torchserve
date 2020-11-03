@@ -13,22 +13,16 @@ from mlflow.exceptions import MlflowException
 
 f_target = "torchserve"
 f_deployment_id = "test"
+f_deployment_name_version = "test/2.0"
+f_deployment_name_all = "test/all"
 f_flavor = None
 f_model_uri = os.path.join("tests/resources", "linear.pt")
 
 model_version = "1.0"
-model_file_path = os.path.join(
-    "tests/resources", "linear_model.py"
-)
-handler_file_path = os.path.join(
-    "tests/resources", "linear_handler.py"
-)
-sample_input_file = os.path.join(
-    "tests/resources", "sample.json"
-)
-sample_output_file = os.path.join(
-    "tests/resources", "output.json"
-)
+model_file_path = os.path.join("tests/resources", "linear_model.py")
+handler_file_path = os.path.join("tests/resources", "linear_handler.py")
+sample_input_file = os.path.join("tests/resources", "sample.json")
+sample_output_file = os.path.join("tests/resources", "output.json")
 
 
 @pytest.fixture(scope="session")
@@ -41,11 +35,7 @@ def start_torchserve():
     count = 0
     for _ in range(5):
         value = health_checkup()
-        if (
-            value is not None
-            and value != ""
-            and json.loads(value)["status"] == "Healthy"
-        ):
+        if value is not None and value != "" and json.loads(value)["status"] == "Healthy":
             time.sleep(1)
             break
         else:
@@ -58,9 +48,7 @@ def start_torchserve():
 
 def health_checkup():
     curl_cmd = "curl http://localhost:8080/ping"
-    (value, _) = subprocess.Popen(
-        [curl_cmd], stdout=subprocess.PIPE, shell=True
-    ).communicate()
+    (value, _) = subprocess.Popen([curl_cmd], stdout=subprocess.PIPE, shell=True).communicate()
     return value.decode("utf-8")
 
 
@@ -89,7 +77,7 @@ def test_create_deployment_success():
         },
     )
     assert isinstance(ret, dict)
-    assert ret["name"] == f_deployment_id
+    assert ret["name"] == f_deployment_id + "/" + model_version
     assert ret["flavor"] == f_flavor
 
 
@@ -99,13 +87,10 @@ def test_create_deployment_no_version():
         f_deployment_id,
         f_model_uri,
         f_flavor,
-        config={
-            "MODEL_FILE": model_file_path,
-            "HANDLER_FILE": handler_file_path,
-        },
+        config={"MODEL_FILE": model_file_path, "HANDLER_FILE": handler_file_path,},
     )
     assert isinstance(ret, dict)
-    assert ret["name"] == f_deployment_id
+    assert ret["name"] == f_deployment_name_version
     assert ret["flavor"] == f_flavor
 
 
@@ -123,11 +108,21 @@ def test_list_success():
         assert False
 
 
-def test_get_success():
+@pytest.mark.parametrize(
+    "deployment_name", [f_deployment_id, f_deployment_name_version, f_deployment_name_all]
+)
+def test_get_success(deployment_name):
     client = deployments.get_deploy_client(f_target)
-    ret = client.get_deployment(f_deployment_id)
+    ret = client.get_deployment(deployment_name)
     print("Return value is ", json.loads(ret["deploy"]))
-    assert json.loads(ret["deploy"])[0]["modelName"] == f_deployment_id
+    if deployment_name == f_deployment_id:
+        assert json.loads(ret["deploy"])[0]["modelName"] == f_deployment_id
+    elif deployment_name == f_deployment_name_version:
+        assert (
+            json.loads(ret["deploy"])[0]["modelVersion"] == f_deployment_name_version.split("/")[1]
+        )
+    else:
+        assert len(json.loads(ret["deploy"])) == 2
 
 
 def test_wrong_target_name():
@@ -135,35 +130,37 @@ def test_wrong_target_name():
         deployments.get_deploy_client("wrong_target")
 
 
-def test_update_deployment_success():
+@pytest.mark.parametrize(
+    "deployment_name, config",
+    [(f_deployment_name_version, {"SET-DEFAULT": "true"}), (f_deployment_id, {"MIN_WORKER": 3}),],
+)
+def test_update_deployment_success(deployment_name, config):
     client = deployments.get_deploy_client(f_target)
-    ret = client.update_deployment(f_deployment_id)
+    ret = client.update_deployment(deployment_name, config)
     assert ret["flavor"] is None
 
 
-def test_predict_success():
+@pytest.mark.parametrize("deployment_name", [f_deployment_name_version, f_deployment_id])
+def test_predict_success(deployment_name):
     client = deployments.get_deploy_client(f_target)
     with open(sample_input_file) as fp:
         data = fp.read()
-    pred = client.predict(f_deployment_id, data)
+    pred = client.predict(deployment_name, data)
     assert pred is not None
 
 
-def test_predict_tensor_input():
+@pytest.mark.parametrize("deployment_name", [f_deployment_name_version, f_deployment_id])
+def test_predict_tensor_input(deployment_name):
     client = deployments.get_deploy_client(f_target)
     data = torch.Tensor([5000])
-    pred = client.predict(f_deployment_id, data)
+    pred = client.predict(deployment_name, data)
     assert pred is not None
 
 
-def test_delete_success():
+@pytest.mark.parametrize("deployment_name", [f_deployment_name_version, f_deployment_id])
+def test_delete_success(deployment_name):
     client = deployments.get_deploy_client(f_target)
-    assert client.delete_deployment(f_deployment_id, config={"VERSION" : "2.0"}) is None
-
-
-def test_delete_no_version():
-    client = deployments.get_deploy_client(f_target)
-    assert client.delete_deployment(f_deployment_id) is None
+    assert client.delete_deployment(deployment_name) is None
 
 
 f_dummy = "dummy"
@@ -236,42 +233,32 @@ def test_create_mar_file_exception():
 
 
 def test_update_invalid_name():
-    with pytest.raises(
-        Exception, match="Unable to update deployment with name %s" % f_dummy
-    ):
+    with pytest.raises(Exception, match="Unable to update deployment with name %s" % f_dummy):
         client = deployments.get_deploy_client(f_target)
         client.update_deployment(f_dummy)
 
 
 def test_get_invalid_name():
-    with pytest.raises(
-        Exception, match="Unable to get deployments with name %s" % f_dummy
-    ):
+    with pytest.raises(Exception, match="Unable to get deployments with name %s" % f_dummy):
         client = deployments.get_deploy_client(f_target)
         client.get_deployment(f_dummy)
 
 
 def test_delete_invalid_name():
-    with pytest.raises(
-        Exception, match="Unable to delete deployment for name %s" % f_dummy
-    ):
+    with pytest.raises(Exception, match="Unable to delete deployment for name %s" % f_dummy):
         client = deployments.get_deploy_client(f_target)
-        client.delete_deployment(f_dummy, config={"VERSION": model_version})
+        client.delete_deployment(f_dummy)
 
 
 def test_predict_exception():
-    with pytest.raises(
-        Exception, match="Unable to parse input json string"
-    ):
+    with pytest.raises(Exception, match="Unable to parse input json string"):
         client = deployments.get_deploy_client(f_target)
         client.predict(f_dummy, "sample")
 
 
 def test_predict_name_exception():
-    with pytest.raises(
-        Exception, match="Unable to infer the results for the name %s" % f_dummy
-    ):
+    with pytest.raises(Exception, match="Unable to infer the results for the name %s" % f_dummy):
         client = deployments.get_deploy_client(f_target)
         with open(sample_input_file) as fp:
             data = fp.read()
-        client.predict(f_dummy, data, config={"VERSION": model_version})
+        client.predict(f_dummy, data)

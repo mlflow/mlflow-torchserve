@@ -164,7 +164,7 @@ class TorchServePlugin(BaseDeploymentClient):
 
         url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
 
-        if "set-default" in config:
+        if config and "set-default" in config:
             url = "{url}/set-default".format(url=url)
 
         if query_path:
