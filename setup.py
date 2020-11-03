@@ -14,5 +14,5 @@ setup(
         "torchserve",
         "torch-model-archiver",
     ],
-    entry_points={"mlflow.deployments": "torchserve=deploy.serve"},
+    entry_points={"mlflow.deployments": "torchserve=mlflow_torchserve"},
 )
