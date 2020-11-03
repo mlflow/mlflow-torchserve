@@ -344,10 +344,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--tracking-uri", type=str, default="http://localhost:5000/", help="mlflow tracking uri"
-    )
-
-    parser.add_argument(
         "--num-samples",
         type=int,
         default=15000,
@@ -370,8 +366,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print("Tracking URI: ", args.tracking_uri)
-    mlflow.set_tracking_uri(args.tracking_uri)
     mlflow.start_run()
 
     model = NewsClassifier(args)
