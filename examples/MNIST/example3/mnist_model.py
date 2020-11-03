@@ -183,16 +183,10 @@ def main():
     )
 
     parser.add_argument(
-        "--tracking-uri", type=str, default="http://localhost:5000/", help="mlflow tracking uri"
-    )
-
-    parser.add_argument(
         "--model-save-path", type=str, default="models", help="Path to save mlflow model"
     )
 
     args = parser.parse_args()
-    print("Tracking URI: ", args.tracking_uri)
-    mlflow.set_tracking_uri(args.tracking_uri)
     mlflow.start_run()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
 

@@ -13,6 +13,7 @@ from deploy.config import Config
 
 from mlflow.deployments import BaseDeploymentClient, get_deploy_client
 from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+from mlflow.models.model import Model
 
 _logger = logging.getLogger(__name__)
 
@@ -111,30 +112,21 @@ class TorchServePlugin(BaseDeploymentClient):
         }
 
         self.__register_model(
-            mar_file_path=mar_file_path,
-            config=config_registration,
+            mar_file_path=mar_file_path, config=config_registration,
         )
 
-        return {"name": name, "flavor": flavor}
+        return {"name": name + "/" + str(version), "flavor": flavor}
 
     # pylint: disable=W0221
-    def delete_deployment(self, name, config=None):
+    def delete_deployment(self, name):
         """
         Delete the deployment with the name given at --name from the specified target
 
-        :param name: Name of the of the model
-        :param config: Configuration parameters like model file path, handler path
+        :param name: Name of the of the model with version number. For ex: "mnist/2.0"
 
         :return: None
         """
-
-        version = "1.0"
-        if config:
-            for key in config:
-                if key.upper() == "VERSION":
-                    version = str(config[key])
-
-        url = "{}/{}/{}/{}".format(self.management_api, "models", name, version)
+        url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
         resp = requests.delete(url)
         if resp.status_code != 200:
             raise Exception(
@@ -149,9 +141,13 @@ class TorchServePlugin(BaseDeploymentClient):
         Update the deployment with the name given at --name from the specified target
         Using -C or --config additional parameters shall be updated for the corresponding model
 
-        :param name: Name of the of the model
-        :param model_uri: Serialized python file [.pt or .pth]
-        :param flavor: Flavor of the deployed model
+        :param name: Name and version number of the model. Version number is optional. \n
+                     Ex: "mnist" - Default version is updated based on config params \n
+                     "mnist/2.0" - mnist 2.0 version is updated based on config params \n
+        :param model_uri: Model uri cannot be updated and torchserve plugin doesnt use
+                          this argument. Added to match base signature
+        :param flavor: torchserve plugin doesnt use
+                          this argument. Added to match base signature
         :param config: Configuration parameters like model file path, handler path
 
         :return: output - Returns a dict with flavor as key
@@ -161,14 +157,23 @@ class TorchServePlugin(BaseDeploymentClient):
 
         if config is not None:
             for key in config:
-                query_path += "&" + key + "=" + str(config[key])
+                if key.lower() != "set-default":
+                    query_path += "&" + key + "=" + str(config[key])
 
-            query_path = query_path[1:]
+            if query_path:
+                query_path = query_path[1:]
 
-        url = "{}/{}/{}?{}".format(self.management_api, "models", name, query_path)
+        url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
+
+        if config and "set-default" in [key.lower() for key in config.keys()]:
+            url = "{url}/set-default".format(url=url)
+
+        if query_path:
+            url = "{url}?{query_path}".format(url=url, query_path=query_path)
+
         resp = requests.put(url)
 
-        if resp.status_code != 202:
+        if resp.status_code not in [200, 202]:
             raise Exception(
                 "Unable to update deployment with name %s. "
                 "Server returned status code %s and response: %s"
@@ -214,12 +219,15 @@ class TorchServePlugin(BaseDeploymentClient):
         Print the detailed description of the deployment with the name given at --name
         in the specified target
 
-        :param name: Name of the of the model
+        :param name: Name and version of the model. \n
+                     Ex: "mnist/3.0" - gets the details of mnist model version 3.0 \n
+                     "mnist" - gets the details of the default version of the model \n
+                     "mnist/all" - gets the details of all the versions of the same model \n
 
         :return: output - Returns a dict with deploy as key and info about the model specified as value
         """
 
-        url = "{}/{}/{}/{}".format(self.management_api, "models", name, "all")
+        url = "{api}/{models}/{name}".format(api=self.management_api, models="models", name=name)
         resp = requests.get(url)
         if resp.status_code != 200:
             raise ValueError(
@@ -229,25 +237,22 @@ class TorchServePlugin(BaseDeploymentClient):
             )
         return {"deploy": resp.text}
 
-    def predict(self, deployment_name, df, config=None):
+    def predict(self, deployment_name, df):
         """
         Predict using the inference api
         Takes dataframe, Tensor or json string as input and returns output as string
 
-        :param deployment_name: Name of the of the model
+        :param deployment_name: Name and version number of the deployment \n
+                                Ex: "mnist/2.0" - predict based on mnist version 2.0 \n
+                                "mnist" - predict based on default version. \n
         :param df: Dataframe object or json object as input
-        :param config: Configuration parameters like model version
 
         :return: output - Returns the predicted value
         """
 
-        version = "1.0"
-        if config:
-            for key in config:
-                if key.upper() == "VERSION":
-                    version = str(config[key])
-
-        url = "{}/{}/{}/{}".format(self.inference_api, "predictions", deployment_name, version)
+        url = "{api}/{predictions}/{name}".format(
+            api=self.inference_api, predictions="predictions", name=deployment_name
+        )
         if isinstance(df, pd.DataFrame):
             df = df.to_json(orient="records")[1:-1].replace("},{", "} {")
 
@@ -279,9 +284,6 @@ class TorchServePlugin(BaseDeploymentClient):
         Generates mar file using the torch archiver in the specified model store path
         """
         valid_file_suffixes = [".pt", ".pth"]
-        requirements_file = "requirements.txt"
-        requirements_directory_name = "requirements"
-        extra_files_directory_name = "artifacts"
         extra_files_list = []
         req_file_path = None
 
@@ -303,20 +305,22 @@ class TorchServePlugin(BaseDeploymentClient):
                             if Path(name).suffix in valid_file_suffixes:
                                 model_path = os.path.join(root, name)
 
-                        for directory in dirs:
-                            if directory == extra_files_directory_name:
-                                dir_list = os.path.join(root, directory)
-                                for extra_file in os.listdir(dir_list):
-                                    extra_files_list.append(os.path.join(dir_list, extra_file))
-                                    if extra_files is None:
-                                        extra_files = True
+                    model = Model.load(model_config)
+                    model_json = json.loads(Model.to_json(model))
 
-                            if directory == requirements_directory_name:
-                                dir_list = os.path.join(root, directory)
-                                for requirements_file in os.listdir(dir_list):
-                                    req_file_path = os.path.join(dir_list, requirements_file)
-                                    if requirements is None:
-                                        requirements = True
+                    try:
+                        if model_json['flavors']['pytorch']['extra_files']:
+                            for extra_file in model_json['flavors']['pytorch']['extra_files']:
+                                extra_files_list.append(os.path.join(path, extra_file["path"]))
+                    except KeyError:
+                        pass
+
+                    try:
+                        if model_json['flavors']['pytorch']['requirements_file']:
+                            req_file_path = os.path.join(path, model_json['flavors']['pytorch']['requirements_file']['path'])
+                    except KeyError:
+                        pass
+
                     if model_path is None:
                         raise RuntimeError(
                             "Model file does not have a valid suffix. Expected to be one of "
@@ -339,17 +343,23 @@ class TorchServePlugin(BaseDeploymentClient):
                 model_name, version, model_file, model_uri, handler_file, model_store
             )
         )
+
+        extra_files_str = ""
+        if extra_files_list:
+            extra_files_str += ",".join(extra_files_list)
+
         if extra_files:
-            extra_files_str = ""
-            if type(extra_files) == str:
-                extra_files_str += str(extra_files).replace("'", "")
-                if len(extra_files_list) > 0:
-                    extra_files_str += ","
-            if len(extra_files_list) > 0:
-                extra_files_str += ",".join(extra_files_list)
+            if extra_files_list:
+                extra_files_str = "{base_string},{user_defined_string}".format(base_string=extra_files_str, user_defined_string=str(extra_files).replace('\'', ""))
+            else:
+                extra_files_str = str(extra_files).replace('\'', "")
+
+        if extra_files_str:
             cmd = "{cmd} --extra-files '{extra_files}'".format(cmd=cmd, extra_files=extra_files_str)
 
-        if req_file_path:
+        if requirements:
+            cmd = "{cmd} -r {path}".format(cmd=cmd, path=requirements)
+        elif req_file_path:
             cmd = "{cmd} -r {path}".format(cmd=cmd, path=req_file_path)
 
         return_code = subprocess.Popen(cmd, shell=True).wait()
