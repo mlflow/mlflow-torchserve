@@ -32,9 +32,7 @@ class MNISTDigitClassifier(object):
 
         properties = ctx.system_properties
         self.device = torch.device(
-            "cuda:" + str(properties.get("gpu_id"))
-            if torch.cuda.is_available()
-            else "cpu"
+            "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu"
         )
         model_dir = properties.get("model_dir")
 
