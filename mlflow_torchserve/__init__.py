@@ -112,7 +112,8 @@ class TorchServePlugin(BaseDeploymentClient):
         }
 
         self.__register_model(
-            mar_file_path=mar_file_path, config=config_registration,
+            mar_file_path=mar_file_path,
+            config=config_registration,
         )
 
         return {"name": name + "/" + str(version), "flavor": flavor}
@@ -371,7 +372,8 @@ class TorchServePlugin(BaseDeploymentClient):
         return_code = subprocess.Popen(cmd, shell=True).wait()
         if return_code != 0:
             _logger.error(
-                "Error when attempting to load and parse JSON cluster spec from file %s", cmd,
+                "Error when attempting to load and parse JSON cluster spec from file %s",
+                cmd,
             )
             raise Exception("Unable to create mar file")
 
