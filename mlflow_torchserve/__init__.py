@@ -91,15 +91,15 @@ class TorchServePlugin(BaseDeploymentClient):
         if "extra_files" not in self.server_config:
             self.server_config["extra_files"] = None
 
-        if "requirements" not in self.server_config:
-            self.server_config["requirements"] = None
+        if "requirements_file" not in self.server_config:
+            self.server_config["requirements_file"] = None
 
         mar_file_path = self.__generate_mar_file(
             model_name=name,
             version=str(version),
             model_file=self.server_config["model_file"],
             handler=self.server_config["handler"],
-            requirements=self.server_config["requirements"],
+            requirements_file=self.server_config["requirements_file"],
             extra_files=self.server_config["extra_files"],
             model_uri=model_uri,
         )
@@ -108,7 +108,7 @@ class TorchServePlugin(BaseDeploymentClient):
             key: val
             for key, val in config.items()
             if key.upper()
-            not in ["VERSION", "MODEL_FILE", "HANDLER", "EXTRA_FILES", "REQUIREMENTS"]
+            not in ["VERSION", "MODEL_FILE", "HANDLER", "EXTRA_FILES", "REQUIREMENTS_FILE"]
         }
 
         self.__register_model(
@@ -278,7 +278,7 @@ class TorchServePlugin(BaseDeploymentClient):
         return resp.text
 
     def __generate_mar_file(
-        self, model_name, version, model_file, handler, requirements, extra_files, model_uri
+        self, model_name, version, model_file, handler, requirements_file, extra_files, model_uri
     ):
 
         """
@@ -363,8 +363,8 @@ class TorchServePlugin(BaseDeploymentClient):
         if extra_files_str:
             cmd = "{cmd} --extra-files '{extra_files}'".format(cmd=cmd, extra_files=extra_files_str)
 
-        if requirements:
-            cmd = "{cmd} -r {path}".format(cmd=cmd, path=requirements)
+        if requirements_file:
+            cmd = "{cmd} -r {path}".format(cmd=cmd, path=requirements_file)
         elif req_file_path:
             cmd = "{cmd} -r {path}".format(cmd=cmd, path=req_file_path)
 
