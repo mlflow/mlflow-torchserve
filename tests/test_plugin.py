@@ -87,7 +87,7 @@ def test_create_deployment_no_version():
         f_deployment_id,
         f_model_uri,
         f_flavor,
-        config={"MODEL_FILE": model_file_path, "HANDLER": handler_file_path,},
+        config={"MODEL_FILE": model_file_path, "HANDLER": handler_file_path}
     )
     assert isinstance(ret, dict)
     assert ret["name"] == f_deployment_name_version
@@ -132,7 +132,7 @@ def test_wrong_target_name():
 
 @pytest.mark.parametrize(
     "deployment_name, config",
-    [(f_deployment_name_version, {"SET-DEFAULT": "true"}), (f_deployment_id, {"MIN_WORKER": 3}),],
+    [(f_deployment_name_version, {"SET-DEFAULT": "true"}), (f_deployment_id, {"MIN_WORKER": 3})]
 )
 def test_update_deployment_success(deployment_name, config):
     client = deployments.get_deploy_client(f_target)
@@ -195,7 +195,7 @@ def test_create_wrong_handler_exception():
             f_deployment_id,
             f_model_uri,
             f_flavor,
-            config={"VERSION": model_version, "MODEL_FILE": model_file_path, "HANDLER": f_dummy,},
+            config={"VERSION": model_version, "MODEL_FILE": model_file_path, "HANDLER": f_dummy}
         )
 
 
@@ -206,7 +206,7 @@ def test_create_wrong_model_exception():
             f_deployment_id,
             f_model_uri,
             f_flavor,
-            config={"VERSION": model_version, "MODEL_FILE": f_dummy, "HANDLER": handler_file_path,},
+            config={"VERSION": model_version, "MODEL_FILE": f_dummy, "HANDLER": handler_file_path}
         )
 
 
