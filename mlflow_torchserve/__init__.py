@@ -59,8 +59,8 @@ class TorchServePlugin(BaseDeploymentClient):
         if "model_file" not in self.server_config:
             raise Exception("Config Variable MODEL_FILE - missing")
 
-        if "handler_file" not in self.server_config:
-            raise Exception("Config Variable HANDLER_FILE - missing")
+        if "handler" not in self.server_config:
+            raise Exception("Config Variable HANDLER - missing")
 
     def create_deployment(self, name, model_uri, flavor=None, config=None):
         """
@@ -98,7 +98,7 @@ class TorchServePlugin(BaseDeploymentClient):
             model_name=name,
             version=str(version),
             model_file=self.server_config["model_file"],
-            handler_file=self.server_config["handler_file"],
+            handler=self.server_config["handler"],
             requirements=self.server_config["requirements"],
             extra_files=self.server_config["extra_files"],
             model_uri=model_uri,
@@ -108,12 +108,11 @@ class TorchServePlugin(BaseDeploymentClient):
             key: val
             for key, val in config.items()
             if key.upper()
-            not in ["VERSION", "MODEL_FILE", "HANDLER_FILE", "EXTRA_FILES", "REQUIREMENTS"]
+            not in ["VERSION", "MODEL_FILE", "HANDLER", "EXTRA_FILES", "REQUIREMENTS"]
         }
 
         self.__register_model(
-            mar_file_path=mar_file_path,
-            config=config_registration,
+            mar_file_path=mar_file_path, config=config_registration,
         )
 
         return {"name": name + "/" + str(version), "flavor": flavor}
@@ -279,7 +278,7 @@ class TorchServePlugin(BaseDeploymentClient):
         return resp.text
 
     def __generate_mar_file(
-        self, model_name, version, model_file, handler_file, requirements, extra_files, model_uri
+        self, model_name, version, model_file, handler, requirements, extra_files, model_uri
     ):
 
         """
@@ -344,7 +343,7 @@ class TorchServePlugin(BaseDeploymentClient):
             "torch-model-archiver --force --model-name {} "
             "--version {} --model-file {} --serialized-file {} "
             "--handler {} --export-path {}".format(
-                model_name, version, model_file, model_uri, handler_file, model_store
+                model_name, version, model_file, model_uri, handler, model_store
             )
         )
 
@@ -372,8 +371,7 @@ class TorchServePlugin(BaseDeploymentClient):
         return_code = subprocess.Popen(cmd, shell=True).wait()
         if return_code != 0:
             _logger.error(
-                "Error when attempting to load and parse JSON cluster spec from file %s",
-                cmd,
+                "Error when attempting to load and parse JSON cluster spec from file %s", cmd,
             )
             raise Exception("Unable to create mar file")
 

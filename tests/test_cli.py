@@ -65,7 +65,7 @@ atexit.register(stop_torchserve)
 def test_create_cli_version_success():
     version = "VERSION={version}".format(version="1.0")
     model_file = "MODEL_FILE={model_file_path}".format(model_file_path=model_file_path)
-    handler_file = "HANDLER_FILE={handler_file_path}".format(handler_file_path=handler_file_path)
+    handler_file = "HANDLER={handler_file_path}".format(handler_file_path=handler_file_path)
     _ = deployments.get_deploy_client(f_target)
     runner = CliRunner()
     res = runner.invoke(
@@ -92,7 +92,7 @@ def test_create_cli_version_success():
 
 def test_create_cli_success_without_version():
     model_file = "MODEL_FILE={model_file_path}".format(model_file_path=model_file_path)
-    handler_file = "HANDLER_FILE={handler_file_path}".format(handler_file_path=handler_file_path)
+    handler_file = "HANDLER={handler_file_path}".format(handler_file_path=handler_file_path)
     _ = deployments.get_deploy_client(f_target)
     runner = CliRunner()
     res = runner.invoke(
@@ -175,8 +175,5 @@ def test_predict_cli_success(deployment_name):
 @pytest.mark.parametrize("deployment_name", [f_deployment_id + "/1.0", f_deployment_name_version])
 def test_delete_cli_success(deployment_name):
     runner = CliRunner()
-    res = runner.invoke(
-        cli.delete_deployment,
-        ["--name", deployment_name, "--target", f_target],
-    )
+    res = runner.invoke(cli.delete_deployment, ["--name", deployment_name, "--target", f_target],)
     assert "Deployment {} is deleted".format(deployment_name) in res.stdout

@@ -73,7 +73,7 @@ def test_create_deployment_success():
         config={
             "VERSION": model_version,
             "MODEL_FILE": model_file_path,
-            "HANDLER_FILE": handler_file_path,
+            "HANDLER": handler_file_path,
         },
     )
     assert isinstance(ret, dict)
@@ -87,10 +87,7 @@ def test_create_deployment_no_version():
         f_deployment_id,
         f_model_uri,
         f_flavor,
-        config={
-            "MODEL_FILE": model_file_path,
-            "HANDLER_FILE": handler_file_path,
-        },
+        config={"MODEL_FILE": model_file_path, "HANDLER": handler_file_path,},
     )
     assert isinstance(ret, dict)
     assert ret["name"] == f_deployment_name_version
@@ -135,10 +132,7 @@ def test_wrong_target_name():
 
 @pytest.mark.parametrize(
     "deployment_name, config",
-    [
-        (f_deployment_name_version, {"SET-DEFAULT": "true"}),
-        (f_deployment_id, {"MIN_WORKER": 3}),
-    ],
+    [(f_deployment_name_version, {"SET-DEFAULT": "true"}), (f_deployment_id, {"MIN_WORKER": 3}),],
 )
 def test_update_deployment_success(deployment_name, config):
     client = deployments.get_deploy_client(f_target)
@@ -173,8 +167,8 @@ f_dummy = "dummy"
 
 
 def test_create_no_handler_exception():
-    with pytest.raises(Exception, match="Config Variable HANDLER_FILE - missing"):
-        client = deployments.get_deploy_client(f_target)
+    client = deployments.get_deploy_client(f_target)
+    with pytest.raises(Exception, match="Config Variable HANDLER - missing"):
         client.create_deployment(
             f_deployment_id,
             f_model_uri,
@@ -184,8 +178,8 @@ def test_create_no_handler_exception():
 
 
 def test_create_no_model_exception():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Config Variable MODEL_FILE - missing"):
-        client = deployments.get_deploy_client(f_target)
         client.create_deployment(
             f_deployment_id,
             f_model_uri,
@@ -195,76 +189,68 @@ def test_create_no_model_exception():
 
 
 def test_create_wrong_handler_exception():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to create mar file"):
-        client = deployments.get_deploy_client(f_target)
         client.create_deployment(
             f_deployment_id,
             f_model_uri,
             f_flavor,
-            config={
-                "VERSION": model_version,
-                "MODEL_FILE": model_file_path,
-                "HANDLER_FILE": f_dummy,
-            },
+            config={"VERSION": model_version, "MODEL_FILE": model_file_path, "HANDLER": f_dummy,},
         )
 
 
 def test_create_wrong_model_exception():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to create mar file"):
-        client = deployments.get_deploy_client(f_target)
         client.create_deployment(
             f_deployment_id,
             f_model_uri,
             f_flavor,
-            config={
-                "VERSION": model_version,
-                "MODEL_FILE": f_dummy,
-                "HANDLER_FILE": handler_file_path,
-            },
+            config={"VERSION": model_version, "MODEL_FILE": f_dummy, "HANDLER": handler_file_path,},
         )
 
 
 def test_create_mar_file_exception():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="No such file or directory"):
-        client = deployments.get_deploy_client(f_target)
         client.create_deployment(
             f_deployment_id,
             f_dummy,
             config={
                 "VERSION": model_version,
                 "MODEL_FILE": model_file_path,
-                "HANDLER_FILE": handler_file_path,
+                "HANDLER": handler_file_path,
             },
         )
 
 
 def test_update_invalid_name():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to update deployment with name %s" % f_dummy):
-        client = deployments.get_deploy_client(f_target)
         client.update_deployment(f_dummy)
 
 
 def test_get_invalid_name():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to get deployments with name %s" % f_dummy):
-        client = deployments.get_deploy_client(f_target)
         client.get_deployment(f_dummy)
 
 
 def test_delete_invalid_name():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to delete deployment for name %s" % f_dummy):
-        client = deployments.get_deploy_client(f_target)
         client.delete_deployment(f_dummy)
 
 
 def test_predict_exception():
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to parse input json string"):
-        client = deployments.get_deploy_client(f_target)
         client.predict(f_dummy, "sample")
 
 
 def test_predict_name_exception():
+    with open(sample_input_file) as fp:
+        data = fp.read()
+    client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to infer the results for the name %s" % f_dummy):
-        client = deployments.get_deploy_client(f_target)
-        with open(sample_input_file) as fp:
-            data = fp.read()
         client.predict(f_dummy, data)
