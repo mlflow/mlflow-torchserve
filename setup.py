@@ -10,6 +10,7 @@ setup(
     # Require MLflow as a dependency of the plugin, so that plugin users can simply install
     # the plugin & then immediately use it with MLflow
     install_requires=[
+        # TODO: replace the line below with "mlflow>=1.12.0" once mlflow 1.12.0 has been released.
         "mlflow @ git+https://github.com/mlflow/mlflow@master",
         "torchserve",
         "torch-model-archiver",
