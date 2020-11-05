@@ -18,9 +18,6 @@ Run the following commands to install deployment plugin
 
 Run the `mnist_model.py` script which will perform training on MNIST handwritten dataset. 
 
-This example logs the model into mlflow. By default the mlflow tracking uri is set to "http://localhost:5000"
-and it can be overridden by providing  command line argument `--tracking-uri http://<IP>:<PORT>`
-
 This example primarily focuses on logging and using additional/supporting files during deployment. 
 `number_to_text.json` file present in this example has the output mappings. 
 
@@ -37,7 +34,6 @@ python mnist_model.py \
     --epochs 5 \
     --batch-size 64 \
     --lr 0.01 \
-    --tracking-uri http://localhost:5000 \
     --model-save-path /home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models
 ```
 
