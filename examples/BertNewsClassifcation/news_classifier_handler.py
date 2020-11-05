@@ -42,7 +42,7 @@ class NewsClassifierHandler(object):
         if not os.path.isfile(model_def_path):
             raise RuntimeError("Missing the model definition file")
 
-        self.VOCAB_FILE = os.path.join(model_dir, "bert_base_cased_vocab.txt")
+        self.VOCAB_FILE = os.path.join(model_dir, "bert_base_uncased_vocab.txt")
         if not os.path.isfile(self.VOCAB_FILE):
             raise RuntimeError("Missing the vocab file")
 
