@@ -5,3 +5,4 @@ mlflow@git+https://github.com/mlflow/mlflow@master
 torchserve
 torch-model-archiver
 numpy
+matplotlib
