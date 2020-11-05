@@ -4,7 +4,7 @@ channels:
 - pytorch
 dependencies:
 - python=3.8.2
-- pytorch=1.6.0
+- pytorch>=1.6.0
 - pip
 - pip:
   - mlflow
@@ -13,3 +13,4 @@ dependencies:
   - boto3
   - transformers
   - torchtext==0.7.0
+  - pandas
