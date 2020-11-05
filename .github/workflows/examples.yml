@@ -38,6 +38,7 @@ jobs:
             --model-save-path ./models
 
           # start torchserve
+          mkdir model_store
           torchserve --start --model-store model_store
           sleep 10
 
