@@ -1,0 +1,18 @@
+name: mnist-example1
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      epochs: {type: int, default: 5}
+      log_interval: {type: int, default: 10}
+      save_mlflow_model: {type: bool, default: False}
+      model_save_path: {type: str, default: "example1"}
+
+    command: |
+          python mnist_model.py \
+            --epochs {epochs} \
+            --log-interval {log_interval} \
+            --model-save-path {model_save_path} \
+            --save-mlflow-model {save_mlflow_model}

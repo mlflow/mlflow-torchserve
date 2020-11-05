@@ -15,18 +15,16 @@ Run the following commands to install deployment plugin
 
 ## Generating model file (.pt)
 
-Run the `mnist_model.py` script which will perform training on MNIST handwritten dataset. 
-
-By default,  the script exports the model file as `model_cnn.pt` and generates a sample input file `sample.json'
+Move to `mlflow-torchserve/examples/MNIST/` directory and run the following command to train the MNIST model  
 
 Command: 
 ```
 python mnist_model.py \
     --epochs 5 \
-    --batch-size 64 \
-    --lr 0.01 \
-    --save-model
+    --model-save-path "example1"
 ```
+
+The trained model file `mnist_cnn.pt` and the sample input file `sample.json` will be saved into the model-save-path location(`example1` directory).
 
 ## Starting torchserve
 
@@ -38,14 +36,17 @@ create an empty directory `model_store` and run the following command to start t
 
 Run the following command to create a new deployment named `mnist_test`
 
-`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "MODEL_FILE=mnist_model.py" -C "HANDLER=mnist_handler.py"`
+`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "MODEL_FILE=<BASE_PATH>/mlflow-torchserve/examples/MNIST/mnist_model.py" -C "HANDLER=mnist_handler.py"`
+
+Note: replace Base Path with the actual of the mlflow-torchserve repository. 
+For ex: `"/home/ubuntu/mlflow-torchserve/examples/MNIST/mnist_model.py"`
 
 Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "VERSION=5.0" -C "MODEL_FILE=mnist_model.py" -C "HANDLER=mnist_handler.py"`     
+`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "VERSION=5.0" -C "MODEL_FILE=<BASE_PATH>/mlflow-torchserve/examples/MNIST/mnist_model.py" -C "HANDLER=mnist_handler.py"`     
 
 ## Running prediction based on deployed model
 

@@ -1,9 +1,12 @@
 import os
-
+import sys
 import matplotlib.pyplot as plt
 from torchvision import transforms
 
 from mlflow.deployments import get_deploy_client
+
+if len(sys.argv) != 3:
+    raise Exception("Invalid Input. Ex: python predict.py <MODEL_FILE_PATH> <HANDLER_PATH>")
 
 img = plt.imread(os.path.join(os.getcwd(), "test_data/one.png"))
 mnist_transforms = transforms.Compose([transforms.ToTensor()])

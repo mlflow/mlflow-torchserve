@@ -23,22 +23,19 @@ This example primarily focuses on logging and using additional/supporting files 
 
 The python package requirements are listed in `requirements.txt`.
 This example logs `requirements.txt` as an additional artifact. Torchserve plugin auto detects the
-requirments file and adds it as the `-r` argument in `torch-model-archiver` during the `create_deployment` process
-
-The mapping file is pushed into mlflow along with the model using `mlflow.pytorch` library. 
+requirements file and adds it as the `-r` argument in `torch-model-archiver` during the `create_deployment` process
 
 Command: 
 
 ```
 python mnist_model.py \
     --epochs 5 \
-    --batch-size 64 \
-    --lr 0.01 \
-    --model-save-path /home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models
+    --model-save-path "example3"
+    --save-mlflow-model True
 ```
 
 This command will run the training process and exports the model to the `model-save-path` location.
-Above command exports the mlflow model into `/home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models` directory. 
+Above command exports the mlflow model into `mlflow-torchserve/examples/MNIST/example3/models` directory. 
 
 ## Starting torchserve
 
@@ -50,17 +47,17 @@ create an empty directory `model_store` and run the following command to start t
 
 Run the following command to create a new deployment named `mnist_test`.
 
-Since the model is exported to mlflow, set the --model-uri to the S3 path where model is logged. 
+`mlflow deployments  create --name mnist_test --target torchserve --model-uri file://<PATH_TO_SAVED_MODEL>> -C "MODEL_FILE=<PATH_TO_MODEL_FILE>" -C "HANDLER=mnist_handler.py"`
 
-`mlflow deployments  create --name mnist_test --target torchserve --model-uri file:///home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models -C "MODEL_FILE=mnist_model.py" -C "HANDLER=mnist_handler.py"`
+For Example:
+`mlflow deployments  create --name mnist_test --target torchserve --model-uri file:///home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models -C "MODEL_FILE=/home/ubuntu/mlflow-torchserve/examples/MNIST/mnist_model.py" -C "HANDLER=mnist_handler.py"`
 
-Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
+Note: Torchserve plugin generates the version number based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments  create --name mnist_test --target torchserve --model-uri file:///home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models -C "VERSION=5.0" "-C "MODEL_FILE=mnist_model.py" -C "HANDLER=mnist_handler.py"`
-
+`mlflow deployments  create --name mnist_test --target torchserve --model-uri file:///home/ubuntu/mlflow-torchserve/examples/MNIST/example3/models -C "VERSION=5.0" -C "MODEL_FILE=/home/ubuntu/mlflow-torchserve/examples/MNIST/mnist_model.py" -C "HANDLER=mnist_handler.py"`
 
 ## Running prediction based on deployed model
 
