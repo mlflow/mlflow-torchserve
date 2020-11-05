@@ -38,14 +38,14 @@ create an empty directory `model_store` and run the following command to start t
 
 Run the following command to create a new deployment named `mnist_test`
 
-`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "MODEL_FILE=mnist_model.py" -C "HANDLER_FILE=mnist_handler.py"`
+`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "MODEL_FILE=mnist_model.py" -C "HANDLER=mnist_handler.py"`
 
 Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "VERSION=5.0" -C "MODEL_FILE=mnist_model.py" -C "HANDLER_FILE=mnist_handler.py"`     
+`mlflow deployments create -t torchserve -m mnist_cnn.pt --name mnist_test -C "VERSION=5.0" -C "MODEL_FILE=mnist_model.py" -C "HANDLER=mnist_handler.py"`     
 
 ## Running prediction based on deployed model
 

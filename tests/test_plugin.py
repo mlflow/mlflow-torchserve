@@ -184,7 +184,7 @@ def test_create_no_model_exception():
             f_deployment_id,
             f_model_uri,
             f_flavor,
-            config={"VERSION": model_version, "HANDLER_FILE": handler_file_path},
+            config={"VERSION": model_version, "HANDLER": handler_file_path},
         )
 
 
