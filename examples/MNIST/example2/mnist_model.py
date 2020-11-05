@@ -78,8 +78,6 @@ def train(args, model, device, train_loader, optimizer, epoch):
                     loss.item(),
                 )
             )
-            if args.dry_run:
-                break
 
 
 def test(model, device, test_loader):
@@ -141,7 +139,7 @@ def main():
     parser.add_argument(
         "--lr",
         type=float,
-        default=1.0,
+        default=0.01,
         metavar="LR",
         help="learning rate (default: 1.0)",
     )
@@ -152,15 +150,7 @@ def main():
         metavar="M",
         help="Learning rate step gamma (default: 0.7)",
     )
-    parser.add_argument(
-        "--no-cuda", action="store_true", default=False, help="disables CUDA training"
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="quickly check a single pass",
-    )
+    parser.add_argument("--no-cuda", type=bool, default=False, help="disables CUDA training")
     parser.add_argument("--seed", type=int, default=1, metavar="S", help="random seed (default: 1)")
     parser.add_argument(
         "--log-interval",
@@ -171,7 +161,7 @@ def main():
     )
     parser.add_argument(
         "--save-model",
-        action="store_true",
+        type=bool,
         default=True,
         help="For Saving the current Model",
     )
