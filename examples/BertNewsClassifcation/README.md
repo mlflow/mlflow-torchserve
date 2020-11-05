@@ -38,7 +38,6 @@ Command:
 python news_classifier.py \
     --epochs 5 \
     --num-samples 50000 \
-    --tracking-uri http://localhost:5000 \
     --model-save-path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
 ```
 
