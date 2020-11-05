@@ -30,15 +30,18 @@ jobs:
           pip install -r requirements.txt
       - name: Run example
         run: |
+          # train model
           python mnist_model.py \
             --epochs 1 \
             --batch-size 64 \
             --lr 0.01 \
             --model-save-path ./models
 
+          # start torchserve
           torchserve --start --model-store model_store
           sleep 10
 
+          # create deployment
           mlflow deployments create \
             --name mnist_test \
             --target torchserve \
@@ -47,6 +50,7 @@ jobs:
             -C "HANDLER=mnist_handler.py"
           sleep 5
 
+          # make prediction
           mlflow deployments predict \
             --name mnist_test \
             --target torchserve \
