@@ -13,3 +13,4 @@ dependencies:
   - boto3
   - transformers
   - torchtext==0.7.0
+  - pandas
