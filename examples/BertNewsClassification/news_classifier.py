@@ -2,7 +2,6 @@
 # pylint: disable=W0613
 # pylint: disable=E1102
 # pylint: disable=W0223
-import os
 import shutil
 from collections import defaultdict
 import numpy as np
