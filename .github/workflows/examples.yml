@@ -62,4 +62,5 @@ jobs:
           # verify output
           cat output.json
 
-          echo done
+          # stop torchserve
+          torchserve --stop
