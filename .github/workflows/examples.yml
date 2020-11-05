@@ -58,3 +58,4 @@ jobs:
             --input-path sample.json \
             --output-path output.json
           sleep 5
+          cat output.json
