@@ -61,4 +61,4 @@ jobs:
           torchserve --stop
 
       - name: Run tests
-        run: pytest -s tests --color=yes --verbose
+        run: pytest tests --color=yes --verbose
