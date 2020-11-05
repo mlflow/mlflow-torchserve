@@ -65,6 +65,6 @@ jobs:
 
       - name: Run tests
         run: |
-          export PATH="$CONDA_DIR:$PATH"
+          export PATH="$CONDA_BIN:$PATH"
           source activate --help
           pytest tests --color=yes --verbose
