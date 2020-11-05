@@ -58,5 +58,7 @@ jobs:
             --input-path sample.json \
             --output-path output.json
           sleep 5
+
+          # verify output
           cat output.json
           sleep 1
