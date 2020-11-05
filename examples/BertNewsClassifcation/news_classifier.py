@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
-from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
@@ -388,8 +387,6 @@ if __name__ == "__main__":
     y_review_texts, y_pred, y_pred_probs, y_test = model.get_predictions(
         model, model.test_data_loader
     )
-
-    print(classification_report(y_test, y_pred, target_names=class_names))
 
     print("\n\n\n SAVING MODEL")
 
