@@ -61,4 +61,5 @@ jobs:
 
           # verify output
           cat output.json
-          sleep 1
+
+          echo done
