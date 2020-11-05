@@ -1,0 +1,55 @@
+name: Examples
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  mnist:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: examples/MNIST/example3
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install Java
+        run: |
+          sudo apt-get update
+          sudo apt-get install openjdk-11-jdk
+      - name: Check Java version
+        run: |
+          java -version
+      - name: Install dependencies
+        run: |
+          pip install -e ../../..
+          pip install -r requirements.txt
+      - name: Run example
+        run: |
+          python mnist_model.py \
+            --epochs 1 \
+            --batch-size 64 \
+            --lr 0.01 \
+            --model-save-path ./models
+
+          torchserve --start --model-store model_store
+          sleep 10
+
+          mlflow deployments create \
+            --name mnist_test \
+            --target torchserve \
+            --model-uri ./models \
+            -C "MODEL_FILE=mnist_model.py" \
+            -C "HANDLER=mnist_handler.py"
+          sleep 5
+
+          mlflow deployments predict \
+            --name mnist_test \
+            --target torchserve \
+            --input-path sample.json \
+            --output-path output.json
+          sleep 5
