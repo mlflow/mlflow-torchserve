@@ -52,6 +52,6 @@ If needed, version number can also be explicitly mentioned as a config variable.
 For testing Handwritten dataset, we are going to use a sample image placed in `test_data` directory. 
 Run the following command to invoke prediction of our sample input `test_data/one.png`
 
-`mlflow deployments predict --name mnist_test --target torchserve --input_path sample.json  --output_path output.json`
+`mlflow deployments predict --name mnist_test --target torchserve --input-path sample.json  --output-path output.json`
 
 MNIST model would predict the handwritten digit and store the output in `output.json`.
