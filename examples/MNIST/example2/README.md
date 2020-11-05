@@ -58,7 +58,7 @@ If needed, version number can also be explicitly mentioned as a config variable 
 ```
 config = {
     'MODEL_FILE': "mnist_model.py",
-    'HANDLER_FILE': 'mnist_handler.py',
+    'HANDLER': 'mnist_handler.py',
     'VERSION': 5.0
 
 }

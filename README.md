@@ -17,8 +17,8 @@ Run the following commands to build the package
 
 ## Sample Commands for deployment
 
-1. Creating a new deployment - `mlflow deployments create -t TARGET -m MODEL_URI --name DEPLOYMENT_NAME -C 'MODEL_FILE=MODEL_FILE_PATH' -C 'HANDLER_FILE=HANDLER_FILE_PATH'` \
-For Example: ```mlflow deployments create -t torchserve -m linear.pt --name linear  -C "MODEL_FILE=linear_model.py" -C "HANDLER_FILE=linear_handler.py"```
+1. Creating a new deployment - `mlflow deployments create -t TARGET -m MODEL_URI --name DEPLOYMENT_NAME -C 'MODEL_FILE=MODEL_FILE_PATH' -C 'HANDLER=HANDLER_FILE_PATH'` \
+For Example: ```mlflow deployments create -t torchserve -m linear.pt --name linear  -C "MODEL_FILE=linear_model.py" -C "HANDLER=linear_handler.py"```
 
 2. List all deployments - ```mlflow deployments list -t TARGET``` \
 For Example: ```mlflow deployments list -t torchserve```

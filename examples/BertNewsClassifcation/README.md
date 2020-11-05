@@ -57,14 +57,14 @@ create an empty directory `model_store` and run the following command to start t
 
 Run the following command to create a new deployment named `news_classification_test`
 
-`mlflow deployments create -t torchserve -m file:///home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER_FILE=news_classifier_handler.py"`
+`mlflow deployments create -t torchserve -m file:///home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py"`
 
 Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments create -t torchserve -m file:///home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models --name news_classification_test -C "VERSION=5.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER_FILE=news_classifier_handler.py"`
+`mlflow deployments create -t torchserve -m file:///home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models --name news_classification_test -C "VERSION=5.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py"`
 
 
 ## Running prediction based on deployed model
