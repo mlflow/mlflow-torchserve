@@ -2,6 +2,8 @@
 # pylint: disable=W0613
 # pylint: disable=E1102
 # pylint: disable=W0223
+import os
+import shutil
 from collections import defaultdict
 import numpy as np
 import pandas as pd
@@ -391,6 +393,8 @@ if __name__ == "__main__":
     print("\n\n\n SAVING MODEL")
 
     if args.save_model:
+        if os.path.exists(args.model_save_path):
+            shutil.rmtree(args.model_save_path)
         mlflow.pytorch.save_model(
             model,
             path=args.model_save_path,

@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import json
 import os
+import shutil
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -209,6 +210,8 @@ def main():
         scheduler.step()
 
     if args.save_model:
+        if os.path.exists(args.model_save_path):
+            shutil.rmtree(args.model_save_path)
         mlflow.pytorch.save_model(
             model,
             path=args.model_save_path,
