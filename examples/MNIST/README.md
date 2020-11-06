@@ -1,11 +1,5 @@
 # Deploying MNIST Handwritten Recognition using torchserve
 
-## Package Requirement
-
-Install the required packages using the following command
-
-`pip install -r requirements.txt`
-
 ## Installing Deployment plugin
 
 Run the following commands to install deployment plugin
@@ -14,21 +8,15 @@ Run the following commands to install deployment plugin
 `python setup.py install`
 
 
-## Generating model file (.pt)
+## Training the model
 
-Run the `mnist_model.py` script which will perform training on MNIST handwritten dataset. 
-
-By default,  the script exports the model file as `model_cnn.pt`
-
-Command: 
+Follow the github link to train MNIST handwritten digit recognition.
 
 ```
-python mnist_model.py \
-    --epochs 5 \
-    --batch-size 64 \
-    --lr 0.01 \
-    --save-model
+https://github.com/mlflow/mlflow/tree/master/examples/pytorch/MNIST/example1
 ```
+
+The above mentioned example, performs training process and autologs the parameters and model into mlflow.
 
 ## Starting torchserve
 
@@ -40,27 +28,25 @@ create an empty directory `model_store` and run the following command to start t
 
 This example uses tensor as input for prediction.
 
-In the previous example(example1), mlflow cli is used for predict. Input image path is provided as a cli argument.
-
 Python plugin accepts 3 different types of input for prediction - Dataframe, Json and Tensor.
 
 This example demonstrates input as tensor (refer `predict.py` where images are converted to tensor)
 
 Run the following command to create and predict the output based on our test data - `test_data/one.png`
 
-`python predict.py`
+`python predict.py <MODEL_URI>`
+
+For ex: `python predict.py  s3://mlflow/artifacts/0/fe1407a3242c4f6f9a5748eca1ae9226/artifacts/model`
 
 Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, by running `predict.py`, a new deployment `mnist_test` is created with version 1.
 
-If needed, version number can also be explicitly mentioned as a config variable in `predict.py` as below.
+Version number can also be explicitly mentioned as a config variable in `predict.py` as below.
 
 ```
 config = {
-    'MODEL_FILE': "mnist_model.py",
     'HANDLER': 'mnist_handler.py',
     'VERSION': 5.0
-
 }
 ```  
 
