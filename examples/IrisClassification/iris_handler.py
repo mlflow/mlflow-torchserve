@@ -5,12 +5,12 @@ import os
 import numpy as np
 import torch
 
-from iris_classification import IrisClassifier
+from iris_classification import IrisClassification
 
 logger = logging.getLogger(__name__)
 
 
-class IRISClassifier(object):
+class IRISClassifierHandler(object):
     """
     IRISClassifier handler class. This handler takes an input tensor and
     output the type of iris based on the input
@@ -42,7 +42,7 @@ class IRISClassifier(object):
             raise RuntimeError("Missing the model definition file")
 
         state_dict = torch.load(model_pt_path, map_location=self.device)
-        self.model = IrisClassifier()
+        self.model = IrisClassification()
         self.model.load_state_dict(state_dict)
         self.model.to(self.device)
         self.model.eval()
@@ -96,7 +96,7 @@ class IRISClassifier(object):
         return inference_output
 
 
-_service = IRISClassifier()
+_service = IRISClassifierHandler()
 
 
 def handle(data, context):
