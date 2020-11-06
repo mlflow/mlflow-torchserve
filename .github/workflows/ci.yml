@@ -66,5 +66,5 @@ jobs:
       - name: Run tests
         run: |
           export PATH="$CONDA_BIN:$PATH"
-          pip install pytorch_lightning
+          pip install pytorch_lightning sklearn
           pytest tests --color=yes --verbose
