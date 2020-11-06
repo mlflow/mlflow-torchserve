@@ -21,13 +21,7 @@ def find_conda_yaml(directory):
 @pytest.mark.parametrize(
     "directory, command",
     [
-        ("MNIST/example1", ["python", "mnist_model.py", "--epochs", "1"]),
-        ("MNIST/example2", ["python", "mnist_model.py", "--epochs", "1"]),
-        # ("MNIST/example3", ["python", "mnist_model.py", "--epochs", "1"]),
-        (
-            "BertNewsClassification",
-            ["python", "news_classifier.py", "--epochs", "1", "--num-samples", "200"],
-        ),
+        ("IrisClassification", ["python", "iris_classification.py"]),
     ],
 )
 def test_command_example(directory, command):
@@ -39,10 +33,7 @@ def test_command_example(directory, command):
 @pytest.mark.parametrize(
     "directory, params",
     [
-        ("MNIST/example1", ["-P", "epochs=1"]),
-        ("MNIST/example2", ["-P", "epochs=1"]),
-        # ("MNIST/example3", ["-P", "epochs=1"]),
-        ("BertNewsClassification", ["-P", "epochs=1", "-P", "num_samples=100"]),
+        ("IrisClassification", []),
     ],
 )
 def test_mlflow_run_example(directory, params):
