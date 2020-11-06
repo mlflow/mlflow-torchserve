@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install pytest==6.1.1 torchvision pytorch_lightning
+          pip install pytest==6.1.1 torchvision
       - name: Run torchserve example
         run: |
           set -x
@@ -66,4 +66,5 @@ jobs:
       - name: Run tests
         run: |
           export PATH="$CONDA_BIN:$PATH"
+          pip install pytorch_lightning
           pytest tests --color=yes --verbose
