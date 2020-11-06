@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install pytest==6.1.1 torchvision
+          pip install pytest==6.1.1 torchvision pytorch_lightning
       - name: Run torchserve example
         run: |
           set -x
