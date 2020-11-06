@@ -10,13 +10,14 @@ from click.testing import CliRunner
 
 from mlflow import deployments
 from mlflow.deployments import cli
+from tests.resources import linear_model
 
 f_target = "torchserve"
 f_deployment_id = "cli_test"
 f_deployment_name_version = "cli_test/2.0"
 f_deployment_name_all = "cli_test/all"
 f_flavor = None
-f_model_uri = os.path.join("tests/resources", "linear.pt")
+f_model_uri = os.path.join("tests/resources", "linear_state_dict.pt")
 
 model_version = "1.0"
 model_file_path = os.path.join("tests/resources", "linear_model.py")
@@ -26,6 +27,7 @@ sample_input_file = os.path.join("tests/resources", "sample.json")
 
 @pytest.fixture(scope="session")
 def start_torchserve():
+    linear_model.main()
     if not os.path.isdir("model_store"):
         os.makedirs("model_store")
     cmd = "torchserve --start --model-store {}".format("./model_store")
@@ -56,6 +58,12 @@ def stop_torchserve():
 
     if os.path.isdir("model_store"):
         shutil.rmtree("model_store")
+
+    if os.path.exists("tests/resources/linear_state_dict.pt"):
+        os.remove("tests/resources/linear_state_dict.pt")
+
+    if os.path.exists("tests/resources/linear_model.pt"):
+        os.remove("tests/resources/linear_model.pt")
 
 
 atexit.register(stop_torchserve)

@@ -5,7 +5,6 @@ import os
 import numpy as np
 import torch
 from torch.autograd import Variable
-from linear_model import LinearRegression
 import json
 
 logger = logging.getLogger(__name__)
@@ -33,15 +32,20 @@ class LinearRegressionHandler(object):
         model_dir = properties.get("model_dir")
 
         # Read model serialize/pt file
-        model_pt_path = os.path.join(model_dir, "linear.pt")
+        model_pt_path = os.path.join(model_dir, "linear_state_dict.pt")
         # Read model definition file
         model_def_path = os.path.join(model_dir, "linear_model.py")
-        if not os.path.isfile(model_def_path):
-            raise RuntimeError("Missing the model definition file")
 
-        state_dict = torch.load(model_pt_path, map_location=self.device)
-        self.model = LinearRegression(1, 1)
-        self.model.load_state_dict(state_dict)
+        if not os.path.isfile(model_def_path):
+            model_pt_path = os.path.join(model_dir, "linear_model.pt")
+            self.model = torch.load(model_pt_path, map_location=self.device)
+        else:
+            from linear_model import LinearRegression
+
+            state_dict = torch.load(model_pt_path, map_location=self.device)
+            self.model = LinearRegression(1, 1)
+            self.model.load_state_dict(state_dict)
+
         self.model.to(self.device)
         self.model.eval()
 
@@ -49,7 +53,6 @@ class LinearRegressionHandler(object):
         self.initialized = True
 
     def preprocess(self, data):
-
         """
         Preprocess the input to tensor and reshape it to be used as input to the network
         """
