@@ -1,12 +1,7 @@
+import json
 import logging
 import os
-
-import matplotlib.pyplot as plt
-import numpy as np
 import torch
-from torch.autograd import Variable
-from torchvision import transforms
-from mnist_model import Net
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +24,6 @@ class MNISTDigitClassifier(object):
 
         :param ctx: System properties
         """
-
         properties = ctx.system_properties
         self.device = torch.device(
             "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu"
@@ -37,15 +31,8 @@ class MNISTDigitClassifier(object):
         model_dir = properties.get("model_dir")
 
         # Read model serialize/pt file
-        model_pt_path = os.path.join(model_dir, "mnist_cnn.pt")
-        # Read model definition file
-        model_def_path = os.path.join(model_dir, "mnist_model.py")
-        if not os.path.isfile(model_def_path):
-            raise RuntimeError("Missing the model definition file")
-
-        state_dict = torch.load(model_pt_path, map_location=self.device)
-        self.model = Net()
-        self.model.load_state_dict(state_dict)
+        model_pt_path = os.path.join(model_dir, "model.pth")
+        self.model = torch.load(model_pt_path, map_location=self.device)
         self.model.to(self.device)
         self.model.eval()
 
@@ -61,20 +48,16 @@ class MNISTDigitClassifier(object):
 
         :return: output - Preprocessed image
         """
+
         image = data[0].get("data")
         if image is None:
             image = data[0].get("body")
 
-        mnist_transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
-        )
-
         image = image.decode("utf-8")
-        image = plt.imread(image)
-        image = mnist_transform(image)
+        image = torch.Tensor(json.loads(image)["data"])
         return image
 
-    def inference(self, img):
+    def inference(self, input_data):
         """
         Predict the class (or classes) of an image using a trained deep learning model
 
@@ -82,13 +65,10 @@ class MNISTDigitClassifier(object):
 
         :return: output - Predicted label for the given input
         """
-        # Convert 2D image to 1D vector
-        img = np.expand_dims(img, 0)
-        img = torch.from_numpy(img)
 
         self.model.eval()
-        inputs = Variable(img).to(self.device)
-        outputs = self.model.forward(inputs)
+        inputs = input_data.to(self.device)
+        outputs = self.model(inputs)
 
         _, y_hat = outputs.max(1)
         predicted_idx = str(y_hat.item())
@@ -117,7 +97,6 @@ def handle(data, context):
 
     :return: output - Output after postprocess
     """
-
     if not _service.initialized:
         _service.initialize(context)
 

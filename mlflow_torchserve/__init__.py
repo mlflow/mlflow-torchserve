@@ -56,9 +56,6 @@ class TorchServePlugin(BaseDeploymentClient):
         Validate the mandatory arguments is present if not raise exception
         """
 
-        if "model_file" not in self.server_config:
-            raise Exception("Config Variable MODEL_FILE - missing")
-
         if "handler" not in self.server_config:
             raise Exception("Config Variable HANDLER - missing")
 
@@ -93,6 +90,9 @@ class TorchServePlugin(BaseDeploymentClient):
 
         if "requirements_file" not in self.server_config:
             self.server_config["requirements_file"] = None
+
+        if "model_file" not in self.server_config:
+            self.server_config["model_file"] = None
 
         mar_file_path = self.__generate_mar_file(
             model_name=name,
@@ -342,11 +342,14 @@ class TorchServePlugin(BaseDeploymentClient):
 
         cmd = (
             "torch-model-archiver --force --model-name {} "
-            "--version {} --model-file {} --serialized-file {} "
+            "--version {} --serialized-file {} "
             "--handler {} --export-path {}".format(
-                model_name, version, model_file, model_uri, handler, model_store
+                model_name, version, model_uri, handler, model_store
             )
         )
+
+        if model_file:
+            cmd += " --model-file {file_path}".format(file_path=model_file)
 
         extra_files_str = ""
         if extra_files_list:
@@ -410,7 +413,7 @@ class TorchServePlugin(BaseDeploymentClient):
         Returns the maximum version for the same model name
         """
         try:
-            get_response = self.get_deployment(name)
+            get_response = self.get_deployment(name + "/all")
         except ValueError:
             get_response = None
 
