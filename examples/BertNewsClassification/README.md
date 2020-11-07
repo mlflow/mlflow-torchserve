@@ -31,7 +31,7 @@ Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log
 
 Run the `news_classifier.py` script which will fine tune the model based on play store review comments. 
 
-By default,  the script exports the model file as `bert_pytorch.pt` and generates a sample input file `sample.json`
+By default,  the script exports the model file as `bert_pytorch.pt` and generates a sample input file `input.json`
 
 Command: 
 ```
@@ -71,6 +71,6 @@ If needed, version number can also be explicitly mentioned as a config variable.
 For testing the fine tuned model, a sample input text is placed in `input.json`
 Run the following command to invoke prediction of our sample input 
 
-`mlflow deployments predict --name news_classification_test --target torchserve --input-path sample.json  --output-path output.json`
+`mlflow deployments predict --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
 
 Bert model would predict the classification of the given news text and store the output in `output.json`.
