@@ -354,7 +354,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--save-model",
-        action="store_true",
+        type=bool,
         default=True,
         help="For Saving the current Model",
     )

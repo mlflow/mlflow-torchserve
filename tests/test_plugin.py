@@ -134,17 +134,6 @@ def test_create_no_handler_exception():
         )
 
 
-def test_create_no_model_exception():
-    client = deployments.get_deploy_client(f_target)
-    with pytest.raises(Exception, match="Config Variable MODEL_FILE - missing"):
-        client.create_deployment(
-            f_deployment_id,
-            f_model_uri,
-            f_flavor,
-            config={"VERSION": model_version, "HANDLER": handler_file_path},
-        )
-
-
 def test_create_wrong_handler_exception():
     client = deployments.get_deploy_client(f_target)
     with pytest.raises(Exception, match="Unable to create mar file"):

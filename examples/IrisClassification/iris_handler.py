@@ -1,20 +1,19 @@
-import json
+import ast
 import logging
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch.autograd import Variable
-from torchvision import transforms
+
+from iris_classification import IrisClassification
 
 logger = logging.getLogger(__name__)
 
 
-class MNISTDigitClassifier(object):
+class IRISClassifierHandler(object):
     """
-    MNISTDigitClassifier handler class. This handler takes a greyscale image
-    and returns the digit in that image.
+    IRISClassifier handler class. This handler takes an input tensor and
+    output the type of iris based on the input
     """
 
     def __init__(self):
@@ -22,7 +21,6 @@ class MNISTDigitClassifier(object):
         self.mapping = None
         self.device = None
         self.initialized = False
-        self.extra_file = None
 
     def initialize(self, ctx):
         """
@@ -30,7 +28,6 @@ class MNISTDigitClassifier(object):
 
         :param ctx: System properties
         """
-
         properties = ctx.system_properties
         self.device = torch.device(
             "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu"
@@ -38,18 +35,15 @@ class MNISTDigitClassifier(object):
         model_dir = properties.get("model_dir")
 
         # Read model serialize/pt file
-        model_pt_path = os.path.join(model_dir, "model.pth")
+        model_pt_path = os.path.join(model_dir, "iris.pt")
         # Read model definition file
-        model_def_path = os.path.join(model_dir, "mnist_model.py")
+        model_def_path = os.path.join(model_dir, "iris_classification.py")
         if not os.path.isfile(model_def_path):
             raise RuntimeError("Missing the model definition file")
-        # Read extra defintion file
-        extra_files_path = os.path.join(model_dir, "number_to_text.json")
 
-        if os.path.isfile(extra_files_path):
-            self.extra_file = extra_files_path
-
-        self.model = torch.load(model_pt_path, map_location=self.device)
+        state_dict = torch.load(model_pt_path, map_location=self.device)
+        self.model = IrisClassification()
+        self.model.load_state_dict(state_dict)
         self.model.to(self.device)
         self.model.eval()
 
@@ -58,45 +52,37 @@ class MNISTDigitClassifier(object):
 
     def preprocess(self, data):
         """
-        Scales, crops, and normalizes a PIL image for a MNIST model,
-         returns an Numpy array
+        preprocessing step - Reads the input array and converts it to tensor
 
         :param data: Input to be passed through the layers for prediction
 
-        :return: output - Preprocessed image
+        :return: output - Preprocessed input
         """
-        image = data[0].get("data")
-        if image is None:
-            image = data[0].get("body")
 
-        mnist_transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
-        )
+        print(data)
+        input_data_str = data[0].get("data")
+        if input_data_str is None:
+            input_data_str = data[0].get("body")
 
-        image = image.decode("utf-8")
-        image = plt.imread(image)
-        image = mnist_transform(image)
-        return image
+        input_data = input_data_str.decode("utf-8")
+        input_tensor = torch.Tensor(ast.literal_eval(input_data))
+        return input_tensor
 
-    def inference(self, img):
+    def inference(self, input_data):
         """
-        Predict the class (or classes) of an image using a trained deep learning model
+        Predict the class (or classes) for the given input using a trained deep learning model
 
-        :param img: Input to be passed through the layers for prediction
+        :param input_data: Input to be passed through the layers for prediction
 
         :return: output - Predicted label for the given input
         """
 
-        # Convert 2D image to 1D vector
-        img = np.expand_dims(img, 0)
-        img = torch.from_numpy(img)
-
         self.model.eval()
-        inputs = Variable(img).to(self.device)
-        outputs = self.model.forward(inputs)
+        inputs = input_data.to(self.device)
+        outputs = self.model(inputs)
 
-        _, y_hat = outputs.max(1)
-        predicted_idx = str(y_hat.item())
+        predicted_idx = str(np.argmax(outputs.cpu().detach().numpy()))
+
         return [predicted_idx]
 
     def postprocess(self, inference_output):
@@ -107,15 +93,10 @@ class MNISTDigitClassifier(object):
 
         :return: output - Output after post processing
         """
-        if self.extra_file:
-            with open(self.extra_file) as json_file:
-                data = json.load(json_file)
-            inference_output = [json.dumps(data[inference_output[0]])]
-            return inference_output
         return inference_output
 
 
-_service = MNISTDigitClassifier()
+_service = IRISClassifierHandler()
 
 
 def handle(data, context):
@@ -127,7 +108,6 @@ def handle(data, context):
 
     :return: output - Output after postprocess
     """
-
     if not _service.initialized:
         _service.initialize(context)
 
