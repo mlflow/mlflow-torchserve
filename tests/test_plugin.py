@@ -1,13 +1,8 @@
-import atexit
 import json
 import os
-import shutil
-import subprocess
-import time
-import torch
 
 import pytest
-
+import torch
 from mlflow import deployments
 from mlflow.exceptions import MlflowException
 
@@ -16,51 +11,13 @@ f_deployment_id = "test"
 f_deployment_name_version = "test/2.0"
 f_deployment_name_all = "test/all"
 f_flavor = None
-f_model_uri = os.path.join("tests/resources", "linear.pt")
+f_model_uri = os.path.join("tests/resources", "linear_state_dict.pt")
 
 model_version = "1.0"
 model_file_path = os.path.join("tests/resources", "linear_model.py")
 handler_file_path = os.path.join("tests/resources", "linear_handler.py")
 sample_input_file = os.path.join("tests/resources", "sample.json")
 sample_output_file = os.path.join("tests/resources", "output.json")
-
-
-@pytest.fixture(scope="session")
-def start_torchserve():
-    if not os.path.isdir("model_store"):
-        os.makedirs("model_store")
-    cmd = "torchserve --start --model-store {}".format("./model_store")
-    _ = subprocess.Popen(cmd, shell=True).wait()
-
-    count = 0
-    for _ in range(5):
-        value = health_checkup()
-        if value is not None and value != "" and json.loads(value)["status"] == "Healthy":
-            time.sleep(1)
-            break
-        else:
-            count += 1
-            time.sleep(5)
-    if count >= 5:
-        raise Exception("Unable to connect to torchserve")
-    return True
-
-
-def health_checkup():
-    curl_cmd = "curl http://localhost:8080/ping"
-    (value, _) = subprocess.Popen([curl_cmd], stdout=subprocess.PIPE, shell=True).communicate()
-    return value.decode("utf-8")
-
-
-def stop_torchserve():
-    cmd = "torchserve --stop"
-    _ = subprocess.Popen(cmd, shell=True).wait()
-
-    if os.path.isdir("model_store"):
-        shutil.rmtree("model_store")
-
-
-atexit.register(stop_torchserve)
 
 
 @pytest.mark.usefixtures("start_torchserve")

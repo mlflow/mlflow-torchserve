@@ -31,59 +31,56 @@ class LinearRegression(torch.nn.Module):
         return out
 
 
-# SECTION FOR HYPERPARAMETERS #
+def main():
+    # SECTION FOR HYPERPARAMETERS #
 
-inputDim = 1
-outputDim = 1
-learningRate = 0.01
-epochs = 100
+    inputDim = 1
+    outputDim = 1
+    learningRate = 0.01
+    epochs = 100
 
+    # INITIALIZING THE MODEL #
 
-# INITIALIZING THE MODEL #
+    model = LinearRegression(inputDim, outputDim)
 
-model = LinearRegression(inputDim, outputDim)
-
-# FOR GPU #
-if torch.cuda.is_available():
-    model.cuda()
-
-
-# INITIALIZING THE LOSS FUNCTION AND OPTIMIZER #
-
-criterion = torch.nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
-
-
-# TRAINING STEP #
-
-for epoch in range(epochs):
-    # Converting inputs and labels to Variable
+    # FOR GPU #
     if torch.cuda.is_available():
-        inputs = Variable(torch.from_numpy(x_train).cuda())
-        labels = Variable(torch.from_numpy(y_train).cuda())
-    else:
-        inputs = Variable(torch.from_numpy(x_train))
-        labels = Variable(torch.from_numpy(y_train))
+        model.cuda()
 
-    optimizer.zero_grad()
-    outputs = model(inputs)
+    # INITIALIZING THE LOSS FUNCTION AND OPTIMIZER #
 
-    loss = criterion(outputs, labels)
+    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
 
-    loss.backward()
-    optimizer.step()
-    print("epoch {}, loss {}".format(epoch, loss.item()))
+    # TRAINING STEP #
 
+    for epoch in range(epochs):
+        # Converting inputs and labels to Variable
+        if torch.cuda.is_available():
+            inputs = Variable(torch.from_numpy(x_train).cuda())
+            labels = Variable(torch.from_numpy(y_train).cuda())
+        else:
+            inputs = Variable(torch.from_numpy(x_train))
+            labels = Variable(torch.from_numpy(y_train))
 
-# EVALUATION AND PREDICTION #
+        optimizer.zero_grad()
+        outputs = model(inputs)
 
-with torch.no_grad():
-    if torch.cuda.is_available():
-        predicted = model(Variable(torch.from_numpy(x_train).cuda())).cpu().data.numpy()
-    else:
-        predicted = model(Variable(torch.from_numpy(x_train))).data.numpy()
-    print(predicted)
+        loss = criterion(outputs, labels)
 
+        loss.backward()
+        optimizer.step()
+        print("epoch {}, loss {}".format(epoch, loss.item()))
 
-# SAVING THE MODEL #
-torch.save(model.state_dict(), "linear.pt")
+    # EVALUATION AND PREDICTION #
+
+    with torch.no_grad():
+        if torch.cuda.is_available():
+            predicted = model(Variable(torch.from_numpy(x_train).cuda())).cpu().data.numpy()
+        else:
+            predicted = model(Variable(torch.from_numpy(x_train))).data.numpy()
+        print(predicted)
+
+    # SAVING THE MODEL #
+    torch.save(model.state_dict(), "tests/resources/linear_state_dict.pt")
+    torch.save(model, "tests/resources/linear_model.pt")
