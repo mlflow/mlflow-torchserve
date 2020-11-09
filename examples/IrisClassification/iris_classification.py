@@ -78,7 +78,6 @@ class IrisClassification(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         logits = self.forward(x)
-        loss = F.cross_entropy(logits, y)
         _, y_hat = torch.max(logits, dim=1)
         self.test_acc(y_hat, y)
         self.log("test_acc", self.test_acc.compute())
