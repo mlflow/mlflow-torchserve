@@ -60,12 +60,11 @@ class IrisClassification(pl.LightningModule):
         self.train_acc(logits, y)
         self.log(
             "train_acc",
-            self.train_acc.compute().cpu(),
+            self.train_acc.compute(),
             on_step=False,
             on_epoch=True,
-            sync_dist=True,
         )
-        self.log("train_loss", loss.cpu(), on_step=False, on_epoch=True, sync_dist=True)
+        self.log("train_loss", loss)
         return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
@@ -73,10 +72,8 @@ class IrisClassification(pl.LightningModule):
         logits = self.forward(x)
         loss = F.cross_entropy(logits, y)
         self.val_acc(logits, y)
-        self.log(
-            "val_acc", self.val_acc.compute().cpu(), on_step=False, on_epoch=True, sync_dist=True
-        )
-        self.log("val_loss", loss.cpu(), on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_acc", self.val_acc.compute())
+        self.log("val_loss", loss, sync_dist=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -84,9 +81,7 @@ class IrisClassification(pl.LightningModule):
         loss = F.cross_entropy(logits, y)
         _, y_hat = torch.max(logits, dim=1)
         self.test_acc(y_hat, y)
-        self.log(
-            "test_acc", self.test_acc.compute().cpu(), on_step=False, on_epoch=True, sync_dist=True
-        )
+        self.log("test_acc", self.test_acc.compute())
 
 
 if __name__ == "__main__":

@@ -43,7 +43,7 @@ class IRISClassifierHandler(BaseHandler):
         :return: output - Output after post processing
         """
 
-        predicted_idx = str(np.argmax(inference_output.numpy()))
+        predicted_idx = str(np.argmax(inference_output.cpu().detach().numpy()))
 
         if self.mapping:
             return [self.mapping[str(predicted_idx)]]
