@@ -34,23 +34,6 @@ class IRISClassifierHandler(BaseHandler):
         input_tensor = torch.Tensor(ast.literal_eval(input_data))
         return input_tensor
 
-    def inference(self, input_data):
-        """
-        Predict the class (or classes) for the given input using a trained deep learning model
-
-        :param input_data: Input to be passed through the layers for prediction
-
-        :return: output - Predicted label for the given input
-        """
-
-        self.model.eval()
-        inputs = input_data.to(self.device)
-        outputs = self.model(inputs)
-
-        predicted_idx = str(np.argmax(outputs.cpu().detach().numpy()))
-
-        return [predicted_idx]
-
     def postprocess(self, inference_output):
         """
         Does postprocess after inference to be returned to user
@@ -60,9 +43,11 @@ class IRISClassifierHandler(BaseHandler):
         :return: output - Output after post processing
         """
 
+        predicted_idx = str(np.argmax(inference_output.numpy()))
+
         if self.mapping:
-            return [self.mapping[str(inference_output[0])]]
-        return inference_output
+            return [self.mapping[str(predicted_idx)]]
+        return [predicted_idx]
 
 
 _service = IRISClassifierHandler()
