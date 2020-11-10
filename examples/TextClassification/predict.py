@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from mlflow.deployments import get_deploy_client
 
 
-def predict_deployment(parser_args):
+def predict(parser_args):
 
     with open(parser_args["input_file_path"], "r") as fp:
         text = fp.read()
@@ -39,4 +39,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    predict_deployment(vars(args))
+    predict(vars(args))

@@ -53,7 +53,7 @@ For example, to create another deployment the script can be triggered as
 
 To perform prediction, run the following script
 
-`python predict_deployment.py`
+`python predict.py`
 
 The prediction results will be printed in the console. 
 
