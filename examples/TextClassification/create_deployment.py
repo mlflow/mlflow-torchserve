@@ -19,7 +19,7 @@ def create_deployment(parser_args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
+    parser = ArgumentParser(description="Text Classifier Example")
 
     parser.add_argument(
         "--target",

@@ -14,7 +14,7 @@ def predict_deployment(parser_args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
+    parser = ArgumentParser(description="Text classifier example")
 
     parser.add_argument(
         "--target",
