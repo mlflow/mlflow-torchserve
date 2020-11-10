@@ -1,27 +1,26 @@
 import json
 import logging
 import os
+
 import torch
+from ts.torch_handler.image_classifier import ImageClassifier
 
 logger = logging.getLogger(__name__)
 
 
-class MNISTDigitClassifier(object):
+class MNISTDigitHandler(ImageClassifier):
     """
     MNISTDigitClassifier handler class. This handler takes a greyscale image
     and returns the digit in that image.
     """
 
     def __init__(self):
-        self.model = None
-        self.mapping = None
-        self.device = None
-        self.initialized = False
+        super(MNISTDigitHandler, self).__init__()
+        self.mapping_file_path = None
 
     def initialize(self, ctx):
         """
         First try to load torchscript else load eager mode state_dict based model
-
         :param ctx: System properties
         """
         properties = ctx.system_properties
@@ -37,18 +36,18 @@ class MNISTDigitClassifier(object):
         self.model.eval()
 
         logger.debug("Model file %s loaded successfully", model_pt_path)
+
+        self.mapping_file_path = os.path.join(model_dir, "index_to_name.json")
+
         self.initialized = True
 
     def preprocess(self, data):
         """
         Scales, crops, and normalizes a PIL image for a MNIST model,
          returns an Numpy array
-
         :param data: Input to be passed through the layers for prediction
-
         :return: output - Preprocessed image
         """
-
         image = data[0].get("data")
         if image is None:
             image = data[0].get("body")
@@ -57,18 +56,18 @@ class MNISTDigitClassifier(object):
         image = torch.Tensor(json.loads(image)["data"])
         return image
 
-    def inference(self, input_data):
+    def inference(self, img):
         """
         Predict the class (or classes) of an image using a trained deep learning model
-
         :param img: Input to be passed through the layers for prediction
-
         :return: output - Predicted label for the given input
         """
-
+        # Convert 2D image to 1D vector
+        # img = np.expand_dims(img, 0)
+        # img = torch.from_numpy(img)
         self.model.eval()
-        inputs = input_data.to(self.device)
-        outputs = self.model(inputs)
+        inputs = img.to(self.device)
+        outputs = self.model.forward(inputs)
 
         _, y_hat = outputs.max(1)
         predicted_idx = str(y_hat.item())
@@ -82,29 +81,10 @@ class MNISTDigitClassifier(object):
 
         :return: output - Output after post processing
         """
-        return inference_output
 
-
-_service = MNISTDigitClassifier()
-
-
-def handle(data, context):
-    """
-    Default function that is called when predict is invoked
-
-    :param data: Input to be passed through the layers for prediction
-    :param context: dict containing system properties
-
-    :return: output - Output after postprocess
-    """
-    if not _service.initialized:
-        _service.initialize(context)
-
-    if data is None:
-        return None
-
-    data = _service.preprocess(data)
-    data = _service.inference(data)
-    data = _service.postprocess(data)
-
-    return data
+        if self.mapping_file_path:
+            with open(self.mapping_file_path) as json_file:
+                data = json.load(json_file)
+            inference_output = [json.dumps(data[inference_output[0]])]
+            return inference_output
+        return [inference_output]
