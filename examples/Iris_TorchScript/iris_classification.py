@@ -9,7 +9,6 @@ import mlflow.pytorch
 from sklearn.metrics import accuracy_score
 from torch.nn import functional as F
 from torch.utils.data.dataloader import DataLoader
-from torch.utils.data import random_split
 
 
 class IrisClassification(pl.LightningModule):
@@ -89,18 +88,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--max-epochs",
+        "--max_epochs",
         default=3,
         help="Describes the number of times a neural network has to be trained",
     )
     parser.add_argument(
         "--gpus", type=int, default=0, help="Number of gpus - by default runs on CPU"
-    )
-    parser.add_argument(
-        "--save-model",
-        type=bool,
-        default=True,
-        help="For Saving the current Model",
     )
     parser.add_argument(
         "--accelerator",
