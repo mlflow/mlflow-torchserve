@@ -13,13 +13,13 @@ Run the following commands to install deployment plugin
 
 https://github.com/pytorch/serve/tree/master/examples/text_classification
 
-Download `train.py' and `model.py` from above mentioned link and run the following command to train the model
+Download `train.py` and `model.py` from above mentioned link and run the following command to train the model
 
 CPU: `python train.py AG_NEWS --device cpu --save-model-path  model.pt --dictionary source_vocab.pt`
 
 GPU: `python train.py AG_NEWS --device cuda --save-model-path  model.pt --dictionary source_vocab.pt`
 
-At the end of the training model file(`model.pt`) and vocabulary file `source_vocab.pt` will be exported into current directory.
+At the end of the training model file `model.pt` and vocabulary file `source_vocab.pt` will be stored into current directory.
 
 ## Starting torchserve
 
@@ -41,8 +41,8 @@ Following are the arguments which can be passed to create_deployment script
 
 1. deployment name - `deployment_name`
 2. model file path - `model_file`
-3. handler file path - `handler'
-4. model file path - 'model_file_path`
+3. handler file path - `handler`
+4. model file path - `model_file_path`
 
 For example, to create another deployment the script can be triggered as
 
