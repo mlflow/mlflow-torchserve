@@ -1,46 +1,119 @@
-# MLFLOW TORCHSERVE DEPLOYMENT PLUGIN
+# mlflow-torchserve
 
-## Package Requirement
+A plugin that integrates TorchServe with MLflow pipeline. ``mlflow_torchserve`` enables you to
+use mlflow to deploy the models built and trained in mlflow pipeline into TorchServe without any
+extra effort from the user. This plugin provides few command line APIs, which is also accessible
+through mlflow's python package, to make the deployment process seamless.
 
-Following are the list of packages which needs to be installed before running the torchserve deployment plugin
+## Installation
+For installing and activating the plugin, you only need to install this package which is available
+in pypi and can be installed with
 
-1. torch-model-archiver
-2. torchserve
-3. mlflow
+```bash
+pip install mlflow-torchserve
+```
+## What does it do
+Installing this package uses python's amazing entrypoint mechanism to register the plugin into MLflow's
+plugin registry. This registry will be invoked each time you launch MLflow script or command line
+argument.
 
-## Steps to build the package
 
-Run the following commands to build the package
+### Create deployment
+Deploy the model to TorchServe. The `create` command line argument and ``create_deployment`` python
+APIs does the deployment of a model built with MLflow to TorchServe.
 
-1. Build the plugin package ```python setup.py build```
-2. Install the plugin package ```python setup.py install```
+##### CLI
+```shell script
+mlflow deployments create -t torchserve -m <model uri> --name DEPLOYMENT_NAME -C 'MODEL_FILE=<model file path>' -C 'HANDLER=<handler file path>'
+```
 
-## Sample Commands for deployment
+##### Python API
+```python
+from mlflow.deployments import get_deploy_client
+target_uri = 'torchserve'
+plugin = get_deploy_client(target_uri)
+plugin.create_deployment(name=<deployment name>, model_uri=<model uri>, config={"MODEL_FILE": <model file path>, "HANDLER": <handler file path>})
+```
 
-1. Creating a new deployment - `mlflow deployments create -t TARGET -m MODEL_URI --name DEPLOYMENT_NAME -C 'MODEL_FILE=MODEL_FILE_PATH' -C 'HANDLER=HANDLER_FILE_PATH'` \
-For Example: ```mlflow deployments create -t torchserve -m linear.pt --name linear  -C "MODEL_FILE=linear_model.py" -C "HANDLER=linear_handler.py"```
+### Update deployment
+Update API can be used to update an already deployed model. This setup is useful if you want to increase the number of workers
+or set a model as default version. TorchServe will make sure the user experience is seamless while changing the model in a live environment.
 
-2. List all deployments - ```mlflow deployments list -t TARGET``` \
-For Example: ```mlflow deployments list -t torchserve```
+##### CLI
+```shell script
+mlflow deployments update -t torchserve --name <deployment name> -C "min-worker=<number of workers>"
+```
 
-3. Get a deployment - ```mlflow deployments get -t TARGET --name DEPLOYMENT_NAME``` \
-For Example: 
-```mlflow deployments get -t torchserve --name linear``` - Gets the details of the default version of the model \
-```mlflow deployments get -t torchserve --name linear/3.0``` - Gets the detals of linear model version 3.0 \
-```mlflow deployments get -t torchserve --name linear/all``` - Gets the details of all the versions of the same model \
+##### Python API
+```python
+plugin.update_deployment(name=<deployment name>, config={'min-worker': <number of workers>})
+```
 
-4. Delete a deployment - ``mlflow deployments delete -t TARGET --name DEPLOYMENT_NAME`` \
-For Example: ```mlflow deployments delete -t torchserve --name linear/2.0``` \
+### Delete deployment
+Delete an existing deployment. Error will be thrown if the model is not already deployed
 
-5. Update a deployment - ```mlflow deployments update -t TARGET -m MODEL_URI --name DEPLOYMENT_NAME``` \
-For Example: \
-`mlflow deployments update -t torchserve -m linear.pt --name "linear" -C "min-worker=2"` - Updates default version of the model with 2 workers \
-`mlflow deployments update -t torchserve -m linear.pt --name "linear/2.0" -C "min-worker=2"` - Updates linear version "2.0" model with 2 workers \
-`mlflow deployments update -t torchserve -m linear.pt --name "linear/2.0" -C "set-default=true"` - Sets 2.0 as the default version \
+##### CLI
+```shell script
+mlflow deployments delete -t torchserve --name <deployment name / version number>
+```
 
-6. Predict deployment - ```mlflow deployments predict -t TARGET --name DEPLOYMENT_NAME --input-path INPUT_PATH``` \
-For Example: \
-```mlflow deployments predict -t torchserve --name "linear" --input-path input.json``` - Predicts based on default version of the model \
-```mlflow deployments predict -t torchserve --name "linear/2.0" --input-path input.json``` - Predicts based on linear version "2.0" \
-```mlflow deployments predict -t torchserve --name "linear" --input-path input.json --output-path output.json``` - Predicts based on default version and writes the result into output.json
+##### Python API
+```python
+plugin.delete_deployment(name=<deployment name / version number>)
+```
+
+### List all deployments
+List the names of all the deploymented models. This name can then be used in other APIs or can be
+used in the get deployment API to get more details about a particular deployment.
+
+##### CLI
+```shell script
+mlflow deployments list -t torchserve
+```
+
+##### Python API
+```python
+plugin.list_deployments()
+```
+
+### Get deployment details
+Get API fetches the details of the deployed model. By default, Get API fetches all the versions of the 
+deployed model
+
+##### CLI
+```shell script
+mlflow deployments get -t torchserve --name <deployment name>
+```
+
+##### Python API
+```python
+plugin.get_deployment(name=<deployment name>)
+```
+
+### Run Prediction on deployed model
+Predict API enables to run prediction on the deployed model. 
+
+CLI takes json file path as input. However, input to the python plugin can be one among the three types
+DataFrame, Tensor or Json String.
+
+##### CLI
+```shell script
+mlflow deployments predict -t torchserve --name <deployment name> --input-path <input file path> --output-path <output file path>
+```
+
+output-path is an optional parameter. Without output path parameter result will printed in console.
+
+##### Python API
+```python
+plugin.predict(name=<deployment name>, df=<prediction input>)
+```
+
+### Plugin help
+Run the following command to get the plugin help string.
+
+##### CLI
+```shell script
+mlflow deployments help -t torchserve
+``` 
+
 
