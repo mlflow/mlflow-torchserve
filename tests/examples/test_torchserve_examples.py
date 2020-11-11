@@ -22,6 +22,7 @@ def find_conda_yaml(directory):
     "directory, params",
     [
         ("IrisClassification", []),
+        ("MNIST", ["-P", "max_epochs=1"]),
     ],
 )
 def test_mlflow_run_example(directory, params):
@@ -38,6 +39,7 @@ def test_mlflow_run_example(directory, params):
     "directory, command",
     [
         ("IrisClassification", ["python", "iris_classification.py"]),
+        ("MNIST", ["python", "mnist_model.py", "--max_epochs", "1"]),
     ],
 )
 def test_command_example(directory, command):
