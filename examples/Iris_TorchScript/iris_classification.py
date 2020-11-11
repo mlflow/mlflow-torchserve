@@ -1,14 +1,11 @@
 import argparse
 
-from sklearn.datasets import load_iris
-import torch.nn as nn
-from torch.utils.data import TensorDataset
+import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
-import mlflow.pytorch
+import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from torch.nn import functional as F
-from torch.utils.data.dataloader import DataLoader
 
 
 class IrisClassification(pl.LightningModule):
