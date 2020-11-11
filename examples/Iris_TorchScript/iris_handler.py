@@ -37,9 +37,6 @@ class IRISClassifierHandler(BaseHandler):
         if not os.path.isfile(model_pt_path):
             raise RuntimeError("Missing the model.pt file")
 
-        # model def file
-        model_file = self.manifest["model"].get("modelFile", "")
-
         logger.debug("Loading torchscript model")
         self.model = self._load_torchscript_model(model_pt_path)
 
@@ -47,9 +44,6 @@ class IRISClassifierHandler(BaseHandler):
         self.model.eval()
 
         logger.debug("Model file %s loaded successfully", model_pt_path)
-
-        # Load class mapping for classifiers
-        mapping_file_path = os.path.join(model_dir, "index_to_name.json")
 
         self.initialized = True
 

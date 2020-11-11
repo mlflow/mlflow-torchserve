@@ -10,5 +10,5 @@ dependencies:
   - sklearn
   - cloudpickle==1.6.0
   - boto3
-  - pytorch_lightning>=1.0.2
+  - pytorch_lightning==1.0.5
 
