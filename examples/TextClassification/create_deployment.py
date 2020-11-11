@@ -11,7 +11,7 @@ def create_deployment(parser_args):
     }
     result = plugin.create_deployment(
         name=parser_args["deployment_name"],
-        model_uri=parser_args["model_file_path"],
+        model_uri=parser_args["serialized_file"],
         config=config,
     )
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--model_file_path",
+        "--serialized_file",
         type=str,
         default="model.pt",
         help="Pytorch model path (default: model.pt)",

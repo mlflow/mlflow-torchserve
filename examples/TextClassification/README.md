@@ -40,7 +40,7 @@ It will create a new deployment named `text_classification`.
 Following are the arguments which can be passed to create_deployment script
 
 1. deployment name - `deployment_name`
-2. model file path - `model_file`
+2. serialized file path - `serialized_file`
 3. handler file path - `handler`
 4. model file path - `model_file_path`
 
