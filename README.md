@@ -1,6 +1,6 @@
 # mlflow-torchserve
 
-A plugin that integrates TorchServe with MLflow pipeline. ``mlflow_torchserve`` enables you to
+A plugin that integrates [TorchServe](https://github.com/pytorch/serve) with MLflow pipeline. ``mlflow_torchserve`` enables you to
 use mlflow to deploy the models built and trained in mlflow pipeline into TorchServe without any
 extra effort from the user. This plugin provides few command line APIs, which is also accessible
 through mlflow's python package, to make the deployment process seamless.
@@ -13,7 +13,7 @@ in pypi and can be installed with
 pip install mlflow-torchserve
 ```
 ## What does it do
-Installing this package uses python's amazing entrypoint mechanism to register the plugin into MLflow's
+Installing this package uses python's entrypoint mechanism to register the plugin into MLflow's
 plugin registry. This registry will be invoked each time you launch MLflow script or command line
 argument.
 
