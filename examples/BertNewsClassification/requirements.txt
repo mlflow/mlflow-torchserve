@@ -1,6 +1,5 @@
 torch>=1.6.0
-# TODO: replace the line below with "mlflow>=1.12.0" once mlflow 1.12.0 has been released.
-mlflow@git+https://github.com/mlflow/mlflow@maste
+mlflow>=1.12.0
 torchserve
 torch-model-archiver
 numpy
