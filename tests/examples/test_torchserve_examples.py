@@ -1,20 +1,10 @@
 import os
-import re
 import pytest
 from mlflow.utils import process
 from mlflow import cli
 from click.testing import CliRunner
 
 EXAMPLES_DIR = "examples"
-
-
-def is_conda_yaml(path):
-    return bool(re.search("conda.ya?ml$", path))
-
-
-def find_conda_yaml(directory):
-    conda_yaml = list(filter(is_conda_yaml, os.listdir(directory)))[0]
-    return os.path.join(directory, conda_yaml)
 
 
 @pytest.mark.parametrize(
