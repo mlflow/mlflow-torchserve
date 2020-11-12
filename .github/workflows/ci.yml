@@ -36,10 +36,13 @@ jobs:
       - name: Check Java version
         run: |
           java -version
+      - name: Enable conda
+        run: |
+          echo "/usr/share/miniconda/bin" >> $GITHUB_PATH
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install pytest==6.1.1 torchvision
+          pip install pytest==6.1.1 torchvision pytorch_lightning==1.0.5 scikit-learn
       - name: Run torchserve example
         run: |
           set -x
@@ -65,6 +68,4 @@ jobs:
 
       - name: Run tests
         run: |
-          export PATH="$CONDA_BIN:$PATH"
-          pip install pytorch_lightning==1.0.5 sklearn
           pytest tests --color=yes --verbose --durations=5
