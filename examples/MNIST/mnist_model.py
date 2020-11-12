@@ -8,8 +8,6 @@
 # pylint: disable=unused-argument
 # pylint: disable=abstract-method
 
-import os
-import shutil
 from argparse import ArgumentParser
 
 import mlflow.pytorch
