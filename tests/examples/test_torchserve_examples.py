@@ -7,7 +7,6 @@ from click.testing import CliRunner
 EXAMPLES_DIR = "examples"
 
 
-@pytest.mark.large
 @pytest.mark.parametrize(
     "directory, params",
     [
@@ -23,7 +22,6 @@ def test_mlflow_run_example(directory, params):
     )
 
 
-@pytest.mark.large
 @pytest.mark.parametrize(
     "directory, command",
     [
