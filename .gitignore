@@ -2,6 +2,17 @@
 mlruns/
 outputs/
 
+# Directories and files generated when running the examples
+sample.json
+output.json
+bert_base_uncased_vocab.txt
+*.pt
+data/
+.data/
+logs/
+model_store/
+models/
+
 # Mac
 .DS_Store
 

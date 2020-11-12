@@ -1,0 +1,11 @@
+torch>=1.6.0
+# TODO: replace the line below with "mlflow>=1.12.0" once mlflow 1.12.0 has been released.
+mlflow@git+https://github.com/mlflow/mlflow@maste
+torchserve
+torch-model-archiver
+numpy
+transformers
+sklearn
+tqdm
+torchtext>=0.7.0
+pandas
