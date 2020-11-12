@@ -6,6 +6,7 @@ setup(
     version="0.1.0",
     description="Torch Serve Mlflow Deployment",
     long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     # Require MLflow as a dependency of the plugin, so that plugin users can simply install
     # the plugin & then immediately use it with MLflow
