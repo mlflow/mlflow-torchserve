@@ -67,4 +67,4 @@ jobs:
         run: |
           export PATH="$CONDA_BIN:$PATH"
           pip install pytorch_lightning==1.0.5 sklearn
-          pytest tests --color=yes --verbose
+          pytest tests --color=yes --verbose --durations=5
