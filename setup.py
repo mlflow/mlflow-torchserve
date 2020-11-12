@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="mlflow-torchserve",
-    version="0.0.1",
+    version="0.1.0",
     description="Torch Serve Mlflow Deployment",
     long_description=open("README.md").read(),
     packages=find_packages(),
