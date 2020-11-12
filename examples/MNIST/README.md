@@ -15,7 +15,7 @@ Run the following command to train MNIST model
 CPU: `mlflow run . -P max_epochs=5`
 GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
 
-On the training completion, the MNIST model is stored as "model" in current working directory.
+On the training completion, the MNIST model is stored as "model.pth" in current working directory.
 
 ## Starting torchserve
 

@@ -15,6 +15,10 @@ from argparse import ArgumentParser
 import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
+from pytorch_lightning.overrides.data_parallel import (
+    LightningDistributedDataParallel,
+    LightningDataParallel,
+)
 from pytorch_lightning import seed_everything
 from pytorch_lightning.metrics import Accuracy
 from torch.nn import functional as F
@@ -187,8 +191,8 @@ class LightningMNISTClassifier(pl.LightningModule):
         logits = self.forward(x)
         loss = self.cross_entropy_loss(logits, y)
         self.train_acc(logits, y)
-        self.log("train_acc", self.train_acc.compute(), on_step=False, on_epoch=True)
-        self.log("train_loss", loss, on_step=False, on_epoch=True)
+        self.log("train_acc", self.train_acc.compute())
+        self.log("train_loss", loss)
         return {"loss": loss}
 
     def validation_step(self, val_batch, batch_idx):
@@ -204,8 +208,8 @@ class LightningMNISTClassifier(pl.LightningModule):
         logits = self.forward(x)
         loss = self.cross_entropy_loss(logits, y)
         self.val_acc(logits, y)
-        self.log("val_acc", self.val_acc.compute(), on_step=False, on_epoch=True)
-        self.log("val_loss", loss, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_acc", self.val_acc.compute())
+        self.log("val_loss", loss, sync_dist=True)
 
     def test_step(self, test_batch, batch_idx):
         """
@@ -221,7 +225,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         _, y_hat = torch.max(output, dim=1)
 
         self.test_acc(y_hat, y)
-        self.log("test_acc", self.test_acc.compute(), on_step=False, on_epoch=True)
+        self.log("test_acc", self.test_acc.compute())
 
     def prepare_data(self):
         """
@@ -250,34 +254,32 @@ class LightningMNISTClassifier(pl.LightningModule):
         return [optimizer], [scheduler]
 
 
+def get_model(trainer):
+    is_dp_module = isinstance(
+        trainer.model, (LightningDistributedDataParallel, LightningDataParallel)
+    )
+    model = trainer.model.module if is_dp_module else trainer.model
+    return model
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
 
     # Add trainer specific arguments
-
-    parser.add_argument(
-        "--max_epochs", type=int, default=20, help="number of epochs to run (default: 20)"
-    )
-    parser.add_argument(
-        "--gpus", type=int, default=0, help="Number of gpus - by default runs on CPU"
-    )
-    parser.add_argument(
-        "--accelerator",
-        type=lambda x: None if x == "None" else x,
-        default=None,
-        help="Accelerator - (default: None)",
-    )
     parser.add_argument(
         "--model-save-path", type=str, default="model", help="Path to save mlflow model"
     )
 
-    # from mnist_data_module import MNISTDataModule
-
+    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = LightningMNISTClassifier.add_model_specific_args(parent_parser=parser)
     parser = MNISTDataModule.add_model_specific_args(parent_parser=parser)
 
     args = parser.parse_args()
     dict_args = vars(args)
+
+    if "accelerator" in dict_args:
+        if dict_args["accelerator"] == "None":
+            dict_args["accelerator"] = None
 
     mlflow.pytorch.autolog()
 
@@ -288,13 +290,10 @@ if __name__ == "__main__":
     dm.setup(stage="fit")
 
     trainer = pl.Trainer.from_argparse_args(args)
+
     trainer.fit(model, dm)
     trainer.test()
 
-    if os.path.isdir(args.model_save_path):
-        shutil.rmtree(args.model_save_path)
-    mlflow.pytorch.save_model(
-        model,
-        path=args.model_save_path,
-        extra_files=["index_to_name.json"],
-    )
+    model = get_model(trainer)
+
+    torch.save(model.state_dict(), "model.pth")

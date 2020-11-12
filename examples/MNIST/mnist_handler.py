@@ -31,7 +31,11 @@ class MNISTDigitHandler(ImageClassifier):
 
         # Read model serialize/pt file
         model_pt_path = os.path.join(model_dir, "model.pth")
-        self.model = torch.load(model_pt_path, map_location=self.device)
+        from mnist_model import LightningMNISTClassifier
+
+        state_dict = torch.load(model_pt_path, map_location=self.device)
+        self.model = LightningMNISTClassifier()
+        self.model.load_state_dict(state_dict)
         self.model.to(self.device)
         self.model.eval()
 
