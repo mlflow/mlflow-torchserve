@@ -3,7 +3,7 @@ and serve the scripted model in TorchServe from Mlflow.
 
 ## Training the model
 
-To run the example via MLflow, navigate to the `examples/IrisClassification/` directory and run the command
+To run the example via MLflow, navigate to the `examples/IrisClassificationTorchScript/` directory and run the command
 
 ```
 mlflow run .
