@@ -1,16 +1,16 @@
 channels:
-  - defaults
-  - conda-forge
-  - pytorch
+- defaults
+- conda-forge
+- pytorch
 dependencies:
-  - python=3.8.2
-  - pytorch>=1.6.0
-  - pip
-  - pip:
-      - mlflow
-      - scikit-learn
-      - cloudpickle==1.6.0
-      - boto3
-      - transformers
-      - torchtext==0.7.0
-      - pandas
+- python=3.8.2
+- pytorch>=1.6.0
+- pip
+- pip:
+  - mlflow
+  - scikit-learn
+  - cloudpickle==1.6.0
+  - boto3
+  - transformers
+  - torchtext==0.7.0
+  - pandas
