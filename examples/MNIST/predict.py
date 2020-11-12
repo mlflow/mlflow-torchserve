@@ -1,22 +1,47 @@
 import os
-import sys
+from argparse import ArgumentParser
+
 import matplotlib.pyplot as plt
+from mlflow.deployments import get_deploy_client
 from torchvision import transforms
 
-from mlflow.deployments import get_deploy_client
 
-if len(sys.argv) != 2:
-    raise Exception("Model file path not found. \n Ex: python predict.py <MODEL_URI>")
+def predict(parser_args):
+    plugin = get_deploy_client(parser_args["target"])
+    img = plt.imread(os.path.join(parser_args["input_file_path"]))
+    mnist_transforms = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
+    )
 
-model_file_path = sys.argv[1]
-img = plt.imread(os.path.join(os.getcwd(), "test_data/one.png"))
-mnist_transforms = transforms.Compose([transforms.ToTensor()])
+    image_tensor = mnist_transforms(img)
+    prediction = plugin.predict(parser_args["deployment_name"], image_tensor)
+    print("Prediction Result {}".format(prediction))
 
-image = mnist_transforms(img)
 
-plugin = get_deploy_client("torchserve")
-config = {"HANDLER": "mnist_handler.py"}
-plugin.create_deployment(name="mnist_test", model_uri=model_file_path, config=config)
-prediction = plugin.predict("mnist_test", image)
+if __name__ == "__main__":
+    parser = ArgumentParser(description="MNIST hand written digits classification example")
 
-print("Prediction Result {}".format(prediction))
+    parser.add_argument(
+        "--target",
+        type=str,
+        default="torchserve",
+        help="MLflow target (default: torchserve)",
+    )
+
+    parser.add_argument(
+        "--deployment_name",
+        type=str,
+        default="mnist_classification",
+        help="Deployment name (default: mnist_classification)",
+    )
+
+    parser.add_argument(
+        "--input_file_path",
+        type=str,
+        default="test_data/one.png",
+        help="Path to input image for prediction (default: test_data/one.png)",
+    )
+
+    args = parser.parse_args()
+
+    predict(vars(args))
