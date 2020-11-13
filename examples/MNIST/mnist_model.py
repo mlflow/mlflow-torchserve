@@ -125,6 +125,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         self.layer_2 = torch.nn.Linear(128, 256)
         self.layer_3 = torch.nn.Linear(256, 10)
         self.args = kwargs
+        self.save_hyperparameters()
 
     @staticmethod
     def add_model_specific_args(parent_parser):
