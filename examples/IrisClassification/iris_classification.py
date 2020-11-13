@@ -2,8 +2,11 @@
 # pylint: disable=W0613
 # pylint: disable=W0223
 import argparse
+import os
+import shutil
 from argparse import ArgumentParser
 
+import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
@@ -122,4 +125,15 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
 
-    torch.save(model.state_dict(), "iris.pt")
+
+    # Save model as state dict
+    if os.path.exists("model_state_dict"):
+        shutil.rmtree("model_state_dict")
+    mlflow.pytorch.save_state_dict(pytorch_model=model, path="model_state_dict")
+
+    # Save the entire model
+    if os.path.exists("entire_model"):
+        shutil.rmtree("entire_model")
+    mlflow.pytorch.save_model(pytorch_model=model, path="entire_model")
+
+
