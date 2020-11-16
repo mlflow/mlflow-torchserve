@@ -252,14 +252,6 @@ class LightningMNISTClassifier(pl.LightningModule):
         return [optimizer], [scheduler]
 
 
-def get_model(trainer):
-    is_dp_module = isinstance(
-        trainer.model, (LightningDistributedDataParallel, LightningDataParallel)
-    )
-    model = trainer.model.module if is_dp_module else trainer.model
-    return model
-
-
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
 
@@ -291,7 +283,3 @@ if __name__ == "__main__":
 
     trainer.fit(model, dm)
     trainer.test()
-
-    model = get_model(trainer)
-
-    torch.save(model.state_dict(), "model.pth")
