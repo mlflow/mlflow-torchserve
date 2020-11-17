@@ -1,13 +1,11 @@
-# mlflow-torchserve
+# Mlflow-TorchServe
 
-A plugin that integrates [TorchServe](https://github.com/pytorch/serve) with MLflow pipeline. ``mlflow_torchserve`` enables you to
-use mlflow to deploy the models built and trained in mlflow pipeline into TorchServe without any
-extra effort from the user. This plugin provides few command line APIs, which is also accessible
-through mlflow's python package, to make the deployment process seamless.
+A plugin that integrates [TorchServe](https://github.com/pytorch/serve) with MLflow pipeline. 
+``mlflow_torchserve`` enables mlflow user to deploy the  mlflow pipeline models into TorchServe .
+Command line APIs of the plugin (also accessible through mlflow's python package) makes the deployment process seamless.
 
 ## Installation
-For installing and activating the plugin, you only need to install this package which is available
-in pypi and can be installed with
+Plugin package which is available in pypi and can be installed using
 
 ```bash
 pip install mlflow-torchserve
@@ -19,7 +17,7 @@ argument.
 
 
 ### Create deployment
-Deploy the model to TorchServe. The `create` command line argument and ``create_deployment`` python
+ The `create` command line argument and ``create_deployment`` python
 APIs does the deployment of a model built with MLflow to TorchServe.
 
 ##### CLI
@@ -36,8 +34,8 @@ plugin.create_deployment(name=<deployment name>, model_uri=<model uri>, config={
 ```
 
 ### Update deployment
-Update API can be used to update an already deployed model. This setup is useful if you want to increase the number of workers
-or set a model as default version. TorchServe will make sure the user experience is seamless while changing the model in a live environment.
+Update API is used to increase the number of workers or set a model as default version. 
+TorchServe will make sure the user experience is seamless while changing the model in a live environment.
 
 ##### CLI
 ```shell script
@@ -50,7 +48,7 @@ plugin.update_deployment(name=<deployment name>, config={'min-worker': <number o
 ```
 
 ### Delete deployment
-Delete an existing deployment. Error will be thrown if the model is not already deployed
+Delete an existing deployment. Excepton will be raised if the model is not already deployed.
 
 ##### CLI
 ```shell script
@@ -63,8 +61,8 @@ plugin.delete_deployment(name=<deployment name / version number>)
 ```
 
 ### List all deployments
-List the names of all the deploymented models. This name can then be used in other APIs or can be
-used in the get deployment API to get more details about a particular deployment.
+List the names of all the deployed models,which can be subequently used in other APIs. For 
+example the get deployment API can use it to get more details about a particular deployment.
 
 ##### CLI
 ```shell script
@@ -77,8 +75,7 @@ plugin.list_deployments()
 ```
 
 ### Get deployment details
-Get API fetches the details of the deployed model. By default, Get API fetches all the versions of the 
-deployed model
+By default, Get API fetches all the versions of the deployed model.
 
 ##### CLI
 ```shell script
@@ -94,7 +91,7 @@ plugin.get_deployment(name=<deployment name>)
 Predict API enables to run prediction on the deployed model. 
 
 CLI takes json file path as input. However, input to the python plugin can be one among the three types
-DataFrame, Tensor or Json String.
+DataFrame, Tensor or a json String.
 
 ##### CLI
 ```shell script

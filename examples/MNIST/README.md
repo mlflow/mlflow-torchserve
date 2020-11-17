@@ -1,4 +1,9 @@
-# Deploying MNIST Handwritten Recognition using torchserve
+# Deploying MNIST Handwritten Recognition using TorchServe
+
+## Training the model
+
+Follow the [respository](https://github.com/mlflow/mlflow/tree/master/examples/pytorch/MNIST/example1) to train MNIST handwritten digit recognition.
+The above mentioned example, autologs the related parameters and model into mlflow using a single line of code.
 
 ## Installing Deployment plugin
 
@@ -7,56 +12,33 @@ Run the following commands to install deployment plugin
 `python setup.py build`
 `python setup.py install`
 
-
-## Training the model
-
-Run the following command to train MNIST model
-
-CPU: `mlflow run . -P max_epochs=5`
-GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
-
-On the training completion, the MNIST model is stored as "model.pth" in current working directory.
-
 ## Starting torchserve
 
 create an empty directory `model_store` and run the following command to start torchserve.
 
 `torchserve --start --model-store model_store`
 
-## Creating a new deployment
+## Creating and predict deployment
 
-This example uses image path as input for prediction.
+Python plugin accepts 3 different types of input for prediction - Dataframe, Json and Tensor.
 
-To create a new deployment, run the following command
+This example demonstrates input as tensor (refer `predict.py` where images are converted to tensor)
 
-`python create_deployment.py`
+Run the following command to create and predict the output based on our test data - `test_data/one.png`
 
-It will create a new deployment named `mnist_classification`.
+`python predict.py <MODEL_URI>`
 
-Following are the arguments which can be passed to create_deployment script
+For ex: `python predict.py  s3://mlflow/artifacts/0/fe1407a3242c4f6f9a5748eca1ae9226/artifacts/model`
 
-1. deployment name - `--deployment_name`
-2. serialized file path - `--serialized_file`
-3. handler file path - `--handler`
-4. model file path - `--model_file`
+Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
+is not a mandatory argument for the plugin. For example, by running `predict.py`, a new deployment `mnist_test` is created with version 1.
 
-For example, to create another deployment the script can be triggered as
+Version number can also be explicitly mentioned as a config variable in `predict.py` as below.
 
-`python create_deployment.py --deployment_name mnist_deployment1`
+```
+config = {
+    'HANDLER': 'mnist_handler.py',
+    'VERSION': 1.0
+}
+```  
 
-## Predicting deployed model
-
-To perform prediction, run the following script
-
-`python predict.py`
-
-The prediction results will be printed in the console. 
-
-Following are the arguments which can be passed to predict_deployment script
-
-1. deployment name - `--deployment_name"`
-2. input file path - `--input_file_path`
-
-For example, to perform prediction on the second deployment which we created. Run the following command
-
-`python predict.py --deployment_name mnist_deployment1 --input_file_path test_data/one.png`

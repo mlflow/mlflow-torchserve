@@ -1,5 +1,8 @@
-In this example, we train a Pytorch Lightning model to classify iris based on height and width of sepal and petal. Then, we convert the model to TorchScript 
-and serve the scripted model in TorchServe from Mlflow. 
+# Deploying Iris Classification using torchserve
+
+The code, adapted from this [repository](http://chappers.github.io/2020/04/19/torch-lightning-using-iris/), 
+is almost entirely dedicated to training, with the addition of a single mlflow.pytorch.autolog() call to enable automatic logging of params, metrics, and the TorchScript model.
+
 
 ## Training the model
 
@@ -44,9 +47,8 @@ Run the following command to create a new deployment named `iris_test`
 
 ## Running prediction based on deployed model
 
-For testing iris dataset, we are going to use a sample input tensor placed in `sample.json` file. 
-Run the following command to invoke prediction of our sample input
+Run the following command to invoke prediction of our sample input, where input.json is the sample input file and output.json stores the predicted outcome.
 
 `mlflow deployments predict --name iris_test --target torchserve --input-path sample.json  --output-path output.json`
 
-The deployed model would predict the type of iris and store the output in `output.json`.
+
