@@ -68,7 +68,7 @@ mlflow run . -P max_epochs=5 -P num_samples=50000
 Or to run the training script directly with custom parameters:
 ```
 python news_classifier.py \
-    --epochs 5 \
+    --max_epochs 5 \
     --num_samples 50000 \
     --model_save_path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
 ```
