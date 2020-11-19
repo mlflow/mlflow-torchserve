@@ -41,9 +41,11 @@ create an empty directory `model_store` and run the following command to start t
 
 ## Creating a new deployment
 
+
+
 Run the following command to create a new deployment named `iris_test`
 
-`mlflow deployments  create --name iris_test --target torchserve --model-uri iris_ts.pt -C "HANDLER=iris_handler.py"`
+`mlflow deployments  create --name iris_test --target torchserve --model-uri iris_ts.pt -C "HANDLER=iris_handler.py"  -C "EXTRA_FILES=index_to_name.json"`
 
 
 ## Running prediction based on deployed model

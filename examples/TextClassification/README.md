@@ -30,7 +30,7 @@ This example uses the default TorchServe text handler to generate the mar file a
 
 To create a new deployment, run the following command
 
-``python create_deployment.py --deployment_name text_classification --model_file model.py   --serialized_file model.pt  --extra_files "source_vocab.pt,index_to_name.json"`
+`python create_deployment.py --deployment_name text_classification --model_file model.py   --serialized_file model.pt  --extra_files "source_vocab.pt,index_to_name.json"`
 
 
 
