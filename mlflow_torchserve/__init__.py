@@ -109,7 +109,8 @@ class TorchServePlugin(BaseDeploymentClient):
 
         if "localhost" not in self.management_api:
             print(
-                "Mar file {mar_file} generated successfully. Host the mar file as public http url and register the model using register_model api".format(
+                "Mar file {mar_file} generated successfully. Host the mar file as public http url"
+                " and register the model using register_model api".format(
                     mar_file=mar_file_path
                 )
             )
