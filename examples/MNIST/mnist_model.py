@@ -296,7 +296,7 @@ if __name__ == "__main__":
     model = get_model(trainer)
 
     mlflow.pytorch.log_model(
-        pytorch_model=model,
+        pytorch_model=trainer.get_model(),
         artifact_path="model_test",
         registered_model_name=dict_args["registration_name"],
         save_as_state_dict=True,
