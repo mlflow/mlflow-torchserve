@@ -74,15 +74,6 @@ python news_classifier.py \
     --model-save-path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
 ```
 
-
-## Installing Deployment plugin
-
-Run the following commands to install deployment plugin
-
-`python setup.py build`
-`python setup.py install`
-
-
 ## Starting TorchServe
 
 create an empty directory `model_store` and run the following command to start torchserve.

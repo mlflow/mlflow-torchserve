@@ -43,15 +43,6 @@ To run it in gpu, use the following command
 ```
 mlflow run . -P gpus=2 -P accelerator="ddp"
 ```
-
-
-## Installing Deployment plugin
-
-Run the following commands to install deployment plugin
-
-`python setup.py build`
-`python setup.py install`
-
 ## Starting TorchServe
 
 Create an empty directory `model_store` and run the following command to start torchserve.
