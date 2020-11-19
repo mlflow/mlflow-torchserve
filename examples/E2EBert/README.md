@@ -40,13 +40,20 @@ mlflow run . --no-conda
 
 ```
 
+To run it in gpu, use the following command
+
+```
+mlflow run . -P gpus=2 -P accelerator="ddp"
+```
+
+
 Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log_model` are optional.
 
 Run the `news_classifier.py` script which will fine tune the model based on news dataset. 
 
 By default,  the script exports the model file as `bert_pytorch.pt` and generates a sample input file `input.json`
 
-Command: 
+
 
 ### Passing custom training parameters
 
@@ -59,15 +66,16 @@ The parameters can be overridden via the command line:
 
 For example:
 ```
-mlflow run . -P max_epochs=5 num-samples=50000
+mlflow run . -P max_epochs=5 -P num-samples=50000
 ```
 
 Or to run the training script directly with custom parameters:
+
 ```
-python mnist_autolog_example1.py \
+python news_classifier.py \
     --max_epochs 5 \
-    --num-samples 50000\
-    --tracking-uri http:localhost:5000\
+    --num-samples 50000 \
+    --model-save-path models
 ```
 
 
@@ -103,6 +111,6 @@ If needed, version number can also be explicitly mentioned as a config variable.
 For testing the fine tuned model, a sample input text is placed in `input.json`
 Run the following command to invoke prediction of our sample input 
 
-`mlflow deployments predict --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
+`mlflow deployments predict --name news_classification_test --target torchserve --input-path sample.json  --output-path output.json`
 
 
