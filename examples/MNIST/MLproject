@@ -6,13 +6,13 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 5}
-      model_save_path: {type: str, default: 'model'}
       gpus: {type: int, default: 0}
       accelerator: {type: str, default: "None"}
+      registration_name: {type: str, default: "mnist_classifier"}
 
     command: |
           python mnist_model.py \
             --max_epochs {max_epochs} \
-            --model-save-path {model_save_path} \
             --gpus {gpus} \
-            --accelerator {accelerator}
+            --accelerator {accelerator} \
+            --registration_name {registration_name}

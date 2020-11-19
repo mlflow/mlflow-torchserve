@@ -12,7 +12,7 @@ def create_deployment(parser_args):
     }
     result = plugin.create_deployment(
         name=parser_args["deployment_name"],
-        model_uri=parser_args["serialized_file"],
+        model_uri=parser_args["registered_model_uri"],
         config=config,
     )
 
@@ -58,10 +58,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--serialized_file",
+        "--registered_model_uri",
         type=str,
-        default="model.pth",
-        help="Pytorch model path (default: model.pth)",
+        default="models:/mnist_classifier/1",
+        help="Pytorch model path (default: models:/mnist_classifier/1)",
     )
 
     args = parser.parse_args()

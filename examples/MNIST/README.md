@@ -15,7 +15,8 @@ Run the following command to train MNIST model
 CPU: `mlflow run . -P max_epochs=5`
 GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
 
-On the training completion, the MNIST model is stored as "model.pth" in current working directory.
+At the end of the training, MNIST model will be logged into mlflow as state dict and registers the mnist 
+model into mlflow as `mnist_classifer` 
 
 ## Starting torchserve
 
@@ -36,13 +37,13 @@ It will create a new deployment named `mnist_classification`.
 Following are the arguments which can be passed to create_deployment script
 
 1. deployment name - `--deployment_name`
-2. serialized file path - `--serialized_file`
+2. registered model uri - `--registered_model_uri`
 3. handler file path - `--handler`
 4. model file path - `--model_file`
 
 For example, to create another deployment the script can be triggered as
 
-`python create_deployment.py --deployment_name mnist_deployment1`
+`python create_deployment.py --deployment_name mnist_deployment1 --registered_model_uri "models:/mnist_classifier/2"`
 
 ## Predicting deployed model
 

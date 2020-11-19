@@ -264,8 +264,9 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
 
     # Add trainer specific arguments
+
     parser.add_argument(
-        "--model-save-path", type=str, default="model", help="Path to save mlflow model"
+        "--registration_name", type=str, default="mnist_classifier", help="Model registration name"
     )
 
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
@@ -294,4 +295,5 @@ if __name__ == "__main__":
 
     model = get_model(trainer)
 
-    torch.save(model.state_dict(), "model.pth")
+    mlflow.pytorch.log_model(pytorch_model=model, artifact_path="model_test", registered_model_name=dict_args["registration_name"],
+                             save_as_state_dict=True)
