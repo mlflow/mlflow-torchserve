@@ -1,10 +1,4 @@
-# Deploying MNIST Handwritten Recognition using TorchServe
-
-## Training the model
-
-Follow the [respository](https://github.com/mlflow/mlflow/tree/master/examples/pytorch/MNIST/example1) to train MNIST handwritten digit recognition.
-The above mentioned example, autologs the model and its relevant parameters and metrics into mlflow using a single line of code.  The example also illustrates how one can use the python plugin to deploy and test the model. Python scripts `create_deployment.py` and `predict.py` have been used for this purpose.
-
+# Deploying MNIST Handwritten Recognition using torchserve
 
 ## Installing Deployment plugin
 
@@ -13,7 +7,17 @@ Run the following commands to install deployment plugin
 `python setup.py build`
 `python setup.py install`
 
-## Starting TorchServe
+
+## Training the model
+
+Run the following command to train MNIST model
+
+CPU: `mlflow run . -P max_epochs=5`
+GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
+
+On the training completion, the MNIST model is stored as "model.pth" in current working directory.
+
+## Starting torchserve
 
 create an empty directory `model_store` and run the following command to start torchserve.
 
@@ -21,7 +25,7 @@ create an empty directory `model_store` and run the following command to start t
 
 ## Creating a new deployment
 
-This example uses an image path as input for prediction.
+This example uses image path as input for prediction.
 
 To create a new deployment, run the following command
 
@@ -46,7 +50,7 @@ To perform prediction, run the following script
 
 `python predict.py`
 
-The prediction results will be printed in the console.
+The prediction results will be printed in the console. 
 
 Following are the arguments which can be passed to predict_deployment script
 
@@ -56,5 +60,3 @@ Following are the arguments which can be passed to predict_deployment script
 For example, to perform prediction on the second deployment which we created. Run the following command
 
 `python predict.py --deployment_name mnist_deployment1 --input_file_path test_data/one.png`
-
-
