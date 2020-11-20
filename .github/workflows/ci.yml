@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install pytest==6.1.1 torchvision pytorch_lightning==1.0.5 scikit-learn
+          pip install pytest==6.1.1 torchvision pytorch_lightning==1.0.5 scikit-learn gorilla transformers torchtext==0.7.0
       - name: Run torchserve example
         run: |
           set -x
