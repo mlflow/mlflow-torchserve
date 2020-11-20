@@ -4,7 +4,7 @@ channels:
 - pytorch
 dependencies:
 - python=3.8.2
-- pytorch>=1.6.0
+- pytorch==1.6.0
 - torchvision
 - pip
 - pip:
