@@ -11,6 +11,8 @@ EXAMPLES_DIR = "examples"
     "directory, params",
     [
         ("IrisClassification", []),
+        ("MNIST", []),
+        ("IrisClassificationTorchScript", []),
     ],
 )
 def test_mlflow_run_example(directory, params):
@@ -25,6 +27,8 @@ def test_mlflow_run_example(directory, params):
 @pytest.mark.parametrize(
     "directory, command",
     [
+        ("IrisClassification", ["python", "iris_classification.py"]),
+        ("MNIST", ["python", "mnist_model.py", "--max_epochs", "1"]),
         ("IrisClassification", ["python", "iris_classification.py"]),
     ],
 )
