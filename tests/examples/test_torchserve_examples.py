@@ -10,9 +10,9 @@ EXAMPLES_DIR = "examples"
 @pytest.mark.parametrize(
     "directory, params",
     [
-        ("IrisClassification", []),
-        ("MNIST", []),
-        ("IrisClassificationTorchScript", []),
+        ("IrisClassification", ["-P", "max_epochs=10"]),
+        ("MNIST", ["-P", "max_epochs=1"]),
+        ("IrisClassificationTorchScript", ["-P", "max_epochs=10"]),
     ],
 )
 def test_mlflow_run_example(directory, params):
@@ -27,9 +27,9 @@ def test_mlflow_run_example(directory, params):
 @pytest.mark.parametrize(
     "directory, command",
     [
-        ("IrisClassification", ["python", "iris_classification.py"]),
+        ("IrisClassification", ["python", "iris_classification.py", "--max_epochs", "10"]),
         ("MNIST", ["python", "mnist_model.py", "--max_epochs", "1"]),
-        ("IrisClassification", ["python", "iris_classification.py"]),
+        ("IrisClassification", ["python", "iris_classification.py", "--max_epochs", "1"]),
     ],
 )
 def test_command_example(directory, command):

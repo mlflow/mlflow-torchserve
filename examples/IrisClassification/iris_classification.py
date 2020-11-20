@@ -87,7 +87,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Iris Classification model")
 
     parser.add_argument(
-        "--max-epochs", type=int, default=100, help="number of epochs to run (default: 100)"
+        "--max_epochs", type=int, default=100, help="number of epochs to run (default: 100)"
     )
     parser.add_argument(
         "--gpus", type=int, default=0, help="Number of gpus - by default runs on CPU"
