@@ -281,4 +281,4 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
 
-    trainer.save_checkpoint("model.pth")
+    trainer.save_checkpoint("model.pth", weights_only=True)
