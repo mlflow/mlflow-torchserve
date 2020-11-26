@@ -1,12 +1,10 @@
 # Deploying MNIST Handwritten Recognition using torchserve
 
-## Installing Deployment plugin
+This example requires Backend store to be set for mlflow.
 
-Run the following commands to install deployment plugin
+Follow the link given below to set backend store
 
-`python setup.py build`
-`python setup.py install`
-
+https://www.mlflow.org/docs/latest/tracking.html#storage
 
 ## Training the model
 
@@ -17,6 +15,15 @@ GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
 
 At the end of the training, MNIST model will be logged into mlflow as state dict and registers the mnist 
 model into mlflow as `mnist_classifer` 
+
+## Deploying in remote torchserve instance
+
+To deploy the model in remote torchserve instance follow
+
+the steps in `remote-deployment.rst` under `docs` folder.
+
+
+## Deploying in local torchserve instance
 
 ## Starting torchserve
 
