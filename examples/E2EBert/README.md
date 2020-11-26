@@ -17,7 +17,7 @@ Install the required packages using the following command
  
  
  ### Running the code
-To run the example via MLflow, navigate to the `mlflow-torchserve/examples/BertNewsClassification_E2E` directory and run the command
+To run the example via MLflow, navigate to the `mlflow-torchserve/examples/E2EBert` directory and run the command
 
 ```
 mlflow run .
