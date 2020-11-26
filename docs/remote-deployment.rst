@@ -136,6 +136,14 @@ Download the mar file using ngrok url . Open browser and hit
 
 mnist_test.mar file should be downloaded.
 
+We are all set for performing registration. To register the model in remote torchserve instance run
+
+.. code-block::
+
+    python register.py --mar_file_name mnist_test.mar
+
+The plugin will download the mar file from ngrok url and register the model in the remote TorchServe instance.
+
 
 .. code-block::
 
