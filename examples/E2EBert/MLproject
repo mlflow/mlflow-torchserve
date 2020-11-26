@@ -8,17 +8,13 @@ entry_points:
       max_epochs: {type: int, default: 5}
       gpus: {type: int, default: 0}
       num_samples: {type: int, default: 15000}
-      save_model: {type: bool, default: True}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
-      model_save_path: {type: str, default: 'models'}
       accelerator: {type str, default: None}
 
     command: |
           python news_classifier.py \
             --max_epochs {max_epochs} \
             --gpus {gpus} \
-            --num-samples {num_samples} \
-            --save-model {save_model} \
-            --vocab-file {vocab_file} \
-            --model-save-path {model_save_path} \
+            --num_samples {num_samples} \
+            --vocab_file {vocab_file} \
             --accelerator={accelerator}

@@ -369,25 +369,16 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Bert-News Classifier Example")
 
     parser.add_argument(
-        "--num-samples",
+        "--num_samples",
         type=int,
         default=15000,
         metavar="N",
         help="Samples for training and evaluation steps (default: 15000) Maximum:100000",
     )
     parser.add_argument(
-        "--save-model",
-        type=bool,
-        default=True,
-        help="For Saving the current Model",
-    )
-    parser.add_argument(
-        "--vocab-file",
+        "--vocab_file",
         default="https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt",
         help="Custom vocab file",
-    )
-    parser.add_argument(
-        "--model-save-path", type=str, default="models", help="Path to save mlflow model"
     )
 
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
