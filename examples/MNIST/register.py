@@ -23,7 +23,7 @@ if __name__ == "__main__":
         "--mar_file_name",
         type=str,
         default="",
-        help="mar file name to register (Ex: mnist_test.mar)"
+        help="mar file name to register (Ex: mnist_test.mar)",
     )
 
     args = parser.parse_args()
