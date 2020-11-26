@@ -25,22 +25,23 @@ Run the following command to test the remote torchserve connectivity.
 
 .. code-block:: 
 
-    curl "http://<Remote_TS_IP>:8081/models"
+    curl "http://<REMOTE_TORCHSERVE_IP>:8081/models"
 
 This command should retrieve the list of existing models present in remote torchserve. This is an optional step. If you are sure about the connectivity proceed with the deployment steps as stated below.. 
 
 Training the model:
 -------------------
 
-Clone the code from - `https://github.com/mlflow/mlflow-torchserve/tree/remote-torchserve-fix <https://github.com/mlflow/mlflow-torchserve/tree/remote-torchserve-fix>`_ and move to `mlflow-torchserve/examples/MNIST` folder. 
+Clone the code from - `https://github.com/mlflow/mlflow-torchserve <https://github.com/mlflow/mlflow-torchserve>`_ and move to `mlflow-torchserve/examples/MNIST` folder.
 
 Train the model by running the following command:
 
 .. code-block::
 
-    mlflow run .
+    mlflow run . -P registration_name=mnist_classifier
 
-At the end of the training, the model will be saved as `model.pth` under the MNIST directory.
+The script will train the model and at the end of the training process, the model is registered into mlflow as `mnist_classifier`.
+
 
 Setting up Config Properties:
 -----------------------------
@@ -51,8 +52,8 @@ For example:
 
 .. code-block::
 
-    inference_address=http://18.225.35.109:8080
-    management_address=http://18.225.35.109:8081
+    inference_address=http://<REMOTE_TORCHSERVE_IP>:8080
+    management_address=http://<REMOTE_TORCHSERVE_IP>:8081
 
 Setting Environment variable:
 -----------------------------
@@ -79,16 +80,12 @@ Install torchserve plugin using the following command
 Creating a new deployment:
 --------------------------
 
-Creating a deployment in the remote TorchServe is a two step process.
-
-    1. Generate mar file using create deployment script
-    2. Register the model using the mar file.
 
 Run the following script to start with the deployment process.
 
 .. code-block::
 
-    python create_deployment.py --deployment_name mnist_test
+    python create_deployment.py --deployment_name mnist_test --registered_model_uri models:/mnist_classifier/1
 
 This comment will generate a `mnist_test.mar` file inside the `model_store` folder.
 
@@ -126,11 +123,10 @@ For example:
 
 .. code-block::
 
-    inference_address=http://18.225.35.109:8080
-    management_address=http://18.225.35.109:8081
+    inference_address=http://<REMOTE_TORCHSERVE_IP>:8080
+    management_address=http://<REMOTE_TORCHSERVE_IP>:8081
     export_url= http://eda154810618.ngrok.io
 
-This is an optional step added for verification.
 
 Download the mar file using ngrok url . Open browser and hit
 
@@ -140,21 +136,12 @@ Download the mar file using ngrok url . Open browser and hit
 
 mnist_test.mar file should be downloaded.
 
-We are all set for performing registration. To register the model in remote torchserve instance run 
-
-.. code-block::
-
-    python register.py --mar_file_name mnist_test.mar
-
-The plugin will download the mar file from ngrok url and register the model in the remote TorchServe instance. 
-
-To verify the same run the following command
 
 .. code-block::
 
     mlflow deployments list -t torchserve
 
-This will list the mnist_model which is registered in a remote TorchServe instance.
+This command will list the mnist_model which is registered in a remote TorchServe instance.
 
 Prediction:
 -----------
