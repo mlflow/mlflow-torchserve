@@ -11,7 +11,7 @@ EXAMPLES_DIR = "examples"
     "directory, params",
     [
         ("IrisClassification", []),
-        ("E2EBert",['max_epochs'==1, 'num_samples'==100])
+        ("E2EBert", ["max_epochs" == 1, "num_samples" == 100]),
     ],
 )
 def test_mlflow_run_example(directory, params):
@@ -27,7 +27,7 @@ def test_mlflow_run_example(directory, params):
     "directory, command",
     [
         ("IrisClassification", ["python", "iris_classification.py"]),
-        ("E2EBert",["python","news_classifier.py"])
+        ("E2EBert", ["python", "news_classifier.py"]),
     ],
 )
 def test_command_example(directory, command):
