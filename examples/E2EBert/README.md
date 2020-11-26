@@ -99,7 +99,7 @@ Run the following command to create a new deployment named `news_classification_
 `mlflow deployments create -t torchserve -m bert.pt --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
 
 Note: Torchserve plugin determines the version number by itself based on the deployment name. hence, version number 
-is not a mandatory argument for the plugin. For example, the above command will create a deployment `mnist_test` with version 1.
+is not a mandatory argument for the plugin. For example, the above command will create a deployment `news_classification_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
