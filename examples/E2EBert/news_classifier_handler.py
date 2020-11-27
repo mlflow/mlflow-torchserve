@@ -114,7 +114,7 @@ class NewsClassifierHandler(BaseHandler):
 
         :return: output - Output after post processing
         """
-        if self.class_mapping_file:
+        if os.path.exists(self.class_mapping_file):
             with open(self.class_mapping_file) as json_file:
                 data = json.load(json_file)
             inference_output = json.dumps(data[str(inference_output[0])])

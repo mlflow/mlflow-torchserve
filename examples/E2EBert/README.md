@@ -77,14 +77,6 @@ python news_classifier.py \
     --num_samples 50000 \
 ```
 
-
-## Installing Deployment Plugin
-
-Run the following commands to install deployment plugin
-
-`python setup.py build`
-`python setup.py install`
-
 ## Starting TorchServe
 
 Create an empty directory `model_store` and run the following command to start TorchServe.
