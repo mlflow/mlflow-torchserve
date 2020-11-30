@@ -5,16 +5,14 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      epochs: {type: int, default: 1}
+      max_epochs: {type: int, default: 1}
       num_samples: {type: int, default: 15000}
-      save_model: {type: bool, default: True}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
       model_save_path: {type: str, default: 'models'}
 
     command: |
           python news_classifier.py \
-            --epochs {epochs} \
-            --num-samples {num_samples} \
-            --save-model {save_model} \
-            --vocab-file {vocab_file} \
-            --model-save-path {model_save_path} 
+            --max_epochs {max_epochs} \
+            --num_samples {num_samples} \
+            --vocab_file {vocab_file} \
+            --model_save_path {model_save_path}
