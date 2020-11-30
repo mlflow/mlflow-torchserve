@@ -70,7 +70,7 @@ class NewsClassifier(nn.Module):
         super(NewsClassifier, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.PRE_TRAINED_MODEL_NAME = "bert-base-uncased"
-        self.EPOCHS = args.epochs
+        self.EPOCHS = args.max_epochs
         self.df = None
         self.tokenizer = None
         self.df_train = None
@@ -337,7 +337,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PyTorch BERT Example")
 
     parser.add_argument(
-        "--epochs",
+        "--max_epochs",
         type=int,
         default=5,
         metavar="N",
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--num-samples",
+        "--num_samples",
         type=int,
         default=15000,
         metavar="N",
@@ -354,20 +354,20 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--save-model",
+        "--save_model",
         type=bool,
         default=True,
         help="For Saving the current Model",
     )
 
     parser.add_argument(
-        "--vocab-file",
+        "--vocab_file",
         default="https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt",
         help="Custom vocab file",
     )
 
     parser.add_argument(
-        "--model-save-path", type=str, default="models", help="Path to save mlflow model"
+        "--model_save_path", type=str, default="models", help="Path to save mlflow model"
     )
 
     args = parser.parse_args()
