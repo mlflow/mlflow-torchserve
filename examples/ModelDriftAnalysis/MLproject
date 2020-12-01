@@ -1,0 +1,17 @@
+name: base_classification_model
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      max_epochs: {type: int, default: 3}
+      mlflow_experiment_name: {type: str, default:'Default'}
+
+
+    command: |
+          python news_classifier.py \
+            --max_epochs {max_epochs} \
+            --mlflow_experiment_name {mlflow_experiment_name}
+
+
