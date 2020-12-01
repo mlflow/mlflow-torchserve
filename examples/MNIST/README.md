@@ -1,16 +1,12 @@
 # Deploying MNIST Handwritten Recognition using torchserve
 
-## Installing Deployment plugin
-
-Run the following commands to install deployment plugin
-
-`python setup.py build`
-`python setup.py install`
-
-
 ## Training the model
+The model is used to classify handwritten digits.
+This example, autologs the trained model and its relevant parameters and metrics into mlflow using a single line of code. 
+The example also illustrates how one can use the python plugin to deploy and test the model.
+Python scripts `create_deployment.py` and `predict.py` have been used for this purpose.
 
-Run the following command to train MNIST model
+Run the following command to train the MNIST model
 
 CPU: `mlflow run . -P max_epochs=5`
 GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
