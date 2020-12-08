@@ -264,7 +264,6 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
 
     # Add trainer specific arguments
-
     parser.add_argument(
         "--registration_name", type=str, default="mnist_classifier", help="Model registration name"
     )
@@ -295,9 +294,5 @@ if __name__ == "__main__":
 
     model = get_model(trainer)
 
-    mlflow.pytorch.log_model(
-        pytorch_model=trainer.get_model(),
-        artifact_path="model_test",
-        registered_model_name=dict_args["registration_name"],
-        save_as_state_dict=True,
-    )
+    if trainer.global_rank == 0:
+        mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")
