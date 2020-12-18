@@ -295,4 +295,6 @@ if __name__ == "__main__":
     model = get_model(trainer)
 
     if trainer.global_rank == 0:
-        mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")
+        with mlflow.start_run() as run:
+            mlflow.pytorch.log_state_dict(trainer.get_model().state_dict(), "models")
+            mlflow.register_model(run.info.artifact_uri, dict_args["registration_name"])

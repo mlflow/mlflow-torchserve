@@ -288,49 +288,46 @@ class TorchServePlugin(BaseDeploymentClient):
         valid_file_suffixes = [".pt", ".pth"]
         extra_files_list = []
         req_file_path = None
+        is_state_dict = False
+        model_path = None
 
         if not os.path.isfile(model_uri):
             path = Path(_download_artifact_from_uri(model_uri))
-            model_config = path / "MLmodel"
-            if not model_config.exists():
-                raise Exception(
-                    "Failed to find MLmodel configuration within "
-                    "the specified model's root directory."
-                )
-            else:
-                model_path = None
-                if path.suffix in valid_file_suffixes:
-                    model_uri = path
-                else:
-                    for root, dirs, files in os.walk(path, topdown=False):
-                        for name in files:
-                            if Path(name).suffix in valid_file_suffixes:
-                                model_path = os.path.join(root, name)
 
-                    model = Model.load(model_config)
-                    model_json = json.loads(Model.to_json(model))
+            # Derive model.pth or state_dict.pth file path
+            for root, dirs, files in os.walk(path, topdown=False):
+                for name in files:
+                    if Path(name).suffix in valid_file_suffixes:
+                        model_path = os.path.join(root, name)
 
-                    try:
-                        if model_json["flavors"]["pytorch"]["extra_files"]:
-                            for extra_file in model_json["flavors"]["pytorch"]["extra_files"]:
-                                extra_files_list.append(os.path.join(path, extra_file["path"]))
-                    except KeyError:
-                        pass
+            # For eager mode models, derive extra files, requirement files
+            if "state_dict.pth" not in model_path:
+                model_config = path / "MLmodel"
+                model = Model.load(model_config)
+                model_json = json.loads(Model.to_json(model))
 
-                    try:
-                        if model_json["flavors"]["pytorch"]["requirements_file"]:
-                            req_file_path = os.path.join(
-                                path, model_json["flavors"]["pytorch"]["requirements_file"]["path"]
-                            )
-                    except KeyError:
-                        pass
+                try:
+                    if model_json["flavors"]["pytorch"]["extra_files"]:
+                        for extra_file in model_json["flavors"]["pytorch"]["extra_files"]:
+                            extra_files_list.append(os.path.join(path, extra_file["path"]))
+                except KeyError:
+                    pass
 
-                    if model_path is None:
-                        raise RuntimeError(
-                            "Model file does not have a valid suffix. Expected to be one of "
-                            + ", ".join(valid_file_suffixes)
+                try:
+                    if model_json["flavors"]["pytorch"]["requirements_file"]:
+                        req_file_path = os.path.join(
+                            path, model_json["flavors"]["pytorch"]["requirements_file"]["path"]
                         )
-                    model_uri = model_path
+                except KeyError:
+                    pass
+
+            if model_path is None:
+                raise RuntimeError(
+                    "Model file does not have a valid suffix. Expected to be one of "
+                    + ", ".join(valid_file_suffixes)
+                )
+            model_uri = model_path
+
 
         export_path = self.server_config["export_path"]
         if export_path:
