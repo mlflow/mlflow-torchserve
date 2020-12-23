@@ -1,6 +1,9 @@
 import pytest
 import os
 from mlflow.utils import process
+from torch.utils import collect_env
+
+print(collect_env.main())
 
 
 @pytest.mark.usefixtures("start_torchserve")
