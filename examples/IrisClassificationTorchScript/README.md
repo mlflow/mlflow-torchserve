@@ -1,5 +1,9 @@
-In this example, we train a Pytorch Lightning model to classify iris based on height and width of sepal and petal. Then, we convert the model to TorchScript 
-and serve the scripted model in TorchServe from Mlflow. 
+# Deploying Iris Classification using torchserve
+
+The code, adapted from this [repository](http://chappers.github.io/2020/04/19/torch-lightning-using-iris/),
+is almost entirely dedicated to training, with the addition of a single mlflow.pytorch.autolog() call to enable automatic logging of params, metrics, and the TorchScript model.
+TorchScript allows us to save the whole model locally and load it into a different environment, such as in a server written in
+a completely different language.
 
 ## Training the model
 
@@ -26,10 +30,10 @@ If you have the required modules for the file and would like to skip the creatio
 mlflow run . --no-conda
 ```
 
-After the training, we will convert the model to a TorchScript model using torch.jit.script.
+After the training, we will convert the model to a TorchScript model using the function `torch.jit.script`.
 At the end of the training process, scripted model is stored as `iris_ts.pt`
 
-## Starting torchserve
+## Starting TorchServe
 
 create an empty directory `model_store` and run the following command to start torchserve.
 
@@ -39,14 +43,10 @@ create an empty directory `model_store` and run the following command to start t
 
 Run the following command to create a new deployment named `iris_test`
 
-`mlflow deployments  create --name iris_test --target torchserve --model-uri iris_ts.pt -C "HANDLER=iris_handler.py"`
-
+`mlflow deployments  create --name iris_test --target torchserve --model-uri iris_ts.pt -C "HANDLER=iris_handler.py"  -C "EXTRA_FILES=index_to_name.json"`
 
 ## Running prediction based on deployed model
 
-For testing iris dataset, we are going to use a sample input tensor placed in `sample.json` file. 
-Run the following command to invoke prediction of our sample input
+Run the following command to invoke prediction of our sample input, where input.json is the sample input file and output.json stores the predicted outcome.
 
 `mlflow deployments predict --name iris_test --target torchserve --input-path sample.json  --output-path output.json`
-
-The deployed model would predict the type of iris and store the output in `output.json`.

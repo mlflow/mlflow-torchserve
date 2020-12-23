@@ -118,7 +118,14 @@ class TorchServePlugin(BaseDeploymentClient):
             key: val
             for key, val in config.items()
             if key.upper()
-            not in ["VERSION", "MODEL_FILE", "HANDLER", "EXTRA_FILES", "REQUIREMENTS_FILE"]
+            not in [
+                "VERSION",
+                "MODEL_FILE",
+                "HANDLER",
+                "EXTRA_FILES",
+                "REQUIREMENTS_FILE",
+                "EXPORT_PATH",
+            ]
         }
 
         self.register_model(
@@ -409,10 +416,12 @@ class TorchServePlugin(BaseDeploymentClient):
         if config:
             for key in config:
                 query_path += "&" + key + "=" + str(config[key])
-        else:
+
+        if "initial_workers" not in query_path:
             query_path += "&initial_workers=" + str(1)
 
         url = "{}/{}?url={}".format(self.management_api, "models", query_path)
+
         resp = requests.post(url=url)
 
         if resp.status_code != 200:
