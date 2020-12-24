@@ -1,15 +1,10 @@
 import pytest
 import os
 from mlflow.utils import process
-from torch.utils import collect_env
 
 
 @pytest.mark.usefixtures("start_torchserve")
 def test_mnist_example():
-    print("*" * 50)
-    print("Environment Info:")
-    print(collect_env.main())
-    print("*" * 50)
     os.environ["MKL_THREADING_LAYER"] = "GNU"
     home_dir = os.getcwd()
     mnist_dir = "examples/MNIST"
