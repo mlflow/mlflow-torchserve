@@ -104,7 +104,7 @@ class NewsClassifier(nn.Module):
 
         :return: output - label for the input text
         """
-        _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask).pooler_output
         output = F.relu(self.fc1(pooled_output))
         output = self.drop(output)
         output = self.out(output)
