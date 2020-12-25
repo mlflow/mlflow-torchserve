@@ -4,7 +4,6 @@ channels:
 - defaults
 dependencies:
 - python=3.8.2
-- torchvision
 - pip
 - pip:
   - mlflow
@@ -14,4 +13,6 @@ dependencies:
   - boto3
   - transformers
   - torchtext
+  - torch
+  - torchvision
   - pandas
