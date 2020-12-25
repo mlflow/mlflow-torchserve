@@ -2,6 +2,7 @@ import pytest
 import os
 from mlflow.utils import process
 
+
 @pytest.mark.usefixtures("start_torchserve")
 def test_mnist_example():
     os.environ["MKL_THREADING_LAYER"] = "GNU"
