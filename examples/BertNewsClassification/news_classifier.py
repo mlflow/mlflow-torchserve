@@ -354,13 +354,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--save_model",
-        type=bool,
-        default=True,
-        help="For Saving the current Model",
-    )
-
-    parser.add_argument(
         "--vocab_file",
         default="https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt",
         help="Custom vocab file",
@@ -391,14 +384,13 @@ if __name__ == "__main__":
 
     print("\n\n\n SAVING MODEL")
 
-    if args.save_model:
-        if os.path.exists(args.model_save_path):
-            shutil.rmtree(args.model_save_path)
-        mlflow.pytorch.save_model(
-            model,
-            path=args.model_save_path,
-            requirements_file="requirements.txt",
-            extra_files=["class_mapping.json", "bert_base_uncased_vocab.txt"],
-        )
+    if os.path.exists(args.model_save_path):
+        shutil.rmtree(args.model_save_path)
+    mlflow.pytorch.save_model(
+        model,
+        path=args.model_save_path,
+        requirements_file="requirements.txt",
+        extra_files=["class_mapping.json", "bert_base_uncased_vocab.txt"],
+    )
 
     mlflow.end_run()
