@@ -13,10 +13,6 @@ from argparse import ArgumentParser
 import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning.overrides.data_parallel import (
-    LightningDistributedDataParallel,
-    LightningDataParallel,
-)
 from pytorch_lightning import seed_everything
 from pytorch_lightning.metrics import Accuracy
 from torch.nn import functional as F
@@ -129,6 +125,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         self.layer_2 = torch.nn.Linear(128, 256)
         self.layer_3 = torch.nn.Linear(256, 10)
         self.args = kwargs
+        self.save_hyperparameters()
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -252,14 +249,6 @@ class LightningMNISTClassifier(pl.LightningModule):
         return [optimizer], [scheduler]
 
 
-def get_model(trainer):
-    is_dp_module = isinstance(
-        trainer.model, (LightningDistributedDataParallel, LightningDataParallel)
-    )
-    model = trainer.model.module if is_dp_module else trainer.model
-    return model
-
-
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
 
@@ -292,6 +281,4 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
 
-    model = get_model(trainer)
-
-    torch.save(model.state_dict(), "model.pth")
+    trainer.save_checkpoint("model.pth", weights_only=True)
