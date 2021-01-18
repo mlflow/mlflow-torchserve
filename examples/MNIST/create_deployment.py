@@ -10,6 +10,10 @@ def create_deployment(parser_args):
         "HANDLER": parser_args["handler"],
         "EXTRA_FILES": parser_args["extra_files"],
     }
+
+    if parser_args["export_path"] != "":
+        config["EXPORT_PATH"] = parser_args["export_path"]
+
     result = plugin.create_deployment(
         name=parser_args["deployment_name"],
         model_uri=parser_args["registered_model_uri"],
@@ -62,6 +66,13 @@ if __name__ == "__main__":
         type=str,
         default="models:/mnist_classifier/1",
         help="Pytorch model path (default: models:/mnist_classifier/1)",
+    )
+
+    parser.add_argument(
+        "--export_path",
+        type=str,
+        default="",
+        help="Path to model store (default: '')",
     )
 
     args = parser.parse_args()

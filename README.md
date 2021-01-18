@@ -1,17 +1,32 @@
-# mlflow-torchserve
+# Mlflow-TorchServe
 
-A plugin that integrates [TorchServe](https://github.com/pytorch/serve) with MLflow pipeline. ``mlflow_torchserve`` enables you to
-use mlflow to deploy the models built and trained in mlflow pipeline into TorchServe without any
-extra effort from the user. This plugin provides few command line APIs, which is also accessible
-through mlflow's python package, to make the deployment process seamless.
+A plugin that integrates [TorchServe](https://github.com/pytorch/serve) with MLflow pipeline.
+``mlflow_torchserve`` enables mlflow users to deploy the  mlflow pipeline models into TorchServe .
+Command line APIs of the plugin (also accessible through mlflow's python package) makes the deployment process seamless.
+
+## Prerequisites
+
+Following are the list of packages which needs to be installed before running the TorchServe deployment plugin
+
+1. torch-model-archiver
+2. torchserve
+3. mlflow
+
 
 ## Installation
-For installing and activating the plugin, you only need to install this package which is available
-in pypi and can be installed with
+Plugin package which is available in pypi and can be installed using
 
 ```bash
 pip install mlflow-torchserve
 ```
+##Installation from Source
+
+Plugin package could also be installed from source using the following commands
+```
+python setup.py build
+python setup.py install
+```
+
 ## What does it do
 Installing this package uses python's entrypoint mechanism to register the plugin into MLflow's
 plugin registry. This registry will be invoked each time you launch MLflow script or command line
@@ -19,7 +34,7 @@ argument.
 
 
 ### Create deployment
-Deploy the model to TorchServe. The `create` command line argument and ``create_deployment`` python
+The `create` command line argument and ``create_deployment`` python
 APIs does the deployment of a model built with MLflow to TorchServe.
 
 ##### CLI
@@ -36,8 +51,8 @@ plugin.create_deployment(name=<deployment name>, model_uri=<model uri>, config={
 ```
 
 ### Update deployment
-Update API can be used to update an already deployed model. This setup is useful if you want to increase the number of workers
-or set a model as default version. TorchServe will make sure the user experience is seamless while changing the model in a live environment.
+Update API can used to modify the configuration parameters such as number of workers, version etc., of an already deployed model.
+TorchServe will make sure the user experience is seamless while changing the model in a live environment.
 
 ##### CLI
 ```shell script
@@ -50,7 +65,7 @@ plugin.update_deployment(name=<deployment name>, config={'min-worker': <number o
 ```
 
 ### Delete deployment
-Delete an existing deployment. Error will be thrown if the model is not already deployed
+Delete an existing deployment. Excepton will be raised if the model is not already deployed.
 
 ##### CLI
 ```shell script
@@ -63,8 +78,7 @@ plugin.delete_deployment(name=<deployment name / version number>)
 ```
 
 ### List all deployments
-List the names of all the deploymented models. This name can then be used in other APIs or can be
-used in the get deployment API to get more details about a particular deployment.
+Lists the names of all the models deployed on the configured TorchServe.
 
 ##### CLI
 ```shell script
@@ -78,7 +92,7 @@ plugin.list_deployments()
 
 ### Get deployment details
 Get API fetches the details of the deployed model. By default, Get API fetches all the versions of the 
-deployed model
+deployed model.
 
 ##### CLI
 ```shell script
@@ -91,17 +105,17 @@ plugin.get_deployment(name=<deployment name>)
 ```
 
 ### Run Prediction on deployed model
-Predict API enables to run prediction on the deployed model. 
+Predict API enables to run prediction on the deployed model.
 
-CLI takes json file path as input. However, input to the python plugin can be one among the three types
-DataFrame, Tensor or Json String.
+For the prediction inputs, DataFrame, Tensor and Json formats are supported. The python API supports all of these
+ three formats. When invoked via command line, one needs to pass the json file path that contains the inputs.
 
 ##### CLI
 ```shell script
 mlflow deployments predict -t torchserve --name <deployment name> --input-path <input file path> --output-path <output file path>
 ```
 
-output-path is an optional parameter. Without output path parameter result will printed in console.
+output-path is an optional parameter. Without output path parameter result will be printed in console.
 
 ##### Python API
 ```python
@@ -114,6 +128,6 @@ Run the following command to get the plugin help string.
 ##### CLI
 ```shell script
 mlflow deployments help -t torchserve
-``` 
+```
 
 
