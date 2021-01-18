@@ -305,7 +305,6 @@ class TorchServePlugin(BaseDeploymentClient):
         valid_file_suffixes = [".pt", ".pth"]
         extra_files_list = []
         req_file_path = None
-        is_state_dict = False
         model_path = None
 
         if not os.path.isfile(model_uri):
@@ -344,7 +343,6 @@ class TorchServePlugin(BaseDeploymentClient):
                     + ", ".join(valid_file_suffixes)
                 )
             model_uri = model_path
-
 
         export_path = self.server_config["export_path"]
         if export_path:
