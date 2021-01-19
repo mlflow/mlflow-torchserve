@@ -11,7 +11,7 @@ def test_mnist_example():
     example_command = ["python", "mnist_model.py", "--max_epochs", "1"]
     process.exec_cmd(example_command, cwd=mnist_dir)
 
-    assert os.path.exists(os.path.join(mnist_dir, "model.pth"))
+    # assert os.path.exists(os.path.join(mnist_dir, "model.pth"))
     create_deployment_command = [
         "python",
         "create_deployment.py",
@@ -21,7 +21,7 @@ def test_mnist_example():
 
     process.exec_cmd(create_deployment_command, cwd=mnist_dir)
 
-    # assert os.path.exists(os.path.join(home_dir, "model_store", "mnist_classification.mar"))
+    assert os.path.exists(os.path.join(home_dir, "model_store", "mnist_classification.mar"))
 
     predict_command = ["python", "predict.py"]
     res = process.exec_cmd(predict_command, cwd=mnist_dir)
