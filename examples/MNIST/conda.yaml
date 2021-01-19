@@ -14,4 +14,3 @@ dependencies:
   - pytorch_lightning>=1.0.2
   - pandas
   - gorilla
-  - mlflow
