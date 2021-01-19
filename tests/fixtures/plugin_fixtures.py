@@ -15,7 +15,7 @@ def start_torchserve():
     linear_model.main()
     if not os.path.isdir("model_store"):
         os.makedirs("model_store")
-    cmd = "torchserve --start --model-store {}".format("./model_store")
+    cmd = "torchserve --ncs --start --model-store {}".format("./model_store")
     _ = subprocess.Popen(cmd, shell=True).wait()
 
     count = 0
