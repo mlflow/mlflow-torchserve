@@ -40,7 +40,7 @@ class NewsClassifierHandler(BaseHandler):
         model_dir = properties.get("model_dir")
 
         # Read model serialize/pt file
-        model_pt_path = os.path.join(model_dir, "bert.pt")
+        model_pt_path = os.path.join(model_dir, "state_dict.pth")
         # Read model definition file
         model_def_path = os.path.join(model_dir, "news_classifier.py")
         if not os.path.isfile(model_def_path):
