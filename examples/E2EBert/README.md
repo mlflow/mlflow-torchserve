@@ -51,7 +51,7 @@ Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log
 
 Run the `news_classifier.py` script which will fine tune the model based on news dataset. 
 
-By default,  the script exports the model file as `bert.pt` and generates a sample input file `input.json`
+By default,  the script exports the model file as `state_dict.pth` and generates a sample input file `input.json`
 
 
 
