@@ -264,7 +264,7 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Type of news for the given news snippet
         """
-        _, pooled_output = self.bert_model(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = self.bert_model(input_ids=input_ids, attention_mask=attention_mask).pooler_output
         output = F.relu(self.fc1(pooled_output))
         output = self.drop(output)
         output = self.out(output)
@@ -342,7 +342,7 @@ class BertNewsClassifier(pl.LightningModule):
         loss = F.cross_entropy(output, targets)
         self.val_acc(output, targets)
         self.log("val_acc", self.val_acc.compute().cpu())
-        self.log("val_loss", loss.cpu(), sync_dist=True)
+        self.log("val_loss", loss, sync_dist=True)
 
     def configure_optimizers(self):
         """
@@ -417,5 +417,6 @@ if __name__ == "__main__":
     )
     trainer.fit(model, dm)
     trainer.test()
-
-    torch.save(model.state_dict(), "bert.pt")
+    if trainer.global_rank == 0:
+        with mlflow.start_run() as run:
+            mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")
