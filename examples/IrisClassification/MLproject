@@ -11,6 +11,6 @@ entry_points:
 
     command: |
           python iris_classification.py \
-            --max-epochs {max_epochs} \
+            --max_epochs {max_epochs} \
             --gpus {gpus} \
             --accelerator {accelerator}
