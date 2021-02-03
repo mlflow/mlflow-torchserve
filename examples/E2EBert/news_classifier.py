@@ -283,7 +283,11 @@ class BertNewsClassifier(pl.LightningModule):
         """
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument(
-            "--lr", type=float, default=0.001, metavar="LR", help="learning rate (default: 0.001)",
+            "--lr",
+            type=float,
+            default=0.001,
+            metavar="LR",
+            help="learning rate (default: 0.001)",
         )
         return parser
 
@@ -351,7 +355,12 @@ class BertNewsClassifier(pl.LightningModule):
         optimizer = AdamW(self.parameters(), lr=self.args["lr"])
         scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer, mode="min", factor=0.2, patience=2, min_lr=1e-6, verbose=True,
+                optimizer,
+                mode="min",
+                factor=0.2,
+                patience=2,
+                min_lr=1e-6,
+                verbose=True,
             ),
             "monitor": "val_loss",
         }
@@ -396,7 +405,12 @@ if __name__ == "__main__":
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True)
 
     checkpoint_callback = ModelCheckpoint(
-        filepath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min", prefix="",
+        filepath=os.getcwd(),
+        save_top_k=1,
+        verbose=True,
+        monitor="val_loss",
+        mode="min",
+        prefix="",
     )
     lr_logger = LearningRateMonitor()
 
