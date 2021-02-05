@@ -289,7 +289,7 @@ class NewsClassifier(nn.Module):
                 correct_predictions += torch.sum(preds == targets)
                 losses.append(loss.item())
 
-        return correct_predictions.double() / len(data_loader), np.mean(losses)
+        return correct_predictions.double() / len(data_loader) / self.BATCH_SIZE, np.mean(losses)
 
     def get_predictions(self, model, data_loader):
 
