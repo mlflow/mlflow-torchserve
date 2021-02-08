@@ -258,7 +258,7 @@ class NewsClassifier(nn.Module):
             self.optimizer.zero_grad()
 
         return (
-            correct_predictions.double() / len(self.train_data_loader),
+            correct_predictions.double() / len(self.train_data_loader) / self.BATCH_SIZE,
             np.mean(losses),
         )
 
