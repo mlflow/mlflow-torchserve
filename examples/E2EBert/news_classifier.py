@@ -4,7 +4,7 @@
 
 import os
 from argparse import ArgumentParser
-
+import requests
 import mlflow.pytorch
 import pandas as pd
 import pytorch_lightning as pl
@@ -117,7 +117,13 @@ class BertDataModule(pl.LightningDataModule):
         :param stage: Stage - training or testing
         """
         # reading  the input
-        dataset_tar = download_from_url(URLS["AG_NEWS"], root=".data")
+        dataset_url =URLS["AG_NEWS"]
+        data_resp = requests.get(dataset_url)
+        dataset_tar ="ag_news_csv.tar.gz"
+        tarfile = open(dataset_tar, 'wb')
+        tarfile.write(data_resp.content)
+        tarfile.close()
+        print("Downloaded the dataset")
         extracted_files = extract_archive(dataset_tar)
 
         for fname in extracted_files:
