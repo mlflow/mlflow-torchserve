@@ -46,9 +46,6 @@ To run it in gpu, use the following command
 mlflow run . -P gpus=2 -P accelerator="ddp"
 ```
 
-
-Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log_model` are optional.
-
 Run the `news_classifier.py` script which will fine tune the model based on news dataset. 
 
 By default,  the script exports the model file as `state_dict.pth` and generates a sample input file `input.json`
@@ -87,14 +84,14 @@ Create an empty directory `model_store` and run the following command to start T
 
 Run the following command to create a new deployment named `news_classification_test`
 
-`mlflow deployments create -t torchserve -m bert.pt --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
+`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
 
 Note: TorchServe plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `news_classification_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments create -t torchserve -m bert.pt --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
+`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
 
 
 ## Running prediction based on deployed model
