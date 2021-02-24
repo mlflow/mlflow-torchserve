@@ -15,4 +15,4 @@ dependencies:
   - boto3
   - transformers
   - torchtext
-  - pytorch-lightning>=1.0.4
+  - pytorch-lightning==1.1.1
