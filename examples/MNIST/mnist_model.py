@@ -262,12 +262,6 @@ def get_model(trainer):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
-
-    # Add trainer specific arguments
-    parser.add_argument(
-        "--model-save-path", type=str, default="model", help="Path to save mlflow model"
-    )
-
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = LightningMNISTClassifier.add_model_specific_args(parent_parser=parser)
     parser = MNISTDataModule.add_model_specific_args(parent_parser=parser)
@@ -294,4 +288,6 @@ if __name__ == "__main__":
 
     model = get_model(trainer)
 
-    torch.save(model.state_dict(), "model.pth")
+    if trainer.global_rank == 0:
+        with mlflow.start_run() as run:
+            mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")

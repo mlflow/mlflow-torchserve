@@ -1,5 +1,11 @@
 # Deploying MNIST Handwritten Recognition using torchserve
 
+This example requires Backend store to be set for mlflow.
+
+Follow the link given below to set backend store
+
+https://www.mlflow.org/docs/latest/tracking.html#storage
+
 ## Training the model
 The model is used to classify handwritten digits.
 This example, autologs the trained model and its relevant parameters and metrics into mlflow using a single line of code. 
@@ -11,7 +17,16 @@ Run the following command to train the MNIST model
 CPU: `mlflow run . -P max_epochs=5`
 GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
 
-On the training completion, the MNIST model is stored as "model.pth" in current working directory.
+At the end of the training, MNIST model will be saved as state dict in the current working directory
+
+## Deploying in remote torchserve instance
+
+To deploy the model in remote torchserve instance follow
+
+the steps in `remote-deployment.rst` under `docs` folder.
+
+
+## Deploying in local torchserve instance
 
 ## Starting torchserve
 
@@ -32,7 +47,7 @@ It will create a new deployment named `mnist_classification`.
 Following are the arguments which can be passed to create_deployment script
 
 1. deployment name - `--deployment_name`
-2. serialized file path - `--serialized_file`
+2. saved model path - `--serialized_file_path`
 3. handler file path - `--handler`
 4. model file path - `--model_file`
 
