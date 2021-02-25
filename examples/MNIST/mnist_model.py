@@ -188,7 +188,8 @@ class LightningMNISTClassifier(pl.LightningModule):
         x, y = train_batch
         logits = self.forward(x)
         loss = self.cross_entropy_loss(logits, y)
-        self.train_acc(logits, y)
+        _,y_hat= torch.max(logits,dim=1)
+        self.train_acc(y_hat, y)
         self.log("train_acc", self.train_acc.compute())
         self.log("train_loss", loss)
         return {"loss": loss}
@@ -205,7 +206,8 @@ class LightningMNISTClassifier(pl.LightningModule):
         x, y = val_batch
         logits = self.forward(x)
         loss = self.cross_entropy_loss(logits, y)
-        self.val_acc(logits, y)
+        _,y_hat =torch.max(logits,dim=1)
+        self.val_acc(y_hat, y)
         self.log("val_acc", self.val_acc.compute())
         self.log("val_loss", loss, sync_dist=True)
 

@@ -14,5 +14,5 @@ dependencies:
       - boto3
       - gorilla
       - torchvision
-      - pytorch_lightning==1.1.1
+      - pytorch_lightning==1.2.0
 

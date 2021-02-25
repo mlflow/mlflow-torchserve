@@ -11,7 +11,7 @@ dependencies:
   - cloudpickle==1.6.0
   - boto3
   - matplotlib
-  - pytorch_lightning==1.1.1
+  - pytorch_lightning==1.2.0
   - pandas
   - gorilla
   - mlflow>=1.14.0
