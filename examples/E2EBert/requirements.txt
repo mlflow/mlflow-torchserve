@@ -1,0 +1,12 @@
+torch>=1.6.0
+pytorch_lightning==1.1.1
+torchvision
+mlflow
+gorilla
+torchserve
+torch-model-archiver
+numpy
+transformers
+sklearn
+tqdm
+torchtext

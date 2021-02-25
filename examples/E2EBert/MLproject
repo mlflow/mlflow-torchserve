@@ -1,0 +1,20 @@
+name: bert-classification
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      max_epochs: {type: int, default: 5}
+      gpus: {type: int, default: 0}
+      num_samples: {type: int, default: 15000}
+      vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
+      accelerator: {type str, default: None}
+
+    command: |
+          python news_classifier.py \
+            --max_epochs {max_epochs} \
+            --gpus {gpus} \
+            --num_samples {num_samples} \
+            --vocab_file {vocab_file} \
+            --accelerator={accelerator}
