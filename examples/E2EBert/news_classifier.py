@@ -303,7 +303,7 @@ class BertNewsClassifier(pl.LightningModule):
         attention_mask = train_batch["attention_mask"]
         targets = train_batch["targets"]
         output = self.forward(input_ids, attention_mask)
-        _,y_hat =torch.max(output,dim=1)
+        _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
         self.train_acc(y_hat, targets)
         self.log("train_acc", self.train_acc.compute().cpu())
@@ -341,7 +341,7 @@ class BertNewsClassifier(pl.LightningModule):
         attention_mask = val_batch["attention_mask"]
         targets = val_batch["targets"]
         output = self.forward(input_ids, attention_mask)
-        _,y_hat =torch.max(output,dim=1)
+        _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
         self.val_acc(y_hat, targets)
         self.log("val_acc", self.val_acc.compute().cpu())
