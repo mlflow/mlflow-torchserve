@@ -137,7 +137,7 @@ class NewsClassifier(nn.Module):
         """
         Creates train, valid and test dataloaders from the csv data
         """
-        dataset_tar = download_from_url(URLS["AG_NEWS"], root=".data")
+        dataset_tar = download_from_url(URLS["AG_NEWS"], root="./data")
         extracted_files = extract_archive(dataset_tar)
 
         for fname in extracted_files:

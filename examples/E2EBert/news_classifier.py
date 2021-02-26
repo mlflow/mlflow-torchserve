@@ -303,8 +303,9 @@ class BertNewsClassifier(pl.LightningModule):
         attention_mask = train_batch["attention_mask"]
         targets = train_batch["targets"]
         output = self.forward(input_ids, attention_mask)
+        _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
-        self.train_acc(output, targets)
+        self.train_acc(y_hat, targets)
         self.log("train_acc", self.train_acc.compute().cpu())
         self.log("train_loss", loss.cpu())
         return {"loss": loss}
@@ -340,8 +341,9 @@ class BertNewsClassifier(pl.LightningModule):
         attention_mask = val_batch["attention_mask"]
         targets = val_batch["targets"]
         output = self.forward(input_ids, attention_mask)
+        _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
-        self.val_acc(output, targets)
+        self.val_acc(y_hat, targets)
         self.log("val_acc", self.val_acc.compute().cpu())
         self.log("val_loss", loss, sync_dist=True)
 
@@ -404,7 +406,7 @@ if __name__ == "__main__":
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True)
 
     checkpoint_callback = ModelCheckpoint(
-        filepath=os.getcwd(),
+        dirpath=os.getcwd(),
         save_top_k=1,
         verbose=True,
         monitor="val_loss",
