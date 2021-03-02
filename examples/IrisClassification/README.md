@@ -8,6 +8,9 @@ the model predicts the test input as belonging to one of the IRIS flower species
 
 ## Package Requirement
 
+Ensure to install the `mlflow-torchserve` [prerequisites](https://github.com/mlflow/mlflow-torchserve#prerequisites) and 
+[package](https://github.com/mlflow/mlflow-torchserve#installation) in your current python environment before starting.
+
 Install the required packages using the following command
 
 `pip install -r requirements.txt`
