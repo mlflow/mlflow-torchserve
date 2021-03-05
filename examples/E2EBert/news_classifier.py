@@ -405,13 +405,15 @@ if __name__ == "__main__":
     model = BertNewsClassifier(**dict_args)
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        dirpath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min"
-    )
+    # checkpoint_callback = ModelCheckpoint(
+    #     dirpath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min"
+    # )
     lr_logger = LearningRateMonitor()
 
     trainer = pl.Trainer.from_argparse_args(
-        args, callbacks=[lr_logger, early_stopping], checkpoint_callback=checkpoint_callback
+        # args, callbacks=[lr_logger, early_stopping], checkpoint_callback=checkpoint_callback
+        args,
+        callbacks=[lr_logger, early_stopping],
     )
     trainer.fit(model, dm)
     trainer.test()
