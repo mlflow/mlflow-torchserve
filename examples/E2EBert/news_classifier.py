@@ -20,7 +20,7 @@ from pytorch_lightning.metrics import Accuracy
 from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
-from torchtext.datasets.text_classification import URLS
+import torchtext.datasets as td
 from torchtext.utils import download_from_url, extract_archive
 from transformers import BertModel, BertTokenizer, AdamW
 
@@ -116,12 +116,13 @@ class BertDataModule(pl.LightningDataModule):
         :param stage: Stage - training or testing
         """
         # reading  the input
-        dataset_tar = download_from_url(URLS["AG_NEWS"], root="./data")
-        extracted_files = extract_archive(dataset_tar)
+        td.AG_NEWS(root="data", split=("train", "test"))
+        extracted_files = os.listdir("data")
 
+        train_csv_path = None
         for fname in extracted_files:
             if fname.endswith("train.csv"):
-                train_csv_path = fname
+                train_csv_path = os.path.join(os.getcwd(), "data", fname)
 
         df = pd.read_csv(train_csv_path)
 
@@ -406,12 +407,7 @@ if __name__ == "__main__":
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True)
 
     checkpoint_callback = ModelCheckpoint(
-        dirpath=os.getcwd(),
-        save_top_k=1,
-        verbose=True,
-        monitor="val_loss",
-        mode="min",
-        prefix="",
+        dirpath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min"
     )
     lr_logger = LearningRateMonitor()
 
