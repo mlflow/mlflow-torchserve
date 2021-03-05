@@ -21,7 +21,6 @@ from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
 import torchtext.datasets as td
-from torchtext.utils import download_from_url, extract_archive
 from transformers import BertModel, BertTokenizer, AdamW
 
 
