@@ -12,5 +12,5 @@ dependencies:
   - cloudpickle==1.6.0
   - boto3
   - gorilla
-  - pytorch-lightning @ git+https://github.com/PyTorchLightning/pytorch-lightning.git@master
+  - pytorch-lightning>=1.2.2
 

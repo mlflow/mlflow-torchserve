@@ -46,7 +46,7 @@ jobs:
 
       - name: Install pytorch lightning
         run: |
-          pip install git+https://github.com/PyTorchLightning/pytorch-lightning.git
+          pip install pytorch-lightning>=1.2.2
 
       - name: Run torchserve example
         run: |
