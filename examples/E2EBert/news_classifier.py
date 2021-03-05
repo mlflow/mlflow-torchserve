@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import (
     EarlyStopping,
-    ModelCheckpoint,
+    # ModelCheckpoint,
     LearningRateMonitor,
 )
 from pytorch_lightning.metrics import Accuracy
