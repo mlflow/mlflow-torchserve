@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import (
     EarlyStopping,
-    # ModelCheckpoint,
+    ModelCheckpoint,
     LearningRateMonitor,
 )
 from pytorch_lightning.metrics import Accuracy
@@ -282,11 +282,7 @@ class BertNewsClassifier(pl.LightningModule):
         """
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument(
-            "--lr",
-            type=float,
-            default=0.001,
-            metavar="LR",
-            help="learning rate (default: 0.001)",
+            "--lr", type=float, default=0.001, metavar="LR", help="learning rate (default: 0.001)",
         )
         return parser
 
@@ -356,12 +352,7 @@ class BertNewsClassifier(pl.LightningModule):
         optimizer = AdamW(self.parameters(), lr=self.args["lr"])
         scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer,
-                mode="min",
-                factor=0.2,
-                patience=2,
-                min_lr=1e-6,
-                verbose=True,
+                optimizer, mode="min", factor=0.2, patience=2, min_lr=1e-6, verbose=True,
             ),
             "monitor": "val_loss",
         }
@@ -405,15 +396,13 @@ if __name__ == "__main__":
     model = BertNewsClassifier(**dict_args)
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True)
 
-    # checkpoint_callback = ModelCheckpoint(
-    #     dirpath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min"
-    # )
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min"
+    )
     lr_logger = LearningRateMonitor()
 
     trainer = pl.Trainer.from_argparse_args(
-        # args, callbacks=[lr_logger, early_stopping], checkpoint_callback=checkpoint_callback
-        args,
-        callbacks=[lr_logger, early_stopping],
+        args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True
     )
     trainer.fit(model, dm)
     trainer.test()
