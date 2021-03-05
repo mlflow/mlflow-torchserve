@@ -14,5 +14,5 @@ dependencies:
       - boto3
       - gorilla
       - torchvision
-      - pytorch_lightning>=1.2.0
+      - pytorch-lightning @ git+https://github.com/PyTorchLightning/pytorch-lightning.git@master
 
