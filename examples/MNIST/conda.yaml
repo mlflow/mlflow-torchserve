@@ -4,14 +4,14 @@ channels:
 - pytorch
 dependencies:
 - python=3.8.2
-- pytorch>=1.6.0
+- pytorch
 - torchvision
 - pip
 - pip:
   - cloudpickle==1.6.0
   - boto3
   - matplotlib
-  - pytorch_lightning>=1.2.0
+  - pytorch-lightning>=1.2.3
   - pandas
   - gorilla
   - mlflow>=1.14.0
