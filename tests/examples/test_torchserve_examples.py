@@ -3,6 +3,7 @@ import pytest
 from mlflow import cli
 from click.testing import CliRunner
 import shutil
+
 EXAMPLES_DIR = "examples"
 
 
@@ -29,7 +30,8 @@ def test_mlflow_run_example(directory, params):
 def get_free_disk_space():
     # https://stackoverflow.com/a/48929832/6943581
     return shutil.disk_usage("/")[-1] / (2 ** 30)
-    
+
+
 @pytest.fixture(scope="function", autouse=True)
 def clean_envs_and_cache():
     yield
