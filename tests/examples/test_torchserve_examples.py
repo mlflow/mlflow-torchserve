@@ -3,6 +3,7 @@ import pytest
 from mlflow import cli
 from click.testing import CliRunner
 import shutil
+from mlflow.utils import process
 
 EXAMPLES_DIR = "examples"
 
