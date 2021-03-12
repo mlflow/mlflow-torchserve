@@ -14,6 +14,7 @@ EXAMPLES_DIR = "examples"
         ("IrisClassificationTorchScript", ["-P", "max_epochs=10"]),
         ("BertNewsClassification", ["-P", "max_epochs=1", "-P", "num_samples=100"]),
         ("E2EBert", ["-P", "max_epochs=1", "-P", "num_samples=100"]),
+        ("Titanic", ["-P", "max_epochs=100", "-P", "lr=0.1"]),
     ],
 )
 def test_mlflow_run_example(directory, params):
