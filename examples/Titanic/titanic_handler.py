@@ -2,7 +2,6 @@ from titanic import TitanicSimpleNNModel
 import json
 import logging
 import os
-import ast
 import torch
 from ts.torch_handler.base_handler import BaseHandler
 from captum.attr import IntegratedGradients
