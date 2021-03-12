@@ -214,7 +214,8 @@ def feature_conductance(test_input_tensor):
     test_input_tensor.requires_grad_()
     attr, _ = ig.attribute(test_input_tensor, target=1, return_convergence_delta=True)
     attr = attr.detach().numpy()
-    # To understand these attributions, we can first average them across all the inputs and print and visualize the average attribution for each feature.
+    # To understand these attributions, we can first average them across all the inputs
+    # and print and visualize the average attribution for each feature.
     feature_imp, feature_imp_dict = visualize_importances(feature_names, np.mean(attr, axis=0))
     mlflow.log_metrics(feature_imp_dict)
     mlflow.log_text(str(feature_imp), "feature_imp_summary.txt")
@@ -223,8 +224,10 @@ def feature_conductance(test_input_tensor):
     ax1.hist(attr[:, 1], 100)
     ax1.set(title="Distribution of Sibsp Attribution Values")
 
-    # we can bucket the examples by the value of the sibsp feature and plot the average attribution for the feature.
-    # In the plot below, the size of the dot is proportional to the number of examples with that value.
+    # we can bucket the examples by the value of the sibsp feature and
+    # plot the average attribution for the feature.
+    # In the plot below, the size of the dot is proportional to
+    # the number of examples with that value.
 
     bin_means, bin_edges, _ = stats.binned_statistic(
         test_features[:, 1], attr[:, 1], statistic="mean", bins=6
@@ -242,11 +245,18 @@ def feature_conductance(test_input_tensor):
 
 def layer_conductance(test_input_tensor):
     """
-    To use Layer Conductance, we create a LayerConductance object passing in the model as well as the module (layer) whose output we would like to understand. In this case, we choose net.sigmoid1, the output of the first hidden layer.
+    To use Layer Conductance, we create a LayerConductance object passing in the model
+    as well as the module (layer) whose output we would like to understand.
+    In this case, we choose net.sigmoid1, the output of the first hidden layer.
 
-    Now obtain the conductance values for all the test examples by calling attribute on the LayerConductance object.
+    Now obtain the conductance values for all the test examples
+    by calling attribute on the LayerConductance object.
 
-    LayerConductance also requires a target index for networks with mutliple outputs, defining the index of the output for which gradients are computed. Similar to feature attributions, we provide target = 1, corresponding to survival. LayerConductance also utilizes a baseline, but we simply use the default zero baseline as in integrated gradients.
+    LayerConductance also requires a target index for networks with mutliple outputs,
+    defining the index of the output for which gradients are computed.
+    Similar to feature attributions, we provide target = 1, corresponding to survival.
+    LayerConductance also utilizes a baseline,
+    but we simply use the default zero baseline as in integrated gradients.
     """
 
     cond = LayerConductance(net, net.sigmoid1)
@@ -263,7 +273,10 @@ def layer_conductance(test_input_tensor):
     )
     mlflow.log_metrics(neuron_imp_dict)
     mlflow.log_text(str(avg_neuron_imp), "neuron_imp_summary.txt")
-    # We can also look at the distribution of each neuron's attributions. Below we look at the distributions for neurons 7 and 9, and we can confirm that their attribution distributions are very close to 0, suggesting they are not learning substantial features.
+    # We can also look at the distribution of each neuron's attributions.
+    # Below we look at the distributions for neurons 7 and 9, and
+    # we can confirm that their attribution distributions are very close to 0,
+    # suggesting they are not learning substantial features.
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(9, 6))
     fig.tight_layout(pad=3)
     ax1.hist(cond_vals[:, 9], 100)
@@ -275,16 +288,33 @@ def layer_conductance(test_input_tensor):
 
 def neuron_conductance(test_input_tensor, neuron_selector=None):
     """
-    We have identified that some of the neurons are not learning important features, while others are. Can we now understand what each of these important neurons are looking at in the input? For instance, are they identifying different features in the input or similar ones?
+    We have identified that some of the neurons are not learning important features,
+    while others are. Can we now understand what each of these important neurons are
+    looking at in the input? For instance,
+    are they identifying different features in the input or similar ones?
 
-    To answer these questions, we can apply the third type of attributions available in Captum, **Neuron Attributions**. This allows us to understand what parts of the input contribute to activating a particular input neuron. For this example, we will apply Neuron Conductance, which divides the neuron's total conductance value into the contribution from each individual input feature.
+    To answer these questions, we can apply the third type of attributions available in Captum,
+    **Neuron Attributions**. This allows us to understand what parts of the input contribute
+    to activating a particular input neuron. For this example, we will apply Neuron Conductance,
+    which divides the neuron's total conductance value into the contribution
+    from each individual input feature.
 
-    To use Neuron Conductance, we create a NeuronConductance object, analogously to Conductance, passing in the model as well as the module (layer) whose output we would like to understand, in this case, net.sigmoid1, as before.
+    To use Neuron Conductance, we create a NeuronConductance object, analogously to Conductance,
+    passing in the model as well as the module (layer) whose output we would like to understand,
+    in this case, net.sigmoid1, as before.
     """
     neuron_selector = 0
     neuron_cond = NeuronConductance(net, net.sigmoid1)
 
-    # We can now obtain the neuron conductance values for all the test examples by calling attribute on the NeuronConductance object. Neuron Conductance requires the neuron index in the target layer for which attributions are requested as well as the target index for networks with mutliple outputs, similar to layer conductance. As before, we provide target = 1, corresponding to survival, and compute neuron conductance for neurons 0 and 10, the significant neurons identified above. The neuron index can be provided either as a tuple or as just an integer if the layer output is 1-dimensional.
+    # We can now obtain the neuron conductance values for all the test examples by calling
+    # attribute on the NeuronConductance object.
+    # Neuron Conductance requires the neuron index in the target layer for which
+    # attributions are requested as well as the target index for networks with mutliple outputs,
+    # similar to layer conductance. As before, we provide target = 1,
+    # corresponding to survival, and compute neuron conductance for neurons 0 and 10,
+    # the significant neurons identified above.
+    # The neuron index can be provided either as a tuple or as just an integer
+    # if the layer output is 1-dimensional.
 
     neuron_cond_vals = neuron_cond.attribute(
         test_input_tensor, neuron_selector=neuron_selector, target=1
@@ -300,7 +330,6 @@ def neuron_conductance(test_input_tensor, neuron_selector=None):
 
 
 if __name__ == "__main__":
-
     parser = ArgumentParser(description="Titanic Captum Example")
 
     parser.add_argument(
