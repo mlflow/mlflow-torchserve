@@ -1,9 +1,24 @@
 import os
 import pytest
+import shutil
 from mlflow import cli
 from click.testing import CliRunner
+from mlflow.utils import process
 
 EXAMPLES_DIR = "examples"
+
+
+def get_free_disk_space():
+    # https://stackoverflow.com/a/48929832/6943581
+    return shutil.disk_usage("/")[-1] / (2 ** 30)
+
+
+@pytest.fixture(scope="function", autouse=True)
+def clean_envs_and_cache():
+    yield
+
+    if get_free_disk_space() < 7.0:  # unit: GiB
+        process.exec_cmd(["./utils/remove-conda-envs.sh"])
 
 
 @pytest.mark.parametrize(
