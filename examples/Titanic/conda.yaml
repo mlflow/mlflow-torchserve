@@ -13,4 +13,5 @@ dependencies:
   - boto3
   - sklearn
   - ipython
+  - prettytable
 
