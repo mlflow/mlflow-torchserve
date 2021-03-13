@@ -9,8 +9,5 @@ dependencies:
 - pip
 - pip:
   - scikit-learn
-  - cloudpickle==1.6.0
-  - boto3
-  - gorilla
   - pytorch-lightning>=1.2.3
 
