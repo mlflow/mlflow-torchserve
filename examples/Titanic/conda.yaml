@@ -10,7 +10,6 @@ dependencies:
   - mlflow
   - pandas
   - captum
-  - boto3
   - sklearn
   - ipython
   - prettytable

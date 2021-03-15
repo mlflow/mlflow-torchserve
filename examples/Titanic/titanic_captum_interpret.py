@@ -16,8 +16,7 @@ from sklearn.model_selection import train_test_split
 import os
 from argparse import ArgumentParser
 import torch.nn as nn
-
-mlflow.start_run(run_name="Titanic_Captum_mlflow")
+from titanic import TitanicSimpleNNModel
 
 
 def get_titanic():
@@ -71,24 +70,7 @@ def get_titanic():
     return titanic_data
 
 
-torch.manual_seed(1)  # Set seed for reproducibility.
-
-
-class TitanicSimpleNNModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.linear1 = nn.Linear(12, 12)
-        self.sigmoid1 = nn.Sigmoid()
-        self.linear2 = nn.Linear(12, 8)
-        self.sigmoid2 = nn.Sigmoid()
-        self.linear3 = nn.Linear(8, 2)
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, x):
-        lin1_out = self.linear1(x)
-        sigmoid_out1 = self.sigmoid1(lin1_out)
-        sigmoid_out2 = self.sigmoid2(self.linear2(sigmoid_out1))
-        return self.softmax(self.linear3(sigmoid_out2))
+torch.manual_seed(1)  # Set seed for reproducibility
 
 
 def prepare():
@@ -109,13 +91,11 @@ def count_model_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
     total_params = 0
     for name, parameter in model.named_parameters():
-
         if not parameter.requires_grad:
             continue
         param = parameter.nonzero(as_tuple=False).size(0)
         table.add_row([name, param])
         total_params += param
-
     return table, total_params
 
 
@@ -126,7 +106,6 @@ def visualize_importances(
     plot=True,
     axis_title="Features",
 ):
-    print(title)
     feature_imp = PrettyTable(["feature_name", "importances"])
     feature_imp_dict = {}
     for i in range(len(feature_names)):
@@ -330,46 +309,49 @@ def neuron_conductance(test_input_tensor, neuron_selector=None):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Titanic Captum Example")
 
-    parser.add_argument(
-        "--use_pretrained_model",
-        default=False,
-        metavar="N",
-        help="Use pretrained model or train from the scratch",
-    )
+    with mlflow.start_run(run_name="Titanic_Captum_mlflow"):
 
-    parser.add_argument(
-        "--max_epochs",
-        type=int,
-        default=100,
-        metavar="N",
-        help="Number of epochs to be used for training",
-    )
+        parser = ArgumentParser(description="Titanic Captum Example")
 
-    parser.add_argument(
-        "--lr",
-        type=float,
-        default=0.1,
-        metavar="LR",
-        help="learning rate (default: 0.1)",
-    )
+        parser.add_argument(
+            "--use_pretrained_model",
+            default=False,
+            metavar="N",
+            help="Use pretrained model or train from the scratch",
+        )
 
-    args = parser.parse_args()
-    dict_args = vars(args)
+        parser.add_argument(
+            "--max_epochs",
+            type=int,
+            default=100,
+            metavar="N",
+            help="Number of epochs to be used for training",
+        )
 
-    (
-        net,
-        train_features,
-        train_labels,
-        test_features,
-        test_labels,
-        feature_names,
-    ) = train()
-    train_input_tensor = train_step(train_features)
-    test_input_tensor = test_step(test_features)
-    feature_conductance(test_input_tensor)
-    layer_conductance(test_input_tensor)
-    neuron_conductance(test_input_tensor)
-    mlflow.log_param("Train Size", len(train_labels))
-    mlflow.log_param("Test Size", len(test_labels))
+        parser.add_argument(
+            "--lr",
+            type=float,
+            default=0.1,
+            metavar="LR",
+            help="learning rate (default: 0.1)",
+        )
+
+        args = parser.parse_args()
+        dict_args = vars(args)
+
+        (
+            net,
+            train_features,
+            train_labels,
+            test_features,
+            test_labels,
+            feature_names,
+        ) = train()
+        train_input_tensor = train_step(train_features)
+        test_input_tensor = test_step(test_features)
+        feature_conductance(test_input_tensor)
+        layer_conductance(test_input_tensor)
+        neuron_conductance(test_input_tensor)
+        mlflow.log_param("Train Size", len(train_labels))
+        mlflow.log_param("Test Size", len(test_labels))

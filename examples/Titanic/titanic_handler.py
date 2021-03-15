@@ -125,7 +125,6 @@ class TitanicHandler(BaseHandler):
             (list): Returns a dict of feature names and their importances
         """
         input_tensor = input_tensor[0]
-        # self.inference(input_tensor)
         ig = IntegratedGradients(self.model)
         input_tensor.requires_grad_()
         attr, self.delta = ig.attribute(input_tensor, target=1, return_convergence_delta=True)
@@ -140,7 +139,6 @@ class TitanicHandler(BaseHandler):
         ax.set(title=title, xlabel=axis_title)
         ax.set_xticks(x_pos)
         ax.set_xticklabels(self.feature_names, rotation="vertical")
-        print("Input file path: ", self.input_file_path)
         path = os.path.join(
             os.path.dirname(os.path.abspath(self.input_file_path)), "attributions_imp.png"
         )

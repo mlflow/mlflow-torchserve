@@ -1,8 +1,8 @@
 #Titanic features attribution analysis using Captum and TorchServe.
 
-In this example, we show how to use a pre-trained custom Titanic model to performing real time classification prediction(survived/Not survived) and features attributions with Captum and TorchServe.
+In this example, we show how to use a pre-trained custom Titanic model to performing real time classification prediction(survived/Not survived) and features attributions with Captum and TorchServe. You can download the dataset from https://biostat.app.vumc.org/wiki/pub/Main/DataSets/titanic3.csv 
 
-The inference service would return the prediction and attribution socre  of features for a given test record.
+The inference service would return the prediction and attribution socre of features for a given test record.
 
 ### Running the code
 
@@ -52,24 +52,12 @@ Run the commands given in following steps from the example dir. For example, if 
      torchserve --start --model-store model_store/ --ts-config config.properties
     curl http://127.0.0.1:8080/predictions/titanic --data '{"input_file_path" : "/home/ubuntu/titanic/test_data/titanic_survived.csv"}'
     ```
+this prediction curl request give the prediction of (survived/not survived) for a given test record.
 
 For captum Explanations on the Torchserve side, use the below curl request:
+
 ```bash
 curl http://127.0.0.1:8080/explanations/titanic --data '{"input_file_path" : "/home/ubuntu/titanic/data/titanic_survived.csv"}'
+```
 
-
-### Captum Explanations
-
-The explain is called with the following request api http://127.0.0.1:8080/explanations/titanic
-
-Captum/Explain doesn't support batching.
-
-#### The handler changes:
-
-1. The handlers should initialize.
-
-2. The Base handler handle uses the explain_handle method to perform captum insights based on whether user wants predictions or explanations. These methods can be overriden to make your changes in the handler.
-
-3. The get_insights method in the handler is called by the explain_handle method to calculate insights using captum.
-
-4. If the custom handler overrides handle function of base handler, the explain_handle function should be called to get captum insights.
+this explanations curl request give us the average attribution for each feature. From the feature attribution information, we obtain some interesting insights regarding the importance of various features.
