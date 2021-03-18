@@ -48,6 +48,10 @@ jobs:
         run: |
           pip install pytorch-lightning>=1.2.3
 
+      - name: Add permissions for remove conda utility file
+        run: |
+          chmod +x utils/remove-conda-envs.sh
+
       - name: Run torchserve example
         run: |
           set -x
