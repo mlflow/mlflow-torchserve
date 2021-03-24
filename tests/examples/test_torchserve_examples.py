@@ -39,16 +39,3 @@ def test_mlflow_run_example(directory, params):
     assert res.exit_code == 0, "Got non-zero exit code {0}. Output is: {1}".format(
         res.exit_code, res.output
     )
-
-
-def get_free_disk_space():
-    # https://stackoverflow.com/a/48929832/6943581
-    return shutil.disk_usage("/")[-1] / (2 ** 30)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def clean_envs_and_cache():
-    yield
-
-    if get_free_disk_space() < 7.0:  # unit: GiB
-        process.exec_cmd(["./utils/remove-conda-envs.sh"])
