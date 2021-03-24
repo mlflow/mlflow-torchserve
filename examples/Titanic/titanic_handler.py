@@ -77,26 +77,25 @@ class TitanicHandler(BaseHandler):
         Returns:
             list : The preprocess function returns a list of Tensor and feature names
         """
-        body = data[0]["body"]
-        self.input_file_path = body["input_file_path"]
+        self.input_file_path = data[0]["body"]["input_file_path"][0]
         data = pd.read_csv(self.input_file_path)
         self.feature_names = list(data.columns)
         data = data.to_numpy()
         data = torch.from_numpy(data).type(torch.FloatTensor)
-        return data, self.feature_names
+        return data
 
     def inference(self, data):
-        """Predict the class (survived or not survived) of the received input dataframe using the
+        """Predict the class (survived or not survived) of the received input json file using the
         serialized model.
 
         Args:
-            input_batch (list): List of Text Tensors from the pre-process function is passed here
+            input_batch (list): List of Tensors from the pre-process function is passed here
 
         Returns:
-            list : It returns a list of the predicted value for the input text
+            list : It returns a list of the predicted value for the input test record
         """
-        self.out_probs = self.model(data[0]).detach().numpy()
-        self.predicted_idx = np.argmax(self.out_probs, axis=1)[0]
+        self.out_probs = self.model(data).detach().numpy()
+        self.predicted_idx = self.out_probs.argmax(1).item()
         prediction = self.mapping[str(self.predicted_idx)]
         self.inference_output.append(prediction)
         logger.info("Model predicted: '%s'", prediction)
@@ -124,7 +123,6 @@ class TitanicHandler(BaseHandler):
         Returns:
             (list): Returns a dict of feature names and their importances
         """
-        input_tensor = input_tensor[0]
         ig = IntegratedGradients(self.model)
         input_tensor.requires_grad_()
         attr, self.delta = ig.attribute(input_tensor, target=1, return_convergence_delta=True)
