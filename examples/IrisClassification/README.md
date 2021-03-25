@@ -64,7 +64,7 @@ Note:
 mlflow-torchserve plugin generates the mar file inside the "model_store" directory. If the `model_store` directory is not present under the current folder, 
 the plugin creates a new directory named "model_store" and generates the mar file inside it.
 
-if the torchserve is already running with a different "model_store" location, ensure to pass the "model_store" path with "--export-path" argument (`--export-path <path-to-model-store>`)
+if the torchserve is already running with a different "model_store" location, ensure to pass the "model_store" path with the "EXPORT_PATH" config variable (`-C 'EXPORT_PATH=<path-to-model-store>'`)
 
 ## Running prediction based on deployed model
 
