@@ -94,7 +94,8 @@ class TitanicHandler(BaseHandler):
         Returns:
             list : It returns a list of the predicted value for the input test record
         """
-        self.out_probs = self.model(data).detach().numpy()
+        data = data.to(self.device)
+        self.out_probs = self.model(data)
         self.predicted_idx = self.out_probs.argmax(1).item()
         prediction = self.mapping[str(self.predicted_idx)]
         self.inference_output.append(prediction)
@@ -125,8 +126,9 @@ class TitanicHandler(BaseHandler):
         """
         ig = IntegratedGradients(self.model)
         input_tensor.requires_grad_()
+        input_tensor = input_tensor.to(self.device)
         attr, self.delta = ig.attribute(input_tensor, target=1, return_convergence_delta=True)
-        attr = attr.detach().numpy()
+        attr = attr.cpu().detach().numpy()
         importances = np.mean(attr, axis=0)
         feature_imp_dict = {}
         for i in range(len(self.feature_names)):
