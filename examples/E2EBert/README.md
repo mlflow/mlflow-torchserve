@@ -1,3 +1,4 @@
+
 # An End-2-End Deep Learning Workflow with BERT PreTrained Model
 
 An `end-2-end` workflow describing how model training is done,followed by storing all the relevant information leading to model deployment and
@@ -94,14 +95,15 @@ is not a mandatory argument for the plugin. For example, the above command will 
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
+`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt,wrapper.py"`
 
 
-## Running prediction based on deployed model
+## Running prediction and explain based on deployed model
 
 For testing the fine tuned model, a sample input text is placed in `input.json`
 Run the following command to invoke prediction of our sample input 
 
 `mlflow deployments predict --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
+`mlflow deployments explain --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
 
-
+All the captum Insights visualization can be seen in the jupyter notebook added in this example
