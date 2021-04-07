@@ -27,7 +27,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class AGNewsDataset(Dataset):
-    def __init__(self, reviews, targets, tokenizer,max_length):
+    def __init__(self, reviews, targets, tokenizer, max_length):
         """
         Performs initialization of tokenizer
 
@@ -69,10 +69,6 @@ class AGNewsDataset(Dataset):
             return_tensors="pt",
             truncation=True,
         )
-        # input_ids = torch.tensor([self.tokenizer.encode(
-        #     review,
-        #     add_special_tokens=True
-        # )])
 
         return {
             "review_text": review,
@@ -96,7 +92,7 @@ class BertDataModule(pl.LightningDataModule):
         self.val_data_loader = None
         self.test_data_loader = None
         self.input_embedding = None
-        self.MAX_LEN = 100  
+        self.MAX_LEN = 100
         self.tokenizer = None
         self.args = kwargs
         self.NUM_SAMPLES_COUNT = self.args["num_samples"]
@@ -186,7 +182,7 @@ class BertDataModule(pl.LightningDataModule):
         )
         return parser
 
-    def create_data_loader(self, df, tokenizer,max_len, batch_size):
+    def create_data_loader(self, df, tokenizer, max_len, batch_size):
         """
         Generic data loader function
 
@@ -198,7 +194,10 @@ class BertDataModule(pl.LightningDataModule):
         :return: Returns the constructed dataloader
         """
         ds = AGNewsDataset(
-            reviews=df.description.to_numpy(), targets=df.label.to_numpy(), tokenizer=tokenizer, max_length=max_len,
+            reviews=df.description.to_numpy(),
+            targets=df.label.to_numpy(),
+            tokenizer=tokenizer,
+            max_length=max_len,
         )
 
         return DataLoader(
@@ -210,7 +209,7 @@ class BertDataModule(pl.LightningDataModule):
         :return: output - Train data loader for the given input
         """
         self.train_data_loader = self.create_data_loader(
-            self.df_train, self.tokenizer,self.MAX_LEN, self.args["batch_size"]
+            self.df_train, self.tokenizer, self.MAX_LEN, self.args["batch_size"]
         )
         return self.train_data_loader
 
@@ -219,7 +218,7 @@ class BertDataModule(pl.LightningDataModule):
         :return: output - Validation data loader for the given input
         """
         self.val_data_loader = self.create_data_loader(
-            self.df_val, self.tokenizer, self.MAX_LEN,self.args["batch_size"]
+            self.df_val, self.tokenizer, self.MAX_LEN, self.args["batch_size"]
         )
         return self.val_data_loader
 
@@ -228,7 +227,7 @@ class BertDataModule(pl.LightningDataModule):
         :return: output - Test data loader for the given input
         """
         self.test_data_loader = self.create_data_loader(
-            self.df_test, self.tokenizer,self.MAX_LEN ,self.args["batch_size"]
+            self.df_test, self.tokenizer, self.MAX_LEN, self.args["batch_size"]
         )
         return self.test_data_loader
 
