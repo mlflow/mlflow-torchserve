@@ -53,7 +53,7 @@ Run the commands given in following steps from the example dir. For example, run
     torch-model-archiver --model-name titanic --version 1.0 --model-file titanic.py --serialized-file models/titanic_state_dict.pt  --handler  titanic_handler.py --extra-file index_to_name.json
     ```
    
- * Step - 5: Register the model on TorchServe using the above model archive file and run inference
+ * Step - 5: Register the model on TorchServe using the above model archive file and run inference. You need to modify/pass the path of the CSV in the input.json
    
     ```bash
     mkdir model_store
