@@ -60,7 +60,6 @@ class NewsClassifierHandler(BaseHandler):
         self.model.eval()
 
         logger.debug("Model file %s loaded successfully", model_pt_path)
-        self.ig = IntegratedGradients(self.model)
         self.initialized = True
 
     def preprocess(self, data):
@@ -80,7 +79,6 @@ class NewsClassifierHandler(BaseHandler):
 
         self.tokenizer = BertTokenizer(self.VOCAB_FILE)
         self.input_ids = torch.tensor([self.tokenizer.encode(self.text, add_special_tokens=True)])
-        print("Shape of encoding input_ids", self.input_ids.shape)
         return self.input_ids
 
     def inference(self, input_ids):
@@ -178,7 +176,7 @@ class NewsClassifierHandler(BaseHandler):
         attributions, delta = ig_1.attribute(
             input_embedding_test, n_steps=500, return_convergence_delta=True, target=1
         )
-        tokens = tokenizer.convert_ids_to_tokens(input_ids[0].numpy().tolist())
+        tokens = tokenizer.convert_ids_to_tokens(self.input_ids[0].numpy().tolist())
         feature_imp_dict = {}
         feature_imp_dict["words"] = tokens
         attributions_sum = self.summarize_attributions(attributions)

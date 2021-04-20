@@ -88,7 +88,7 @@ Create an empty directory `model_store` and run the following command to start T
 
 Run the following command to create a new deployment named `news_classification_test`
 
-`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
+`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt,wrapper.py"`
 
 Note: TorchServe plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `news_classification_test` with version 1.
