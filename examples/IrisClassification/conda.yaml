@@ -6,6 +6,7 @@ dependencies:
 - python=3.8.2
 - pytorch>=1.6.0
 - torchvision
+- mlflow
 - pip
 - pip:
   - scikit-learn
