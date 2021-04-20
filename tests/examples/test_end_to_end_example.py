@@ -34,7 +34,12 @@ def test_iris_example(tmpdir):
     home_dir = os.getcwd()
     example_command = ["python", "iris_classification.py"]
     process.exec_cmd(example_command, cwd=iris_dir)
-    create_deployment_command = ["python", "iris_classification.py"]
+    create_deployment_command = [
+        "python",
+        "create_deployment.py",
+        "--export_path",
+        os.path.join(home_dir, "model_store"),
+    ]
 
     process.exec_cmd(create_deployment_command, cwd=iris_dir)
 
