@@ -411,7 +411,6 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Bert-News Classifier Example")
     parser.add_argument(
         "--num_samples",
-
         type=int,
         default=15000,
         metavar="N",
@@ -426,7 +425,7 @@ if __name__ == "__main__":
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = BertNewsClassifier.add_model_specific_args(parent_parser=parser)
     parser = BertDataModule.add_model_specific_args(parent_parser=parser)
-    
+
     mlflow.pytorch.autolog()
 
     args = parser.parse_args()
