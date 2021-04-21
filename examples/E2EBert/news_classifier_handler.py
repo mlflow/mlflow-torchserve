@@ -78,7 +78,7 @@ class NewsClassifierHandler(BaseHandler):
         self.text = text.decode("utf-8")
 
         self.tokenizer = BertTokenizer(self.VOCAB_FILE)
-        self.input_ids = torch.tensor([self.tokenizer.encode(self.text, add_special_tokens=True)])
+        self.input_ids = torch.tensor([self.tokenizer.encode(self.text, add_special_tokens=True)]).to(self.device)
         return self.input_ids
 
     def inference(self, input_ids):
@@ -123,7 +123,7 @@ class NewsClassifierHandler(BaseHandler):
     ):
         attributions = attributions.sum(dim=2).squeeze(0)
         attributions = attributions / torch.norm(attributions)
-        attributions = attributions.detach().numpy()
+        attributions = attributions.cpu().detach().numpy()
 
         # storing couple samples in an array for visualization purposes
         vis_data_records.append(
@@ -141,7 +141,7 @@ class NewsClassifierHandler(BaseHandler):
 
     def score_func(self, o):
         output = F.softmax(o, dim=1)
-        pre_pro = np.max(output.detach().numpy())
+        pre_pro = np.argmax(output.cpu().detach())
         return pre_pro
 
     def summarize_attributions(self, attributions):
@@ -167,7 +167,7 @@ class NewsClassifierHandler(BaseHandler):
         tokenizer = BertTokenizer(self.VOCAB_FILE)
         model_wrapper.eval()
         model_wrapper.zero_grad()
-        input_ids = torch.tensor([tokenizer.encode(self.text, add_special_tokens=True)])
+        input_ids = torch.tensor([tokenizer.encode(self.text, add_special_tokens=True)]).to(self.device)
         input_embedding_test = model_wrapper.model.bert_model.embeddings(input_ids)
         preds = model_wrapper(input_embedding_test)
         out = np.argmax(preds.cpu().detach(), axis=1)

@@ -23,7 +23,7 @@ from torch.utils.data import Dataset, DataLoader
 import torchtext.datasets as td
 from transformers import BertModel, BertTokenizer, AdamW
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:id" if torch.cuda.is_available() else "cpu")
 
 
 class AGNewsDataset(Dataset):
@@ -238,7 +238,6 @@ class BertNewsClassifier(pl.LightningModule):
         Initializes the network, optimizer and scheduler
         """
         super(BertNewsClassifier, self).__init__()
-
         self.train_acc = Accuracy()
         self.val_acc = Accuracy()
         self.test_acc = Accuracy()
@@ -254,7 +253,6 @@ class BertNewsClassifier(pl.LightningModule):
 
         self.fc1 = nn.Linear(self.bert_model.config.hidden_size, 512)
         self.out = nn.Linear(512, n_classes)
-
         self.args = kwargs
 
     def compute_bert_outputs(
@@ -361,8 +359,8 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Testing accuracy
         """
-        input_ids = test_batch["input_ids"]
-        targets = test_batch["targets"]
+        input_ids = test_batch["input_ids"].to(device)
+        targets = test_batch["targets"].to(device)
         output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         self.test_acc(y_hat, targets)
@@ -378,8 +376,8 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - valid step loss
         """
 
-        input_ids = val_batch["input_ids"]
-        targets = val_batch["targets"]
+        input_ids = val_batch["input_ids"].to(device)
+        targets = val_batch["targets"].to(device)
         output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
@@ -409,10 +407,11 @@ class BertNewsClassifier(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Bert-News Classifier Example")
 
+    parser = ArgumentParser(description="Bert-News Classifier Example")
     parser.add_argument(
         "--num_samples",
+
         type=int,
         default=15000,
         metavar="N",
@@ -427,8 +426,7 @@ if __name__ == "__main__":
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = BertNewsClassifier.add_model_specific_args(parent_parser=parser)
     parser = BertDataModule.add_model_specific_args(parent_parser=parser)
-
-    # mlflow.start_run()
+    
     mlflow.pytorch.autolog()
 
     args = parser.parse_args()

@@ -101,9 +101,14 @@ If needed, version number can also be explicitly mentioned as a config variable.
 ## Running prediction and explain based on deployed model
 
 For testing the fine tuned model, a sample input text is placed in `input.json`
+
 Run the following command to invoke prediction of our sample input 
 
 `mlflow deployments predict --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
+
+Run the following command to invoke explain of our sample input 
+
+
 `mlflow deployments explain --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
 
 All the captum Insights visualization can be seen in the jupyter notebook added in this example
