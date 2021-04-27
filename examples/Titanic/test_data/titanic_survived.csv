@@ -1,0 +1,2 @@
+age,sibsp,parch,fare,female,male,embark_C,embark_Q,embark_S,class_1,class_2,class_3
+29,0,0,211.3375,1,0,0,0,1,1,0,0
