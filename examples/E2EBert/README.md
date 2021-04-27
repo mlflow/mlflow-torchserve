@@ -96,6 +96,13 @@ If needed, version number can also be explicitly mentioned as a config variable.
 
 `mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt"`
 
+Note:
+
+By default, the mlfow-torchserve plugin generates the mar file inside the "model_store" directory. If the model store directory is not present under the current folder, 
+the plugin creates a new directory named "model_store" and generates the mar file inside it.
+
+if the torchserve is already running with a different "model_store" location, ensure to pass the "model_store" path with the "EXPORT_PATH" config variable (`-C 'EXPORT_PATH=<path-to-model-store>'`)
+
 
 ## Running prediction based on deployed model
 

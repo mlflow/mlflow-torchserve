@@ -55,6 +55,15 @@ For example, to create another deployment the script can be triggered as
 
 `python create_deployment.py --deployment_name mnist_deployment1`
 
+Note:
+
+if the torchserve is running with a different "model_store" locations, the model-store path 
+can be passed as input using `--export_path` argument.
+
+For example:
+
+`python create_deployment.py --deployment_name mnist_deployment1 --export_path /home/ubuntu/model_store`
+
 ## Predicting deployed model
 
 To perform prediction, run the following script

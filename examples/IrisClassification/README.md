@@ -60,6 +60,12 @@ based on the predefined mapping.
 
 `mlflow deployments  create --name iris_test --target torchserve --model-uri iris.pt -C "MODEL_FILE=iris_classification.py" -C "HANDLER=iris_handler.py" -C "EXTRA_FILES=index_to_name.json"`
 
+Note:
+mlflow-torchserve plugin generates the mar file inside the "model_store" directory. If the `model_store` directory is not present under the current folder, 
+the plugin creates a new directory named "model_store" and generates the mar file inside it.
+
+if the torchserve is already running with a different "model_store" location, ensure to pass the "model_store" path with the "EXPORT_PATH" config variable (`-C 'EXPORT_PATH=<path-to-model-store>'`)
+
 ## Running prediction based on deployed model
 
 IrisClassification model takes 4 different parameters - sepal length, sepal width, petal length and petal width.These parameters can be passed as tensor. For ex: `[4.4000, 3.0000, 1.3000, 0.2000]`.

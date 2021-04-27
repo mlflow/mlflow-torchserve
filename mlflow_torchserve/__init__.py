@@ -350,6 +350,11 @@ class TorchServePlugin(BaseDeploymentClient):
         else:
             model_store = "model_store"
             if not os.path.isdir(model_store):
+                print(
+                    "model_store directory not present in the current folder. "
+                    "Creating model_store directory. To avoid this behaviour"
+                    "pass -C 'EXPORT_PATH=<model-store-path> as an input argument"
+                )
                 os.makedirs(model_store)
 
         cmd = (
