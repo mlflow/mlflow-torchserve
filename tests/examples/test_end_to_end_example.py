@@ -37,7 +37,7 @@ def test_iris_example(tmpdir):
     example_command = ["python", os.path.join(iris_dir, "iris_classification.py")]
     extra_files = "{},{}".format(
         os.path.join(iris_dir, "index_to_name.json"),
-        os.path.join(run.info.artifact_uri, "model/MLmodel"),
+        os.path.join(home_dir, "mlruns/0", run.info.run_id, "artifacts/model/MLmodel"),
     )
     process.exec_cmd(example_command, cwd=home_dir, env={"MLFLOW_RUN_ID": run.info.run_id})
     create_deployment_command = [
@@ -56,7 +56,7 @@ def test_iris_example(tmpdir):
     ]
 
     process.exec_cmd(create_deployment_command, cwd=home_dir)
-
+    mlflow.end_run()
     assert os.path.exists(os.path.join(home_dir, "model_store", "iris_classification.mar"))
     predict_command = [
         "python",
