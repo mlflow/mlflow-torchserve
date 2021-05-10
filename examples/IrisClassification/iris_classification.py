@@ -2,8 +2,6 @@
 # pylint: disable=W0613
 # pylint: disable=W0223
 import argparse
-import os
-import shutil
 from argparse import ArgumentParser
 
 import mlflow
