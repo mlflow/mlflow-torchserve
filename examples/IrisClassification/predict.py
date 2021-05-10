@@ -17,7 +17,7 @@ def predict(parser_args):
     plugin = get_deploy_client(parser_args["target"])
     input_file = parser_args["input_file_path"]
     if not os.path.exists(input_file):
-        raise Exception("Unable to locate inuput file : {}".format(input_file))
+        raise Exception("Unable to locate input file : {}".format(input_file))
     else:
         with open(input_file) as fp:
             input_data = fp.read()
@@ -27,7 +27,7 @@ def predict(parser_args):
 
     df = pd.read_json(data[0])
     for column in df.columns:
-        df[column].astype("double")
+        df[column] = df[column].astype("double")
 
     prediction = plugin.predict(deployment_name=parser_args["deployment_name"], df=input_data)
     print("Prediction Result {}".format(prediction))

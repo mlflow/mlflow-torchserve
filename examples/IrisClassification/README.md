@@ -60,14 +60,14 @@ if the torchserve is already running with a different "model_store" location, en
 
 ## Running prediction based on deployed model
 
-`python create_deployment.py --deployment_name iris_classification_1`
+`python create_deployment.py --deployment_name iris_classification_1 --serialized_file_path <MLFLOW_MODEL_URI>`
 
 Note:
-MLFlow stores the model signature inside MLmodel file and it is important to pass the MLmodel path as an EXTRA_FILE argument to create_deployment script.
+MLflow stores the model signature inside MLmodel file and it is important to pass the MLmodel path as an EXTRA_FILE argument to create_deployment script.
 
 ## Validating the model signature and running prediction based on deployed model
 
-IrisClassification model takes 4 different parameters - sepal length, sepal width, petal length and petal width.T
+IrisClassification model takes 4 different parameters - sepal length, sepal width, petal length and petal width.
 
 For testing [iris dataset](http://archive.ics.uci.edu/ml/datasets/Iris/), we are going to use a sample input tensor placed in `sample.json` file.
 
@@ -91,7 +91,7 @@ To know more about the model signature implementation in details, check the `iri
 
 The model will classify the flower species based on the input test data as one among the three types. A sample output is shown as below.
 
-![Sample Prediction output](screenshots/git_prediction_success.png)
+```Prediction Result SETOSA```
 
 
 To understand the model signature and its output, the following sample files are created. Run the following command to see the validation errors.
@@ -100,11 +100,11 @@ To understand the model signature and its output, the following sample files are
 
 When the input column name doesn't match with the model signature, validation exception is thrown as below.
 
-![Sample Validation Column name Error](screenshots/git_ms_invalid_column_name.png)
+```mlflow.exceptions.MlflowException: Model is missing inputs ['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']. Note that there were extra inputs: ['length (cm)', 'width (cm)']```
 
 
-`python predict.py --input_file_path sig_invalid_column_name.json`
+`python predict.py --input_file_path sig_invalid_data_type.json`
 
 When the input data type doesn't match with the model signature, validation exception is thrown as below.
 
-![Sample Validation Datatype Error](screenshots/git_ms_invalid_datatype_error.png)
+```mlflow.exceptions.MlflowException: Incompatible input types for column sepal length (cm). Can not safely convert int64 to float64.```

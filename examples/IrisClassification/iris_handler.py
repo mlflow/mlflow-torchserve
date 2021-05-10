@@ -7,6 +7,7 @@ import os
 import json
 from ts.torch_handler.base_handler import BaseHandler
 from mlflow.models.model import Model
+from mlflow.pyfunc import _enforce_schema
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +30,11 @@ class IRISClassifierHandler(BaseHandler):
 
         :return: output - Preprocessed input
         """
-        from mlflow_torchserve.SignatureValidator import SignatureValidator
 
         data = json.loads(data[0]["data"].decode("utf-8"))
         df = pd.DataFrame(data)
 
-        SignatureValidator(model_meta=self.mlmodel)._enforce_schema(
-            df, self.mlmodel.get_input_schema()
-        )
+        _enforce_schema(df, self.mlmodel.get_input_schema())
 
         input_tensor = torch.Tensor(list(df.iloc[0]))
         return input_tensor

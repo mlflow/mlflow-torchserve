@@ -64,8 +64,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--serialized_file_path",
         type=str,
-        default="model",
-        help="Pytorch model path (default: model)",
+        help="Pytorch model path",
     )
 
     parser.add_argument(

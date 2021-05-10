@@ -229,6 +229,4 @@ if __name__ == "__main__":
     output_schema = Schema([ColSpec("long")])
     signature = ModelSignature(inputs=input_schema, outputs=output_schema)
     with mlflow.start_run():
-        if os.path.exists("model"):
-            shutil.rmtree("model")
-        mlflow.pytorch.save_model(trainer.get_model(), "model", signature=signature)
+        mlflow.pytorch.log_model(trainer.get_model(), "model", signature=signature)
