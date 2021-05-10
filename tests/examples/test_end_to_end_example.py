@@ -1,3 +1,4 @@
+import mlflow
 import pytest
 import os
 from mlflow.utils import process
@@ -32,18 +33,36 @@ def test_mnist_example():
 def test_iris_example(tmpdir):
     iris_dir = os.path.join("examples", "IrisClassification")
     home_dir = os.getcwd()
-    example_command = ["python", "iris_classification.py"]
-    process.exec_cmd(example_command, cwd=iris_dir)
+    run = mlflow.start_run()
+    example_command = ["python", os.path.join(iris_dir, "iris_classification.py")]
+    extra_files = "{},{}".format(
+        os.path.join(iris_dir, "index_to_name.json"),
+        os.path.join(run.info.artifact_uri, "model/MLmodel"),
+    )
+    process.exec_cmd(example_command, cwd=home_dir, env={"MLFLOW_RUN_ID": run.info.run_id})
     create_deployment_command = [
         "python",
-        "create_deployment.py",
+        os.path.join(iris_dir, "create_deployment.py"),
         "--export_path",
         os.path.join(home_dir, "model_store"),
+        "--serialized_file_path",
+        "runs:/{}/model".format(run.info.run_id),
+        "--handler",
+        os.path.join(iris_dir, "iris_handler.py"),
+        "--model_file",
+        os.path.join(iris_dir, "iris_classification.py"),
+        "--extra_files",
+        extra_files,
     ]
 
-    process.exec_cmd(create_deployment_command, cwd=iris_dir)
+    process.exec_cmd(create_deployment_command, cwd=home_dir)
 
     assert os.path.exists(os.path.join(home_dir, "model_store", "iris_classification.mar"))
-    predict_command = ["python", "predict.py"]
-    res = process.exec_cmd(predict_command, cwd=iris_dir)
+    predict_command = [
+        "python",
+        os.path.join(iris_dir, "predict.py"),
+        "--input_file_path",
+        os.path.join(iris_dir, "sample.json"),
+    ]
+    res = process.exec_cmd(predict_command, cwd=home_dir)
     assert "SETOSA" in res[1]
