@@ -112,9 +112,8 @@ def test_create_cli_failure_without_version():
     res = runner.invoke(cli.create_deployment)
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: create [OPTIONS]\nTry 'create --help' for help.\n\n"
-           "Error: Missing option '--name'.\n"
+        and res.output == "Usage: create [OPTIONS]\nTry 'create --help' for help.\n\n"
+        "Error: Missing option '--name'.\n"
     )
     res = runner.invoke(
         cli.create_deployment,
@@ -233,9 +232,8 @@ def test_get_cli_failure(deployment_name):
     res = runner.invoke(cli.get_deployment, ["--name", deployment_name])
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: get [OPTIONS]\nTry 'get --help' for help.\n\n"
-           "Error: Missing option '--target' / '-t'.\n"
+        and res.output == "Usage: get [OPTIONS]\nTry 'get --help' for help.\n\n"
+        "Error: Missing option '--target' / '-t'.\n"
     )
 
 
@@ -256,9 +254,8 @@ def test_predict_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-           "Error: Missing option '--input-path' / '-I'.\n"
+        and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
+        "Error: Missing option '--input-path' / '-I'.\n"
     )
     res = runner.invoke(
         cli.predict,
@@ -266,9 +263,8 @@ def test_predict_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-           "Error: Missing option '--target' / '-t'.\n"
+        and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
+        "Error: Missing option '--target' / '-t'.\n"
     )
     res = runner.invoke(
         cli.predict,
@@ -276,9 +272,8 @@ def test_predict_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-           "Error: Missing option '--name'.\n"
+        and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
+        "Error: Missing option '--name'.\n"
     )
     res = runner.invoke(
         cli.predict,
@@ -310,9 +305,8 @@ def test_explain_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: explain [OPTIONS]\nTry 'explain --help' for help.\n\n"
-           "Error: Missing option '--input-path' / '-I'.\n"
+        and res.output == "Usage: explain [OPTIONS]\nTry 'explain --help' for help.\n\n"
+        "Error: Missing option '--input-path' / '-I'.\n"
     )
     res = runner.invoke(
         cli.explain,
@@ -320,9 +314,8 @@ def test_explain_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: explain [OPTIONS]\nTry 'explain --help' for help.\n\n"
-           "Error: Missing option '--target' / '-t'.\n"
+        and res.output == "Usage: explain [OPTIONS]\nTry 'explain --help' for help.\n\n"
+        "Error: Missing option '--target' / '-t'.\n"
     )
     res = runner.invoke(
         cli.explain,
@@ -355,9 +348,8 @@ def test_delete_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: delete [OPTIONS]\nTry 'delete --help' for help.\n\n"
-           "Error: Missing option '--target' / '-t'.\n"
+        and res.output == "Usage: delete [OPTIONS]\nTry 'delete --help' for help.\n\n"
+        "Error: Missing option '--target' / '-t'.\n"
     )
 
     res = runner.invoke(
@@ -366,9 +358,8 @@ def test_delete_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: delete [OPTIONS]\nTry 'delete --help' for help.\n\n"
-           "Error: Missing option '--name'.\n"
+        and res.output == "Usage: delete [OPTIONS]\nTry 'delete --help' for help.\n\n"
+        "Error: Missing option '--name'.\n"
     )
 
     res = runner.invoke(
@@ -376,7 +367,6 @@ def test_delete_cli_failure(deployment_name):
     )
     assert (
         res.exit_code == 2
-        and res.output
-        == "Usage: delete [OPTIONS]\nTry 'delete --help' for help.\n\n"
-           "Error: Missing option '--name'.\n"
+        and res.output == "Usage: delete [OPTIONS]\nTry 'delete --help' for help.\n\n"
+        "Error: Missing option '--name'.\n"
     )
