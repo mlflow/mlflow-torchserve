@@ -291,5 +291,4 @@ if __name__ == "__main__":
     model = get_model(trainer)
 
     if trainer.global_rank == 0:
-        with mlflow.start_run() as run:
-            mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")
+        mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")
