@@ -1,8 +1,17 @@
 #Titanic features attribution analysis using Captum and TorchServe.
 
-In this example, we show how to use a pre-trained custom Titanic model to performing real time classification prediction(survived/Not survived) and features attributions with Captum and TorchServe. You can download the dataset from [here][https://biostat.app.vumc.org/wiki/pub/Main/DataSets/titanic3.csv] 
+In this example, we will demonstrate the basic features of the [Captum](https://captum.ai/) interpretability,and serving the model on torchserve through an example model trained on the Titanic survival data. you can download the data from [titanic](https://biostat.app.vumc.org/wiki/pub/Main/DataSets/titanic3.csv)
 
-The inference service would return the prediction and attribution score of features for a given test record.
+We will first train a deep neural network on the data using PyTorch and use Captum to understand which of the features were most important and how the network reached its prediction.
+
+you can get more details about used attributions methods used in this example
+
+1. [Titanic_Basic_Interpret](https://captum.ai/tutorials/Titanic_Basic_Interpret)
+2. [integrated-gradients](https://captum.ai/docs/algorithms#primary-attribution)
+3. [layer-attributions](https://captum.ai/docs/algorithms#layer-attribution)
+ 
+
+The inference service would return the prediction and  avg attribution socre of features for a given target for a input test record.
 
 ### Running the code
 
