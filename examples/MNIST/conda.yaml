@@ -11,3 +11,4 @@ dependencies:
   - matplotlib
   - pytorch-lightning>=1.2.3
   - mlflow>=1.14.0
+  - captum

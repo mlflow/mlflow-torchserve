@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+from pytorch_lightning import seed_everything
 import torch
 from sklearn.datasets import load_iris
 from torch.utils.data import TensorDataset
@@ -11,21 +12,25 @@ class IRISDataModule(pl.LightningDataModule):
         super().__init__()
 
     def prepare_data(self):
-        iris = load_iris()
-        df = iris.data
-        self.columns = iris.feature_names
-        target = iris["target"]
-        data = torch.Tensor(df).float()
-        labels = torch.Tensor(target).long()
-        data_set = TensorDataset(data, labels)
-        return data_set
+        """
+        Implementation of abstract class
+        """
 
     def setup(self, stage=None):
 
         # Assign train/val datasets for use in dataloaders
         if stage == "fit" or stage is None:
-            iris_full = self.prepare_data()
-            self.train_set, self.val_set = random_split(iris_full, [130, 20])
+            iris = load_iris()
+            df = iris.data
+            target = iris["target"]
+
+            data = torch.Tensor(df).float()
+            labels = torch.Tensor(target).long()
+            RANDOM_SEED = 42
+            seed_everything(RANDOM_SEED)
+
+            data_set = TensorDataset(data, labels)
+            self.train_set, self.val_set = random_split(data_set, [130, 20])
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:

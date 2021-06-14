@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--export_path",
         type=str,
-        default="",
+        default="model_store",
         help="Path to model store (default: '')",
     )
 
