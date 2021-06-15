@@ -137,12 +137,12 @@ class NewsClassifier(nn.Module):
         Creates train, valid and test dataloaders from the csv data
         """
         td.AG_NEWS(root="data", split=("train", "test"))
-        extracted_files = os.listdir("data")
+        extracted_files = os.listdir("data/AG_NEWS")
 
         train_csv_path = None
         for fname in extracted_files:
             if fname.endswith("train.csv"):
-                train_csv_path = os.path.join(os.getcwd(), "data", fname)
+                train_csv_path = os.path.join(os.getcwd(), "data/AG_NEWS", fname)
 
         self.df = pd.read_csv(train_csv_path)
 
