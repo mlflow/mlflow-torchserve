@@ -87,7 +87,7 @@ create an empty directory `model_store` and run the following command to start t
 
 Run the following command to create a new deployment named `news_classification_test`
 
-`mlflow deployments create -t torchserve -m models --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py"`
+`mlflow deployments create -t torchserve -m file:///home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py"`
 
 Torchserve plugin determines the version number by itself based on the deployment name. hence, version number
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `news_classification_test` with version 1.
@@ -95,7 +95,7 @@ is not a mandatory argument for the plugin. For example, the above command will 
 If needed, version number can also be explicitly mentioned as a config variable.
 
 
-`mlflow deployments create -t torchserve -m models --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py"`
+`mlflow deployments create -t torchserve -m file:///home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py"`
 
 Note:
 mlflow-torchserve plugin generates the mar file inside the "model_store" directory. If the `model_store` directory is not present under the current folder, 
