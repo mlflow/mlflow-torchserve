@@ -116,12 +116,12 @@ class BertDataModule(pl.LightningDataModule):
         """
         # reading  the input
         td.AG_NEWS(root="data", split=("train", "test"))
-        extracted_files = os.listdir("data")
+        extracted_files = os.listdir("data/AG_NEWS")
 
         train_csv_path = None
         for fname in extracted_files:
             if fname.endswith("train.csv"):
-                train_csv_path = os.path.join(os.getcwd(), "data", fname)
+                train_csv_path = os.path.join(os.getcwd(), "data/AG_NEWS", fname)
 
         df = pd.read_csv(train_csv_path)
 
@@ -416,5 +416,4 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
     if trainer.global_rank == 0:
-        with mlflow.start_run() as run:
-            mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), ".")
+        mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), ".")
