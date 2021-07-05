@@ -36,9 +36,7 @@ class NewsClassifierHandler(BaseHandler):
         """
 
         properties = ctx.system_properties
-        self.device = torch.device(
-            "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu"
-        )
+        self.device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
         model_dir = properties.get("model_dir")
 
         # Read model serialize/pt file
@@ -180,7 +178,7 @@ class NewsClassifierHandler(BaseHandler):
         attributions, delta = ig_1.attribute(
             input_embedding_test, n_steps=500, return_convergence_delta=True, target=1
         )
-        tokens = tokenizer.convert_ids_to_tokens(self.input_ids[0].numpy().tolist())
+        tokens = tokenizer.convert_ids_to_tokens(self.input_ids[0].cpu().numpy().tolist())
         feature_imp_dict = {}
         feature_imp_dict["words"] = tokens
         attributions_sum = self.summarize_attributions(attributions)
