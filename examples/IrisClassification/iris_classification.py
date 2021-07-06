@@ -124,4 +124,6 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
 
-    torch.save(model.state_dict(), "iris.pt")
+    state_dict = model.state_dict()
+    if trainer.global_rank == 0:
+        torch.save(state_dict, "iris.pt")
