@@ -23,8 +23,6 @@ from torch.utils.data import Dataset, DataLoader
 import torchtext.datasets as td
 from transformers import BertModel, BertTokenizer, AdamW
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 class AGNewsDataset(Dataset):
     def __init__(self, reviews, targets, tokenizer, max_length):
@@ -339,9 +337,7 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - Training loss
         """
         input_ids = train_batch["input_ids"]
-        input_ids = input_ids.to(device)
         targets = train_batch["targets"]
-        targets = targets.to(device)
         output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
@@ -359,8 +355,8 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Testing accuracy
         """
-        input_ids = test_batch["input_ids"].to(device)
-        targets = test_batch["targets"].to(device)
+        input_ids = test_batch["input_ids"]
+        targets = test_batch["targets"]
         output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         self.test_acc(y_hat, targets)
@@ -376,8 +372,8 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - valid step loss
         """
 
-        input_ids = val_batch["input_ids"].to(device)
-        targets = val_batch["targets"].to(device)
+        input_ids = val_batch["input_ids"]
+        targets = val_batch["targets"]
         output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
