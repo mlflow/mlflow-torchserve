@@ -77,7 +77,9 @@ class TitanicHandler(BaseHandler):
         Returns:
             list : The preprocess function returns a list of Tensor and feature names
         """
-        self.input_file_path = data[0]["body"]["input_file_path"][0]
+        self.input_file_path = data[0]["input_file_path"]
+        if isinstance(self.input_file_path, bytearray):
+            self.input_file_path = self.input_file_path.decode()
         data = pd.read_csv(self.input_file_path)
         self.feature_names = list(data.columns)
         data = data.to_numpy()
