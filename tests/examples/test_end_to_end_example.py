@@ -33,20 +33,17 @@ def test_mnist_example():
 def test_iris_example(tmpdir):
     iris_dir = os.path.join("examples", "IrisClassification")
     home_dir = os.getcwd()
-    run = mlflow.start_run()
     example_command = ["python", os.path.join(iris_dir, "iris_classification.py")]
     extra_files = "{},{}".format(
         os.path.join(iris_dir, "index_to_name.json"),
         os.path.join(home_dir, "model/MLmodel"),
     )
-    process.exec_cmd(example_command, cwd=home_dir, env={"MLFLOW_RUN_ID": run.info.run_id})
+    process.exec_cmd(example_command, cwd=home_dir)
     create_deployment_command = [
         "python",
         os.path.join(iris_dir, "create_deployment.py"),
         "--export_path",
         os.path.join(home_dir, "model_store"),
-        "--serialized_file_path",
-        "runs:/{}/model".format(run.info.run_id),
         "--handler",
         os.path.join(iris_dir, "iris_handler.py"),
         "--model_file",
