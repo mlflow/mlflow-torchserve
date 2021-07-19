@@ -10,10 +10,6 @@ setup(
     packages=find_packages(),
     # Require MLflow as a dependency of the plugin, so that plugin users can simply install
     # the plugin & then immediately use it with MLflow
-    install_requires=[
-        "mlflow@git+https://github.com/mlflow/mlflow.git@master",
-        "torchserve",
-        "torch-model-archiver",
-    ],
+    install_requires=["torchserve", "torch-model-archiver", "mlflow"],
     entry_points={"mlflow.deployments": "torchserve=mlflow_torchserve"},
 )
