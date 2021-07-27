@@ -57,8 +57,7 @@ class AGNewsDataset(Dataset):
         """
         review = str(self.reviews[item])
         target = self.targets[item]
-
-        encoding = self.tokenizer.encode_plus(
+        encoded = self.tokenizer.encode_plus(
             review,
             add_special_tokens=True,
             max_length=self.max_length,
@@ -71,8 +70,8 @@ class AGNewsDataset(Dataset):
 
         return {
             "review_text": review,
-            "input_ids": encoding["input_ids"].flatten(),
-            "attention_mask": encoding["attention_mask"].flatten(),
+            "input_ids": encoded["input_ids"].flatten(),
+            "attention_mask": encoded["attention_mask"].flatten(),
             "targets": torch.tensor(target, dtype=torch.long),
         }
 
@@ -90,8 +89,8 @@ class BertDataModule(pl.LightningDataModule):
         self.train_data_loader = None
         self.val_data_loader = None
         self.test_data_loader = None
+        self.input_embedding = None
         self.MAX_LEN = 100
-        self.encoding = None
         self.tokenizer = None
         self.args = kwargs
         self.NUM_SAMPLES_COUNT = self.args["num_samples"]
@@ -116,12 +115,12 @@ class BertDataModule(pl.LightningDataModule):
         """
         # reading  the input
         td.AG_NEWS(root="data", split=("train", "test"))
-        extracted_files = os.listdir("data")
+        extracted_files = os.listdir("data/AG_NEWS")
 
         train_csv_path = None
         for fname in extracted_files:
             if fname.endswith("train.csv"):
-                train_csv_path = os.path.join(os.getcwd(), "data", fname)
+                train_csv_path = os.path.join(os.getcwd(), "data/AG_NEWS", fname)
 
         df = pd.read_csv(train_csv_path)
 
@@ -237,7 +236,6 @@ class BertNewsClassifier(pl.LightningModule):
         Initializes the network, optimizer and scheduler
         """
         super(BertNewsClassifier, self).__init__()
-
         self.train_acc = Accuracy()
         self.val_acc = Accuracy()
         self.test_acc = Accuracy()
@@ -253,19 +251,58 @@ class BertNewsClassifier(pl.LightningModule):
 
         self.fc1 = nn.Linear(self.bert_model.config.hidden_size, 512)
         self.out = nn.Linear(512, n_classes)
-
         self.args = kwargs
 
-    def forward(self, input_ids, attention_mask):
+    def compute_bert_outputs(
+        self, model_bert, embedding_input, attention_mask=None, head_mask=None
+    ):
+        if attention_mask is None:
+            attention_mask = torch.ones(embedding_input.shape[0], embedding_input.shape[1]).to(
+                embedding_input
+            )
+
+        extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
+
+        extended_attention_mask = extended_attention_mask.to(
+            dtype=next(model_bert.parameters()).dtype
+        )  # fp16 compatibility
+        extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+
+        if head_mask is not None:
+            if head_mask.dim() == 1:
+                head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+                head_mask = head_mask.expand(model_bert.config.num_hidden_layers, -1, -1, -1, -1)
+            elif head_mask.dim() == 2:
+                head_mask = (
+                    head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
+                )  # We can specify head_mask for each layer
+            head_mask = head_mask.to(
+                dtype=next(model_bert.parameters()).dtype
+            )  # switch to fload if need + fp16 compatibility
+        else:
+            head_mask = [None] * model_bert.config.num_hidden_layers
+
+        encoder_outputs = model_bert.encoder(
+            embedding_input, extended_attention_mask, head_mask=head_mask
+        )
+        sequence_output = encoder_outputs[0]
+        pooled_output = model_bert.pooler(sequence_output)
+        outputs = (
+            sequence_output,
+            pooled_output,
+        ) + encoder_outputs[1:]
+        return outputs
+
+    def forward(self, input_ids, attention_mask=None):
         """
         :param input_ids: Input data
         :param attention_maks: Attention mask value
 
         :return: output - Type of news for the given news snippet
         """
-        pooled_output = self.bert_model(
-            input_ids=input_ids, attention_mask=attention_mask
-        ).pooler_output
+        embedding_input = self.bert_model.embeddings(input_ids)
+        outputs = self.compute_bert_outputs(self.bert_model, embedding_input)
+        pooled_output = outputs[1]
         output = F.relu(self.fc1(pooled_output))
         output = self.drop(output)
         output = self.out(output)
@@ -300,9 +337,8 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - Training loss
         """
         input_ids = train_batch["input_ids"]
-        attention_mask = train_batch["attention_mask"]
         targets = train_batch["targets"]
-        output = self.forward(input_ids, attention_mask)
+        output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
         self.train_acc(y_hat, targets)
@@ -320,9 +356,8 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - Testing accuracy
         """
         input_ids = test_batch["input_ids"]
-        attention_mask = test_batch["attention_mask"]
         targets = test_batch["targets"]
-        output = self.forward(input_ids, attention_mask)
+        output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         self.test_acc(y_hat, targets)
         self.log("test_acc", self.test_acc.compute().cpu())
@@ -338,9 +373,8 @@ class BertNewsClassifier(pl.LightningModule):
         """
 
         input_ids = val_batch["input_ids"]
-        attention_mask = val_batch["attention_mask"]
         targets = val_batch["targets"]
-        output = self.forward(input_ids, attention_mask)
+        output = self.forward(input_ids)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
         self.val_acc(y_hat, targets)
@@ -369,8 +403,8 @@ class BertNewsClassifier(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Bert-News Classifier Example")
 
+    parser = ArgumentParser(description="Bert-News Classifier Example")
     parser.add_argument(
         "--num_samples",
         type=int,
@@ -388,7 +422,6 @@ if __name__ == "__main__":
     parser = BertNewsClassifier.add_model_specific_args(parent_parser=parser)
     parser = BertDataModule.add_model_specific_args(parent_parser=parser)
 
-    # mlflow.start_run()
     mlflow.pytorch.autolog()
 
     args = parser.parse_args()

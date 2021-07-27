@@ -10,6 +10,6 @@ dependencies:
   - scikit-learn
   - transformers
   - torchtext
-  - torch
   - torchvision
+  - torch
   - pandas

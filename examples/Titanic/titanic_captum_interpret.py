@@ -17,6 +17,7 @@ import os
 from argparse import ArgumentParser
 import torch.nn as nn
 from titanic import TitanicSimpleNNModel
+import json
 
 
 def get_titanic():
@@ -355,3 +356,8 @@ if __name__ == "__main__":
         neuron_conductance(test_input_tensor)
         mlflow.log_param("Train Size", len(train_labels))
         mlflow.log_param("Test Size", len(test_labels))
+        dict = {
+            "input_file_path": [os.getcwd() + "/test_data/titanic_not_survived.csv"]
+        }  # Updating JSON file with absolute path of input csv file
+        with open(os.getcwd() + "/test_data/input.json", "w+") as out:
+            json.dump(dict, out)

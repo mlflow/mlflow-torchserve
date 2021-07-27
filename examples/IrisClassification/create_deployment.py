@@ -24,7 +24,7 @@ def create_deployment(parser_args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="MNIST hand written digits classification example")
+    parser = ArgumentParser(description="Iris Classification example")
 
     parser.add_argument(
         "--target",
@@ -36,43 +36,43 @@ if __name__ == "__main__":
     parser.add_argument(
         "--deployment_name",
         type=str,
-        default="mnist_classification",
-        help="Deployment name (default: mnist_classification)",
+        default="iris_classification",
+        help="Deployment name (default: iris_classification)",
     )
 
     parser.add_argument(
         "--model_file",
         type=str,
-        default="mnist_model.py",
-        help="Model file path (default: mnist_model.py)",
+        default="iris_classification.py",
+        help="Model file path (default: iris_classification.py)",
     )
 
     parser.add_argument(
         "--handler",
         type=str,
-        default="mnist_handler.py",
-        help="Handler file path (default: mnist_handler.py)",
+        default="iris_handler.py",
+        help="Handler file path (default: iris_handler.py)",
     )
 
     parser.add_argument(
         "--extra_files",
         type=str,
-        default="index_to_name.json",
+        default="index_to_name.json,model/MLmodel",
         help="List of extra files",
     )
 
     parser.add_argument(
         "--serialized_file_path",
         type=str,
-        default="models",
-        help="Pytorch model path (default: models)",
+        default="model",
+        help="Pytorch model path",
     )
 
     parser.add_argument(
         "--export_path",
         type=str,
-        default="model_store",
-        help="Path to model store (default: 'model_store')",
+        default="",
+        help="Path to model store (default: '')",
     )
 
     args = parser.parse_args()

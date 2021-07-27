@@ -295,6 +295,44 @@ class TorchServePlugin(BaseDeploymentClient):
 
         return resp.text
 
+    def explain(self, deployment_name, df):
+        """
+        Predict using the inference api
+        Takes dataframe, Tensor or json string as input and returns output as string
+
+        :param deployment_name: Name and version number of the deployment \n
+                                Ex: "mnist/2.0" - predict based on mnist version 2.0 \n
+                                "mnist" - predict based on default version. \n
+        :param df: Dataframe object or json object as input
+
+        :return: output - Returns the predicted value
+        """
+
+        url = "{api}/{explanations}/{name}".format(
+            api=self.inference_api, explanations="explanations", name=deployment_name
+        )
+        if isinstance(df, pd.DataFrame):
+            df = df.to_json(orient="records")[1:-1].replace("},{", "} {")
+        if torch.is_tensor(df):
+            data = json.dumps({"data": df.tolist()})
+        else:
+            try:
+                data = json.loads(df)
+            except TypeError as e:
+                raise TypeError("Input data can either be dataframe or Json string: {}".format(e))
+            except json.decoder.JSONDecodeError as e:
+                raise ValueError("Unable to parse input json string: {}".format(e))
+
+        resp = requests.post(url, data)
+        if resp.status_code != 200:
+            raise Exception(
+                "Unable to infer the results for the name %s. "
+                "Server returned status code %s and response: %s"
+                % (deployment_name, resp.status_code, resp.content)
+            )
+
+        return resp.text
+
     def __generate_mar_file(
         self, model_name, version, model_file, handler, requirements_file, extra_files, model_uri
     ):
@@ -350,11 +388,6 @@ class TorchServePlugin(BaseDeploymentClient):
         else:
             model_store = "model_store"
             if not os.path.isdir(model_store):
-                print(
-                    "model_store directory not present in the current folder. "
-                    "Creating model_store directory. To avoid this behaviour"
-                    "pass -C 'EXPORT_PATH=<model-store-path> as an input argument"
-                )
                 os.makedirs(model_store)
 
         cmd = (
