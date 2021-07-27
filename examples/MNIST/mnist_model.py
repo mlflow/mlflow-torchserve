@@ -13,6 +13,7 @@ from argparse import ArgumentParser
 import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
+
 # from pytorch_lightning.overrides.data_parallel import (
 #     LightningDistributedDataParallel,
 #     LightningDataParallel,
@@ -259,9 +260,7 @@ class LightningMNISTClassifier(pl.LightningModule):
 
 
 def get_model(trainer):
-    is_dp_module = isinstance(
-        trainer.model, (DistributedDataParallel, DataParallel)
-    )
+    is_dp_module = isinstance(trainer.model, (DistributedDataParallel, DataParallel))
     model = trainer.model.module if is_dp_module else trainer.model
     return model
 
