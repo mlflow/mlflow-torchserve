@@ -449,4 +449,4 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
     if trainer.global_rank == 0:
-        mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), ".")
+        mlflow.pytorch.save_state_dict(trainer.lightning_module.state_dict(), ".")
