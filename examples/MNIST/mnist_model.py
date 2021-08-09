@@ -13,9 +13,14 @@ from argparse import ArgumentParser
 import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning.overrides.data_parallel import (
-    LightningDistributedDataParallel,
-    LightningDataParallel,
+
+# from pytorch_lightning.overrides.data_parallel import (
+#     LightningDistributedDataParallel,
+#     LightningDataParallel,
+# )
+from torch.nn.parallel import (
+    DistributedDataParallel,
+    DataParallel,
 )
 from pytorch_lightning import seed_everything
 from pytorch_lightning.metrics import Accuracy
@@ -255,9 +260,7 @@ class LightningMNISTClassifier(pl.LightningModule):
 
 
 def get_model(trainer):
-    is_dp_module = isinstance(
-        trainer.model, (LightningDistributedDataParallel, LightningDataParallel)
-    )
+    is_dp_module = isinstance(trainer.model, (DistributedDataParallel, DataParallel))
     model = trainer.model.module if is_dp_module else trainer.model
     return model
 
@@ -291,4 +294,4 @@ if __name__ == "__main__":
     model = get_model(trainer)
 
     if trainer.global_rank == 0:
-        mlflow.pytorch.save_state_dict(trainer.get_model().state_dict(), "models")
+        mlflow.pytorch.save_state_dict(trainer.lightning_module.state_dict(), "models")

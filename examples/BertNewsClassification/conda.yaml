@@ -11,5 +11,5 @@ dependencies:
   - transformers
   - torchtext
   - torchvision
-  - torch
+  - torch>=1.9.0
   - pandas

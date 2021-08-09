@@ -226,4 +226,4 @@ if __name__ == "__main__":
     )
     output_schema = Schema([ColSpec("long")])
     signature = ModelSignature(inputs=input_schema, outputs=output_schema)
-    mlflow.pytorch.save_model(trainer.get_model(), "model", signature=signature)
+    mlflow.pytorch.save_model(trainer.lightning_module, "model", signature=signature)
