@@ -450,4 +450,3 @@ if __name__ == "__main__":
     trainer.test()
     if trainer.global_rank == 0:
         torch.save(model.state_dict(), "state_dict.pth")
-
