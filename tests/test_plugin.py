@@ -136,7 +136,7 @@ def test_create_no_handler_exception():
 
 def test_create_wrong_handler_exception():
     client = deployments.get_deploy_client(f_target)
-    with pytest.raises(Exception, match="Unable to create mar file"):
+    with pytest.raises(Exception, match="No such file or directory"):
         client.create_deployment(
             f_deployment_id,
             f_model_uri,
@@ -147,7 +147,7 @@ def test_create_wrong_handler_exception():
 
 def test_create_wrong_model_exception():
     client = deployments.get_deploy_client(f_target)
-    with pytest.raises(Exception, match="Unable to create mar file"):
+    with pytest.raises(Exception, match="No such file or directory"):
         client.create_deployment(
             f_deployment_id,
             f_model_uri,

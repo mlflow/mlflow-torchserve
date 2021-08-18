@@ -94,7 +94,7 @@ def test_create_cli_failure_without_version():
             handler_file,
         ],
     )
-    assert str(res.exception) == "Unable to create mar file" and res.exit_code == 1
+    assert "No such file or directory" in str(res.exception) and res.exit_code == 1
     res = runner.invoke(
         cli.create_deployment,
         [
