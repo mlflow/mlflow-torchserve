@@ -422,13 +422,14 @@ class TorchServePlugin(BaseDeploymentClient):
         elif req_file_path:
             cmd = "{cmd} -r {path}".format(cmd=cmd, path=req_file_path)
 
-        return_code = subprocess.Popen(cmd, shell=True).wait()
-        if return_code != 0:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        _, error = p.communicate()
+        if p.returncode != 0:
             _logger.error(
                 "Error when attempting to load and parse JSON cluster spec from file %s",
                 cmd,
             )
-            raise Exception("Unable to create mar file")
+            raise Exception(error.decode("utf-8"))
 
         if export_path:
             mar_file = "{}/{}.mar".format(export_path, model_name)
@@ -458,7 +459,7 @@ class TorchServePlugin(BaseDeploymentClient):
         resp = requests.post(url=url)
 
         if resp.status_code != 200:
-            raise Exception("Unable to register the model")
+            raise Exception("Unable to register the model - {}", resp.text)
         return True
 
     def __get_max_version(self, name):
