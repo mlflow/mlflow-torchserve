@@ -459,7 +459,7 @@ class TorchServePlugin(BaseDeploymentClient):
         resp = requests.post(url=url)
 
         if resp.status_code != 200:
-            raise Exception("Unable to register the model")
+            raise Exception("Unable to register the model - {}", resp.text)
         return True
 
     def __get_max_version(self, name):

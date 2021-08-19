@@ -128,7 +128,7 @@ def test_create_cli_failure_without_version():
             handler_file,
         ],
     )
-    assert str(res.exception) == "Unable to register the model"
+    assert "Unable to register the model" in str(res.exception)
     res = runner.invoke(
         cli.create_deployment,
         [
