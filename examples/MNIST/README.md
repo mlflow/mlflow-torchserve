@@ -23,7 +23,7 @@ At the end of the training, MNIST model will be saved as state dict in the curre
 
 To deploy the model in remote torchserve instance follow
 
-the steps in `remote-deployment.rst` under `docs` folder.
+the steps in [remote-deployment.rst](../../docs/remote-deployment.rst) under `docs` folder.
 
 
 ## Deploying in local torchserve instance
