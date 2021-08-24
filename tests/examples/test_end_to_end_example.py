@@ -9,15 +9,17 @@ def test_mnist_example():
     os.environ["MKL_THREADING_LAYER"] = "GNU"
     home_dir = os.getcwd()
     mnist_dir = "examples/MNIST"
-    example_command = ["python", "mnist_model.py", "--max_epochs", "1"]
+    example_command = ["python", "mnist_model.py", "--max_epochs", "1", "--register", "false"]
     process.exec_cmd(example_command, cwd=mnist_dir)
 
-    assert os.path.exists(os.path.join(mnist_dir, "models", "state_dict.pth"))
+    assert os.path.exists(os.path.join(mnist_dir, "model.pth"))
     create_deployment_command = [
         "python",
         "create_deployment.py",
         "--export_path",
         os.path.join(home_dir, "model_store"),
+        "--registered_model_uri",
+        "model.pth",
     ]
 
     process.exec_cmd(create_deployment_command, cwd=mnist_dir)
