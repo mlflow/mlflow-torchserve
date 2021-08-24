@@ -267,6 +267,9 @@ def get_model(trainer):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
+    parser.add_argument(
+        "--registration_name", type=str, default="mnist_classifier", help="Model registration name"
+    )
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = LightningMNISTClassifier.add_model_specific_args(parent_parser=parser)
     parser = MNISTDataModule.add_model_specific_args(parent_parser=parser)
@@ -291,7 +294,5 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test()
 
-    model = get_model(trainer)
-
-    if trainer.global_rank == 0:
-        mlflow.pytorch.save_state_dict(trainer.lightning_module.state_dict(), "models")
+    run = mlflow.active_run()
+    mlflow.register_model(model_uri=run.info.artifact_uri, name=dict_args["registration_name"])
