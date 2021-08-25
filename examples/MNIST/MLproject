@@ -15,4 +15,4 @@ entry_points:
             --max_epochs {max_epochs} \
             --gpus {gpus} \
             --accelerator {accelerator} \
-            --registration_name {registration_name}
+            --registration_name {registration_name} \
