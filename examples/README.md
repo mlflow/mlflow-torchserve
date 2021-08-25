@@ -17,7 +17,7 @@ The examples in the folder illustrates training and deploying models using `mlfl
 
 4.`Iris_TorchScript` -   Demonstrates saving TorchScript version of the Iris Classification model and deployment of the same using MLflow-torchserve plugin with `MLflow cli` commands  
 
-5.`MNIST` - Demonstrates training of MNIST handwritten digit recognition and deployment of the model using MLflow-torchserve **python plugin** - This examples illustrates on saving the state dict using `mlflow.pytorch.save_state_dict` library.
+5.`MNIST` - Demonstrates training of MNIST handwritten digit recognition and deployment of the model using MLflow-torchserve **python plugin** - This examples illustrates on registering the model to mlflow and deploying the model in remote torchserve instance.
 
 6.`TextClassification` - Demonstrates training of TextClassification example and deployment of the model using using MLflow-torchserve **python plugin**  
 
