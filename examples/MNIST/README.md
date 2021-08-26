@@ -23,7 +23,7 @@ At the end of the training, MNIST model will be saved as state dict in the curre
 
 To deploy the model in remote torchserve instance follow
 
-the steps in `remote-deployment.rst` under `docs` folder.
+the steps in [remote-deployment.rst](../../docs/remote-deployment.rst) under `docs` folder.
 
 
 ## Deploying in local torchserve instance
@@ -47,7 +47,7 @@ It will create a new deployment named `mnist_classification`.
 Following are the arguments which can be passed to create_deployment script
 
 1. deployment name - `--deployment_name`
-2. saved model path - `--serialized_file_path`
+2. registered mlflow model uri - `--registered_model_uri`
 3. handler file path - `--handler`
 4. model file path - `--model_file`
 

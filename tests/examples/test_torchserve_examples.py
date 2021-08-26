@@ -25,7 +25,7 @@ def clean_envs_and_cache():
     "directory, params",
     [
         ("IrisClassification", ["-P", "max_epochs=10"]),
-        ("MNIST", ["-P", "max_epochs=1"]),
+        ("MNIST", ["-P", "max_epochs=1", "-P", "register=false"]),
         ("IrisClassificationTorchScript", ["-P", "max_epochs=10"]),
         ("BertNewsClassification", ["-P", "max_epochs=1", "-P", "num_samples=100"]),
         ("E2EBert", ["-P", "max_epochs=1", "-P", "num_samples=100"]),
