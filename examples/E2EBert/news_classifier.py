@@ -301,7 +301,7 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - Type of news for the given news snippet
         """
         embedding_input = self.bert_model.embeddings(input_ids)
-        outputs = self.compute_bert_outputs(self.bert_model, embedding_input)
+        outputs = self.compute_bert_outputs(self.bert_model, embedding_input, attention_mask)
         pooled_output = outputs[1]
         output = F.relu(self.fc1(pooled_output))
         output = self.drop(output)
@@ -337,8 +337,9 @@ class BertNewsClassifier(pl.LightningModule):
         :return: output - Training loss
         """
         input_ids = train_batch["input_ids"]
+        attention_mask = train_batch["attention_mask"]
         targets = train_batch["targets"]
-        output = self.forward(input_ids)
+        output = self.forward(input_ids, attention_mask)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
         self.train_acc(y_hat, targets)
@@ -357,7 +358,8 @@ class BertNewsClassifier(pl.LightningModule):
         """
         input_ids = test_batch["input_ids"]
         targets = test_batch["targets"]
-        output = self.forward(input_ids)
+        attention_mask = test_batch["attention_mask"]
+        output = self.forward(input_ids, attention_mask)
         _, y_hat = torch.max(output, dim=1)
         self.test_acc(y_hat, targets)
         self.log("test_acc", self.test_acc.compute().cpu())
@@ -374,7 +376,8 @@ class BertNewsClassifier(pl.LightningModule):
 
         input_ids = val_batch["input_ids"]
         targets = val_batch["targets"]
-        output = self.forward(input_ids)
+        attention_mask = val_batch["attention_mask"]
+        output = self.forward(input_ids, attention_mask)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, targets)
         self.val_acc(y_hat, targets)
