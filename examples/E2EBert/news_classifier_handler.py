@@ -170,18 +170,13 @@ class NewsClassifierHandler(BaseHandler):
         model_wrapper.eval()
         model_wrapper.zero_grad()
         encoding = tokenizer.encode_plus(
-            self.text,
-            return_attention_mask=True,
-            return_tensors="pt",
-            add_special_tokens=False
+            self.text, return_attention_mask=True, return_tensors="pt", add_special_tokens=False
         )
         input_ids = encoding["input_ids"]
         attention_mask = encoding["attention_mask"]
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
-        input_embedding_test = model_wrapper.model.bert_model.embeddings(
-            input_ids
-        )
+        input_embedding_test = model_wrapper.model.bert_model.embeddings(input_ids)
         preds = model_wrapper(input_embedding_test, attention_mask)
         out = np.argmax(preds.cpu().detach(), axis=1)
         out = out.item()
@@ -192,9 +187,7 @@ class NewsClassifierHandler(BaseHandler):
             return_convergence_delta=True,
             target=1,
         )
-        tokens = tokenizer.convert_ids_to_tokens(
-            input_ids[0].cpu().numpy().tolist()
-        )
+        tokens = tokenizer.convert_ids_to_tokens(input_ids[0].cpu().numpy().tolist())
         feature_imp_dict = {}
         feature_imp_dict["words"] = tokens
         attributions_sum = self.summarize_attributions(attributions)

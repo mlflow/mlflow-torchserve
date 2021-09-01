@@ -35,13 +35,8 @@ class AGNewsmodelWrapper(nn.Module):
 
         if head_mask is not None:
             if head_mask.dim() == 1:
-                head_mask = (
-                    head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).
-                    unsqueeze(-1)
-                )
-                head_mask = head_mask.expand(
-                    model_bert.config.num_hidden_layers, -1, -1, -1, -1
-                )
+                head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+                head_mask = head_mask.expand(model_bert.config.num_hidden_layers, -1, -1, -1, -1)
             elif head_mask.dim() == 2:
                 head_mask = (
                     head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
@@ -70,9 +65,7 @@ class AGNewsmodelWrapper(nn.Module):
               embeddings : bert embeddings.
               attention_mask: Attention mask value
         """
-        outputs = self.compute_bert_outputs(
-            self.model.bert_model, embeddings, attention_mask
-        )
+        outputs = self.compute_bert_outputs(self.model.bert_model, embeddings, attention_mask)
         pooled_output = outputs[1]
         output = F.relu(self.model.fc1(pooled_output))
         output = self.model.drop(output)
