@@ -158,27 +158,36 @@ class NewsClassifierHandler(BaseHandler):
     def explain_handle(self, model_wraper, text, target=1):
         """Captum explanations handler
         Args:
-            data_preprocess (Torch Tensor): Preprocessed data to be used for captum
+            data_preprocess (Torch Tensor):
+            Preprocessed data to be used for captum
             raw_data (list): The unprocessed data to get target from the request
         Returns:
-            dict : A dictionary response with the explanations response."""
+            dict : A dictionary response with the explanations response.
+        """
         vis_data_records_base = []
         model_wrapper = AGNewsmodelWrapper(self.model)
         tokenizer = BertTokenizer(self.VOCAB_FILE)
         model_wrapper.eval()
         model_wrapper.zero_grad()
-        input_ids = torch.tensor([tokenizer.encode(self.text, add_special_tokens=True)]).to(
-            self.device
+        encoding = tokenizer.encode_plus(
+            self.text, return_attention_mask=True, return_tensors="pt", add_special_tokens=False
         )
+        input_ids = encoding["input_ids"]
+        attention_mask = encoding["attention_mask"]
+        input_ids = input_ids.to(self.device)
+        attention_mask = attention_mask.to(self.device)
         input_embedding_test = model_wrapper.model.bert_model.embeddings(input_ids)
-        preds = model_wrapper(input_embedding_test)
+        preds = model_wrapper(input_embedding_test, attention_mask)
         out = np.argmax(preds.cpu().detach(), axis=1)
         out = out.item()
         ig_1 = IntegratedGradients(model_wrapper)
-        attributions, delta = ig_1.attribute(
-            input_embedding_test, n_steps=500, return_convergence_delta=True, target=1
+        attributions, delta = ig_1.attribute(  # pylint: disable=no-member
+            input_embedding_test,
+            n_steps=500,
+            return_convergence_delta=True,
+            target=1,
         )
-        tokens = tokenizer.convert_ids_to_tokens(self.input_ids[0].cpu().numpy().tolist())
+        tokens = tokenizer.convert_ids_to_tokens(input_ids[0].cpu().numpy().tolist())
         feature_imp_dict = {}
         feature_imp_dict["words"] = tokens
         attributions_sum = self.summarize_attributions(attributions)
