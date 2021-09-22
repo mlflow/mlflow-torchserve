@@ -11,12 +11,14 @@ from torch import nn
 from torchvision import models
 
 
-class CIFAR10Classifier(pl.LightningModule):  #pylint: disable=too-many-ancestors,too-many-instance-attributes
+class CIFAR10Classifier(
+    pl.LightningModule
+):  # pylint: disable=too-many-ancestors,too-many-instance-attributes
     """Cifar10 model class."""
 
     def __init__(self, **kwargs):
         """Initializes the network, optimizer and scheduler."""
-        super(CIFAR10Classifier, self).__init__()  #pylint: disable=super-with-arguments
+        super(CIFAR10Classifier, self).__init__()  # pylint: disable=super-with-arguments
         self.model_conv = models.resnet50(pretrained=True)
         for param in self.model_conv.parameters():
             param.requires_grad = False
@@ -49,7 +51,9 @@ class CIFAR10Classifier(pl.LightningModule):  #pylint: disable=too-many-ancestor
             train accuracy
         """
         if batch_idx == 0:
-            self.reference_image = (train_batch[0][0]).unsqueeze(0)  #pylint: disable=attribute-defined-outside-init
+            self.reference_image = (train_batch[0][0]).unsqueeze(
+                0
+            )  # pylint: disable=attribute-defined-outside-init
             # self.reference_image.resize((1,1,28,28))
             print("\n\nREFERENCE IMAGE!!!")
             print(self.reference_image.shape)
@@ -118,24 +122,22 @@ class CIFAR10Classifier(pl.LightningModule):  #pylint: disable=too-many-ancestor
             self.parameters(),
             lr=self.args.get("lr", 0.001),
             weight_decay=self.args.get("weight_decay", 0),
-            eps=self.args.get("eps", 1e-8)
+            eps=self.args.get("eps", 1e-8),
         )
         self.scheduler = {
-            "scheduler":
-                torch.optim.lr_scheduler.ReduceLROnPlateau(
-                    self.optimizer,
-                    mode="min",
-                    factor=0.2,
-                    patience=3,
-                    min_lr=1e-6,
-                    verbose=True,
-                ),
-            "monitor":
-                "val_loss",
+            "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self.optimizer,
+                mode="min",
+                factor=0.2,
+                patience=3,
+                min_lr=1e-6,
+                verbose=True,
+            ),
+            "monitor": "val_loss",
         }
         return [self.optimizer], [self.scheduler]
 
-    def makegrid(self, output, numrows):  #pylint: disable=no-self-use
+    def makegrid(self, output, numrows):  # pylint: disable=no-self-use
         """Makes grids.
         Args:
              output : Tensor output
@@ -169,18 +171,13 @@ class CIFAR10Classifier(pl.LightningModule):  #pylint: disable=too-many-ancestor
 
         # logging reference image
         self.logger.experiment.add_image(
-            "input",
-            torch.Tensor.cpu(x_var[0][0]),
-            self.current_epoch,
-            dataformats="HW"
+            "input", torch.Tensor.cpu(x_var[0][0]), self.current_epoch, dataformats="HW"
         )
 
         # logging layer 1 activations
         out = self.model_conv.conv1(x_var)
         c_grid = self.makegrid(out, 4)
-        self.logger.experiment.add_image(
-            "layer 1", c_grid, self.current_epoch, dataformats="HW"
-        )
+        self.logger.experiment.add_image("layer 1", c_grid, self.current_epoch, dataformats="HW")
 
     def training_epoch_end(self, outputs):
         """Training epoch end.
@@ -194,7 +191,8 @@ class CIFAR10Classifier(pl.LightningModule):  #pylint: disable=too-many-ancestor
             sample_img = torch.rand((1, 3, 64, 64))
             self.logger.experiment.add_graph(CIFAR10Classifier(), sample_img)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Cifar10 Example")
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 

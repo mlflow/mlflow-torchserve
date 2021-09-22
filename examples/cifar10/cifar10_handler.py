@@ -12,9 +12,7 @@ from io import BytesIO
 import numpy as np
 import torch
 from PIL import Image
-from captum.attr import (
-    IntegratedGradients, Occlusion, LayerGradCam, LayerAttribution
-)
+from captum.attr import IntegratedGradients, Occlusion, LayerGradCam
 from captum.attr import visualization as viz
 from matplotlib.colors import LinearSegmentedColormap
 from torchvision import transforms
@@ -28,7 +26,7 @@ class CIFAR10Classification(ImageClassifier, ABC):
     Base class for all vision handlers
     """
 
-    def initialize(self, ctx): # pylint: disable=arguments-differ
+    def initialize(self, ctx):  # pylint: disable=arguments-differ
         """In this initialize function, the CIFAR10 trained model is loaded and
         the Integrated Gradients,occlusion and layer_gradcam Algorithm for
         Captum Explanations is initialized here.
@@ -47,10 +45,10 @@ class CIFAR10Classification(ImageClassifier, ABC):
                 self.mapping = json.load(fp)
         model_pt_path = os.path.join(model_dir, serialized_file)
         self.device = torch.device(
-            "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available(
-            ) else "cpu"
+            "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu"
         )
         from cifar10_train import CIFAR10Classifier
+
         self.model = CIFAR10Classifier()
         self.model.load_state_dict(torch.load(model_pt_path))
         self.model.to(self.device)
@@ -69,19 +67,17 @@ class CIFAR10Classification(ImageClassifier, ABC):
             logger.warning("Missing the class_mapping.json file.")
 
         self.ig = IntegratedGradients(self.model)
-        self.layer_gradcam = LayerGradCam(
-            self.model, self.model.model_conv.layer4[2].conv3
-        )
+        self.layer_gradcam = LayerGradCam(self.model, self.model.model_conv.layer4[2].conv3)
         self.occlusion = Occlusion(self.model)
         self.initialized = True
-        self.image_processing = transforms.Compose([
-            transforms.Resize(224),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-            ),
-        ])
+        self.image_processing = transforms.Compose(
+            [
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
 
     def _get_img(self, row):
         """Compat layer: normally the envelope should just return the data
@@ -155,12 +151,8 @@ class CIFAR10Classification(ImageClassifier, ABC):
         )
 
         matplot_viz_ig, _ = viz.visualize_image_attr_multiple(
-            np.transpose(
-                attributions_ig.squeeze().cpu().detach().numpy(), (1, 2, 0)
-            ),
-            np.transpose(
-                tensor_data.squeeze().cpu().detach().numpy(), (1, 2, 0)
-            ),
+            np.transpose(attributions_ig.squeeze().cpu().detach().numpy(), (1, 2, 0)),
+            np.transpose(tensor_data.squeeze().cpu().detach().numpy(), (1, 2, 0)),
             use_pyplot=False,
             methods=["original_image", "heat_map"],
             cmap=default_cmap,
@@ -171,8 +163,8 @@ class CIFAR10Classification(ImageClassifier, ABC):
 
         ig_bytes = self.output_bytes(matplot_viz_ig)
 
-        output = [{
-            "b64": b64encode(row).decode("utf8")
-        } if isinstance(row, (bytes, bytearray)) else row
-                  for row in [ig_bytes]]
+        output = [
+            {"b64": b64encode(row).decode("utf8")} if isinstance(row, (bytes, bytearray)) else row
+            for row in [ig_bytes]
+        ]
         return output

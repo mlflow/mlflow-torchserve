@@ -7,13 +7,11 @@ from mlflow.deployments import get_deploy_client
 
 def predict(parser_args):
     plugin = get_deploy_client(parser_args["target"])
-    image = open(parser_args["input_file_path"], 'rb')  # open binary file in read mode
+    image = open(parser_args["input_file_path"], "rb")  # open binary file in read mode
     image_read = image.read()
     image_64_encode = base64.b64encode(image_read)
-    bytes_array = image_64_encode.decode('utf-8')
-    request = {
-                "data": str(bytes_array)
-    }
+    bytes_array = image_64_encode.decode("utf-8")
+    request = {"data": str(bytes_array)}
 
     inference_type = parser_args["inference_type"]
     if inference_type == "explanation":
