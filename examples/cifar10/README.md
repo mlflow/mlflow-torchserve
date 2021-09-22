@@ -54,16 +54,16 @@ For example:
 
 To perform prediction, run the following script
 
-`python predict.py`
+`python inference.py`
 
 The prediction results will be printed in the console. 
+
+to save the inference output in file run the following command
+
+`python inference.py --output_file_path prediction_result.json`
 
 Following are the arguments which can be passed to predict_deployment script
 
 1. deployment name - `--deployment_name"`
 2. input file path - `--input_file_path`
-
-For example, to perform prediction on the second deployment which we created. Run the following command
-
-`python predict.py --deployment_name cifar_test --input_file_path test_data/kitten.png`
-
+3. path to write the result - `--output_file_path`

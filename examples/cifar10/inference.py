@@ -15,8 +15,18 @@ def predict(parser_args):
                 "data": str(bytes_array)
     }
 
-    prediction = plugin.predict(parser_args["deployment_name"], json.dumps(request))
-    print("Prediction Result {}".format(prediction))
+    inference_type = parser_args["inference_type"]
+    if inference_type == "prediction":
+        result = plugin.predict(parser_args["deployment_name"], json.dumps(request))
+    else:
+        result = plugin.explain(parser_args["deployment_name"], json.dumps(request))
+
+    print("Prediction Result {}".format(result))
+
+    output_path = parser_args["output_file_path"]
+    if output_path:
+        with open(output_path, "w") as fp:
+            fp.write(result)
 
 
 if __name__ == "__main__":
@@ -41,6 +51,20 @@ if __name__ == "__main__":
         type=str,
         default="test_data/kitten.png",
         help="Path to input image for prediction (default: test_data/one.png)",
+    )
+
+    parser.add_argument(
+        "--output_file_path",
+        type=str,
+        default="",
+        help="output path to write the result",
+    )
+
+    parser.add_argument(
+        "--inference_type",
+        type=str,
+        default="predict",
+        help="Option to run prediction/explanation",
     )
 
     args = parser.parse_args()
