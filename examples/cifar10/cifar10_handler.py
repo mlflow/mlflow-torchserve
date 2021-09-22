@@ -41,6 +41,10 @@ class CIFAR10Classification(ImageClassifier, ABC):
         model_dir = properties.get("model_dir")
         print("Model dir is {}".format(model_dir))
         serialized_file = self.manifest["model"]["serializedFile"]
+        mapping_file_path = os.path.join(model_dir, "index_to_name.json")
+        if os.path.exists(mapping_file_path):
+            with open(mapping_file_path) as fp:
+                self.mapping = json.load(fp)
         model_pt_path = os.path.join(model_dir, serialized_file)
         self.device = torch.device(
             "cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available(
