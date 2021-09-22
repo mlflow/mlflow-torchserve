@@ -1,0 +1,16 @@
+name: cifar10-example
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      max_epochs: {type: int, default: 1}
+      gpus: {type: int, default: 0}
+      accelerator: {type: str, default: "None"}
+
+    command: |
+          python cifar10_train.py \
+            --max_epochs {max_epochs} \
+            --gpus {gpus} \
+            --accelerator {accelerator}
