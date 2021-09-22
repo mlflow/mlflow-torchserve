@@ -67,3 +67,19 @@ Following are the arguments which can be passed to predict_deployment script
 1. deployment name - `--deployment_name"`
 2. input file path - `--input_file_path`
 3. path to write the result - `--output_file_path`
+
+
+## Calculate captum explanations
+
+To perform explain request, run the following script
+
+`python inferene.py --inference_type explanation`
+
+to save the explanation output in file run the following command
+
+`python inference.py --inference_type explanation --output_file_path explanation_result.json`
+
+
+## Viewing captum results
+
+Use the notebook - `Cifar10_Captum.ipynb` to view the captum results.

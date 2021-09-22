@@ -16,10 +16,10 @@ def predict(parser_args):
     }
 
     inference_type = parser_args["inference_type"]
-    if inference_type == "prediction":
-        result = plugin.predict(parser_args["deployment_name"], json.dumps(request))
-    else:
+    if inference_type == "explanation":
         result = plugin.explain(parser_args["deployment_name"], json.dumps(request))
+    else:
+        result = plugin.predict(parser_args["deployment_name"], json.dumps(request))
 
     print("Prediction Result {}".format(result))
 
