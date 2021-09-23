@@ -198,6 +198,8 @@ if __name__ == "__main__":
 
     from cifar10_datamodule import CIFAR10DataModule
 
+    parser = CIFAR10DataModule.add_model_specific_args(parent_parser=parser)
+
     args = parser.parse_args()
     dict_args = vars(args)
 

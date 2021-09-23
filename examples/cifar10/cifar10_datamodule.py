@@ -3,6 +3,7 @@ import os
 
 import pytorch_lightning as pl
 import webdataset as wds
+from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -49,6 +50,36 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         """
         return len(os.listdir(input_path)) - 1
 
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        """
+        Returns the review text and the targets of the specified item
+
+        :param parent_parser: Application specific parser
+
+        :return: Returns the augmented arugument parser
+        """
+        parser = ArgumentParser(parents=[parent_parser], add_help=False)
+        parser.add_argument(
+            "--num_samples_train",
+            type=int,
+            help="Number of samples for training (max: 39)",
+        )
+
+        parser.add_argument(
+            "--num_samples_val",
+            type=int,
+            help="Number of samples for Validation (max: 9)",
+        )
+
+        parser.add_argument(
+            "--num_samples_test",
+            type=int,
+            help="Number of samples for Testing (max: 9)",
+        )
+
+        return parser
+
     def setup(self, stage=None):
         """Downloads the data, parse it and split the data into train, test,
         validation data.
@@ -62,9 +93,18 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         val_base_url = data_path + "/val"
         test_base_url = data_path + "/test"
 
-        train_count = self.get_num_files(train_base_url)
-        val_count = self.get_num_files(val_base_url)
-        test_count = self.get_num_files(test_base_url)
+        train_count = self.args["num_samples_train"]
+        val_count = self.args["num_samples_val"]
+        test_count = self.args["num_samples_test"]
+
+        if not train_count:
+            train_count = self.get_num_files(train_base_url)
+
+        if not val_count:
+            val_count = self.get_num_files(val_base_url)
+
+        if not test_count:
+            test_count = self.get_num_files(test_base_url)
 
         train_url = "{}/{}-{}".format(train_base_url, "train", "{0.." + str(train_count) + "}.tar")
         valid_url = "{}/{}-{}".format(val_base_url, "val", "{0.." + str(val_count) + "}.tar")
