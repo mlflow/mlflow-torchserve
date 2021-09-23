@@ -1,0 +1,17 @@
+channels:
+- defaults
+- conda-forge
+- pytorch
+dependencies:
+- python=3.8.2
+- cudatoolkit=10.2
+- pytorch>=1.9.0
+- torchvision
+- pip
+- pip:
+  - matplotlib
+  - pytorch-lightning==1.4.0
+  - mlflow>=1.14.0
+  - captum
+  - webdataset
+  - sklearn
