@@ -6,12 +6,6 @@ Follow the link given below to set backend store
 
 https://www.mlflow.org/docs/latest/tracking.html#storage
 
-## Download the dataset
-
-Invoke the following script to download the dataset and perform preprocessing on input images
-
-`python cifar10_pre_process.py --output_path output/processing`
-
 ## Training the model
 
 This example, autologs the trained model and its relevant parameters and metrics into mlflow using a single line of code. 

@@ -194,6 +194,12 @@ class CIFAR10Classifier(
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Cifar10 Example")
+    parser.add_argument(
+        "--download_path",
+        type=str,
+        default="output/processing",
+        help="Path to write cifar10 dataset",
+    )
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
 
     from cifar10_datamodule import CIFAR10DataModule
