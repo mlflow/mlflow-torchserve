@@ -51,28 +51,29 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         trainset = torchvision.datasets.CIFAR10(root="./", train=True, download=True)
         testset = torchvision.datasets.CIFAR10(root="./", train=False, download=True)
 
-        Path(output_path + "/train").mkdir(parents=True, exist_ok=True)
-        Path(output_path + "/val").mkdir(parents=True, exist_ok=True)
-        Path(output_path + "/test").mkdir(parents=True, exist_ok=True)
+        if not os.path.exists(os.path.join(output_path, "train")):
+            Path(output_path + "/train").mkdir(parents=True, exist_ok=True)
+            Path(output_path + "/val").mkdir(parents=True, exist_ok=True)
+            Path(output_path + "/test").mkdir(parents=True, exist_ok=True)
 
-        RANDOM_SEED = 25
-        y = trainset.targets
-        trainset, valset, y_train, y_val = train_test_split(
-            trainset, y, stratify=y, shuffle=True, test_size=0.2, random_state=RANDOM_SEED
-        )
+            RANDOM_SEED = 25
+            y = trainset.targets
+            trainset, valset, y_train, y_val = train_test_split(
+                trainset, y, stratify=y, shuffle=True, test_size=0.1, random_state=RANDOM_SEED
+            )
 
-        for name in [(trainset, "train"), (valset, "val"), (testset, "test")]:
-            with wds.ShardWriter(
-                output_path + "/" + str(name[1]) + "/" + str(name[1]) + "-%d.tar", maxcount=1000
-            ) as sink:
-                for index, (image, cls) in enumerate(name[0]):
-                    sink.write({"__key__": "%06d" % index, "ppm": image, "cls": cls})
+            for name in [(trainset, "train"), (valset, "val"), (testset, "test")]:
+                with wds.ShardWriter(
+                    output_path + "/" + str(name[1]) + "/" + str(name[1]) + "-%d.tar", maxcount=1000
+                ) as sink:
+                    for index, (image, cls) in enumerate(name[0]):
+                        sink.write({"__key__": "%06d" % index, "ppm": image, "cls": cls})
 
-        entry_point = ["ls", "-R", output_path]
-        run_code = subprocess.run(
-            entry_point, stdout=subprocess.PIPE
-        )  # pylint: disable=subprocess-run-check
-        print(run_code.stdout)
+            entry_point = ["ls", "-R", output_path]
+            run_code = subprocess.run(
+                entry_point, stdout=subprocess.PIPE
+            )  # pylint: disable=subprocess-run-check
+            print(run_code.stdout)
 
     @staticmethod
     def get_num_files(input_path):
@@ -149,7 +150,6 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
             .rename(image="ppm;jpg;jpeg;png", info="cls")
             .map_dict(image=self.train_transform)
             .to_tuple("image", "info")
-            .batched(40)
         )
 
         self.valid_dataset = (
@@ -159,7 +159,6 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
             .rename(image="ppm", info="cls")
             .map_dict(image=self.valid_transform)
             .to_tuple("image", "info")
-            .batched(20)
         )
 
         self.test_dataset = (
@@ -169,7 +168,6 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
             .rename(image="ppm", info="cls")
             .map_dict(image=self.valid_transform)
             .to_tuple("image", "info")
-            .batched(20)
         )
 
     def create_data_loader(self, dataset, batch_size, num_workers):  # pylint: disable=no-self-use
@@ -183,7 +181,7 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         """
         self.train_data_loader = self.create_data_loader(
             self.train_dataset,
-            self.args.get("train_batch_size", None),
+            self.args.get("train_batch_size", 40),
             self.args.get("train_num_workers", 4),
         )
         return self.train_data_loader
@@ -195,7 +193,7 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         """
         self.val_data_loader = self.create_data_loader(
             self.valid_dataset,
-            self.args.get("val_batch_size", None),
+            self.args.get("val_batch_size", 20),
             self.args.get("val_num_workers", 4),
         )
         return self.val_data_loader
@@ -207,7 +205,7 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         """
         self.test_data_loader = self.create_data_loader(
             self.test_dataset,
-            self.args.get("val_batch_size", None),
+            self.args.get("val_batch_size", 20),
             self.args.get("val_num_workers", 4),
         )
         return self.test_data_loader
