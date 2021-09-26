@@ -22,6 +22,7 @@ from torch import nn
 from torch.utils.data import Dataset, DataLoader
 import torchtext.datasets as td
 from transformers import BertModel, BertTokenizer, AdamW
+from deepspeed.ops.adam import FusedAdam
 
 
 class AGNewsDataset(Dataset):
@@ -390,19 +391,33 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Initialized optimizer and scheduler
         """
-        optimizer = AdamW(self.parameters(), lr=self.args["lr"])
-        scheduler = {
+        # if self.args["deepspeed"]:
+        #     from deepspeed.ops.adam import DeepSpeedCPUAdam
+        #     return DeepSpeedCPUAdam(self.parameters())
+        #     # return FusedAdam(self.parameters())
+        # else:
+        self.optimizer = torch.optim.Adam(
+            self.parameters(),
+            lr=self.args.get("lr", 0.001),
+            betas=self.args.get("betas", [
+                        0.8,
+                        0.999
+                    ]),
+            weight_decay=self.args.get("weight_decay", 3e-7),
+            eps=self.args.get("eps", 1e-8),
+        )
+        self.scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer,
+                self.optimizer,
                 mode="min",
                 factor=0.2,
-                patience=2,
+                patience=3,
                 min_lr=1e-6,
                 verbose=True,
             ),
             "monitor": "val_loss",
         }
-        return [optimizer], [scheduler]
+        return [self.optimizer], [self.scheduler]
 
 
 if __name__ == "__main__":
@@ -421,11 +436,18 @@ if __name__ == "__main__":
         help="Custom vocab file",
     )
 
+    parser.add_argument(
+        "--deepspeed",
+        type=bool,
+        default=False,
+        help="Enable deepspeed training",
+    )
+
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = BertNewsClassifier.add_model_specific_args(parent_parser=parser)
     parser = BertDataModule.add_model_specific_args(parent_parser=parser)
 
-    mlflow.pytorch.autolog()
+    #mlflow.pytorch.autolog()
 
     args = parser.parse_args()
     dict_args = vars(args)
@@ -446,9 +468,51 @@ if __name__ == "__main__":
     )
     lr_logger = LearningRateMonitor()
 
-    trainer = pl.Trainer.from_argparse_args(
-        args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True
-    )
+    if dict_args["deepspeed"]:
+        deepspeed_config = {
+            "zero_allow_untested_optimizer": True,
+            "optimizer": {
+                "type": "Adam",
+                "params": {
+                    "lr": 0.001,
+                    "betas": [
+                        0.8,
+                        0.999
+                    ],
+                    "eps": 1e-8,
+                    "weight_decay": 3e-7
+                }
+            },
+            "scheduler": {
+                "type": "WarmupLR",
+                "params": {
+                    "last_batch_iteration": -1,
+                    "warmup_min_lr": 0,
+                    "warmup_max_lr": 3e-5,
+                    "warmup_num_steps": 100,
+                },
+            },
+            "zero_optimization": {
+                "stage": 2,  # Enable Stage 2 ZeRO (Optimizer/Gradient state partitioning)
+                # "cpu_offload": True,
+                # Enable Offloading optimizer state/calculation to the host CPU
+                "contiguous_gradients": False,  # Reduce gradient fragmentation.
+                "reduce_bucket_size": 27000000,
+                # "overlap_comm": True,  # Overlap reduce/backward operation of gradients for speed.
+                # "allgather_bucket_size": 2e8,  # Number of elements to all gather at once.
+                # "reduce_bucket_size": 2e8,  # Number of elements we reduce/allreduce at once.
+            },
+        }
+        from pytorch_lightning.plugins import DeepSpeedPlugin
+
+    if dict_args["deepspeed"]:
+        trainer = pl.Trainer.from_argparse_args(
+            args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True, plugins=DeepSpeedPlugin(config=deepspeed_config)
+        )
+    else:
+        trainer = pl.Trainer.from_argparse_args(
+            args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True
+        )
     trainer.fit(model, dm)
     trainer.test()
     if trainer.global_rank == 0:
