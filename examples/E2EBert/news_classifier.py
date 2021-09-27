@@ -390,16 +390,16 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Initialized optimizer and scheduler
         """
-        self.optimizer = torch.optim.Adam(
+        optimizer = torch.optim.Adam(
             self.parameters(),
             lr=self.args.get("lr", 0.001),
             betas=self.args.get("betas", [0.8, 0.999]),
             weight_decay=self.args.get("weight_decay", 3e-7),
             eps=self.args.get("eps", 1e-8),
         )
-        self.scheduler = {
+        scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self.optimizer,
+                optimizer,
                 mode="min",
                 factor=0.2,
                 patience=3,
@@ -408,7 +408,7 @@ class BertNewsClassifier(pl.LightningModule):
             ),
             "monitor": "val_loss",
         }
-        return [self.optimizer], [self.scheduler]
+        return [optimizer], [scheduler]
 
 
 if __name__ == "__main__":
