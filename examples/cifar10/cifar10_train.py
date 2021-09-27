@@ -121,15 +121,13 @@ class CIFAR10Classifier(
         """
         if self.args["deepspeed"]:
             from deepspeed.ops.adam import DeepSpeedCPUAdam
+
             return DeepSpeedCPUAdam(self.parameters())
         else:
             self.optimizer = torch.optim.Adam(
                 self.parameters(),
                 lr=self.args.get("lr", 0.001),
-                betas=self.args.get("betas", [
-                            0.8,
-                            0.999
-                        ]),
+                betas=self.args.get("betas", [0.8, 0.999]),
                 weight_decay=self.args.get("weight_decay", 3e-7),
                 eps=self.args.get("eps", 1e-8),
             )
@@ -145,7 +143,6 @@ class CIFAR10Classifier(
                 "monitor": "val_loss",
             }
             return [self.optimizer], [self.scheduler]
-
 
     def makegrid(self, output, numrows):  # pylint: disable=no-self-use
         """Makes grids.
@@ -245,15 +242,7 @@ if __name__ == "__main__":
             "zero_allow_untested_optimizer": True,
             "optimizer": {
                 "type": "Adam",
-                "params": {
-                    "lr": 0.001,
-                    "betas": [
-                        0.8,
-                        0.999
-                    ],
-                    "eps": 1e-8,
-                    "weight_decay": 3e-7
-                }
+                "params": {"lr": 0.001, "betas": [0.8, 0.999], "eps": 1e-8, "weight_decay": 3e-7},
             },
             "scheduler": {
                 "type": "WarmupLR",
@@ -266,26 +255,16 @@ if __name__ == "__main__":
             },
             "zero_optimization": {
                 "stage": 2,  # Enable Stage 2 ZeRO (Optimizer/Gradient state partitioning)
-                # "cpu_offload": True,
-                # Enable Offloading optimizer state/calculation to the host CPU
                 "contiguous_gradients": False,  # Reduce gradient fragmentation.
                 "reduce_bucket_size": 27000000,
-                # "overlap_comm": True,  # Overlap reduce/backward operation of gradients for speed.
-                # "allgather_bucket_size": 2e8,  # Number of elements to all gather at once.
-                # "reduce_bucket_size": 2e8,  # Number of elements we reduce/allreduce at once.
             },
         }
 
-        dict_args["plugins"] = DeepSpeedPlugin(config=deepspeed_config),
+        dict_args["plugins"] = (DeepSpeedPlugin(config=deepspeed_config),)
         dict_args["precision"] = 16
     trainer = pl.Trainer.from_argparse_args(Namespace(**dict_args))
 
-    print("\n\n\nStarting Training")
-    import time
-    start_time = time.time()
     trainer.fit(model, dm)
-    time_taken_for_training = time.time() - start_time
-    print("\n\nTotal time taken for training: ", time_taken_for_training)
     trainer.test()
 
     torch.save(trainer.lightning_module.state_dict(), "resnet.pth")

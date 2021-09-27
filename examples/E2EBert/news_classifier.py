@@ -21,8 +21,7 @@ from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
 import torchtext.datasets as td
-from transformers import BertModel, BertTokenizer, AdamW
-from deepspeed.ops.adam import FusedAdam
+from transformers import BertModel, BertTokenizer
 
 
 class AGNewsDataset(Dataset):
@@ -391,18 +390,10 @@ class BertNewsClassifier(pl.LightningModule):
 
         :return: output - Initialized optimizer and scheduler
         """
-        # if self.args["deepspeed"]:
-        #     from deepspeed.ops.adam import DeepSpeedCPUAdam
-        #     return DeepSpeedCPUAdam(self.parameters())
-        #     # return FusedAdam(self.parameters())
-        # else:
         self.optimizer = torch.optim.Adam(
             self.parameters(),
             lr=self.args.get("lr", 0.001),
-            betas=self.args.get("betas", [
-                        0.8,
-                        0.999
-                    ]),
+            betas=self.args.get("betas", [0.8, 0.999]),
             weight_decay=self.args.get("weight_decay", 3e-7),
             eps=self.args.get("eps", 1e-8),
         )
@@ -447,7 +438,7 @@ if __name__ == "__main__":
     parser = BertNewsClassifier.add_model_specific_args(parent_parser=parser)
     parser = BertDataModule.add_model_specific_args(parent_parser=parser)
 
-    #mlflow.pytorch.autolog()
+    mlflow.pytorch.autolog()
 
     args = parser.parse_args()
     dict_args = vars(args)
@@ -473,15 +464,7 @@ if __name__ == "__main__":
             "zero_allow_untested_optimizer": True,
             "optimizer": {
                 "type": "Adam",
-                "params": {
-                    "lr": 0.001,
-                    "betas": [
-                        0.8,
-                        0.999
-                    ],
-                    "eps": 1e-8,
-                    "weight_decay": 3e-7
-                }
+                "params": {"lr": 0.001, "betas": [0.8, 0.999], "eps": 1e-8, "weight_decay": 3e-7},
             },
             "scheduler": {
                 "type": "WarmupLR",
@@ -494,24 +477,24 @@ if __name__ == "__main__":
             },
             "zero_optimization": {
                 "stage": 2,  # Enable Stage 2 ZeRO (Optimizer/Gradient state partitioning)
-                # "cpu_offload": True,
-                # Enable Offloading optimizer state/calculation to the host CPU
                 "contiguous_gradients": False,  # Reduce gradient fragmentation.
                 "reduce_bucket_size": 27000000,
-                # "overlap_comm": True,  # Overlap reduce/backward operation of gradients for speed.
-                # "allgather_bucket_size": 2e8,  # Number of elements to all gather at once.
-                # "reduce_bucket_size": 2e8,  # Number of elements we reduce/allreduce at once.
             },
         }
         from pytorch_lightning.plugins import DeepSpeedPlugin
 
     if dict_args["deepspeed"]:
         trainer = pl.Trainer.from_argparse_args(
-            args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True, plugins=DeepSpeedPlugin(config=deepspeed_config)
+            args,
+            callbacks=[lr_logger, early_stopping, checkpoint_callback],
+            checkpoint_callback=True,
+            plugins=DeepSpeedPlugin(config=deepspeed_config),
         )
     else:
         trainer = pl.Trainer.from_argparse_args(
-            args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True
+            args,
+            callbacks=[lr_logger, early_stopping, checkpoint_callback],
+            checkpoint_callback=True,
         )
     trainer.fit(model, dm)
     trainer.test()
