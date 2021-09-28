@@ -8,7 +8,8 @@ The examples in the folder illustrates training and deploying models using `mlfl
 
 2.`E2EBert` - Demonstrates a workflow using a pytorch-lightning based BERT model.  
                            The example illustrates,  
-                           <li> model training (fine tuning a pre-trained model)  
+                           <li> model training (fine tuning a pre-trained model)
+                           <li> Distributed training using Pytorch Lightning DDP and deepspeed
                            <li> model saving and loading using mlflow autolog  
                            <li> deployment of the  model in TorchServe  
                            <li> Calculating explanations using captum  
@@ -23,4 +24,4 @@ The examples in the folder illustrates training and deploying models using `mlfl
 
 7.`Titanic` - Demonstrates training of titanic dataset using pytorch and deploying the model using mlflow-torchserve plugin. This example illustrates the validation using `captum` library.
 
-8. `cifar10` - Training and deploying image classification model with cifar10 dataset using mlflow-torchserve plugin.  
+8. `cifar10` - Training and deploying image classification model with cifar10 dataset using mlflow-torchserve plugin. The example uses pretrained resnet model and illustrates training using multi gpu pytorch lightning ddp and deepspeed.
