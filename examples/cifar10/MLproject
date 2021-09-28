@@ -11,6 +11,7 @@ entry_points:
       num_samples_train: {type: int, default: 39}
       num_samples_val: {type: int, default: 9}
       num_samples_test: {type: int, default: 9}
+      deepspeed: {type: str, default: false}
 
     command: |
           python cifar10_train.py \
@@ -19,4 +20,5 @@ entry_points:
             --num_samples_train {num_samples_train} \
             --num_samples_val {num_samples_val} \
             --num_samples_test {num_samples_test} \
-            --accelerator {accelerator}
+            --accelerator {accelerator} \
+            --deepspeed {deepspeed}

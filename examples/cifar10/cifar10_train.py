@@ -119,7 +119,7 @@ class CIFAR10Classifier(
         Returns:
              output - Initialized optimizer and scheduler
         """
-        if self.args["deepspeed"]:
+        if str(dict_args["deepspeed"]).lower() != "false":
             from deepspeed.ops.adam import DeepSpeedCPUAdam
 
             return DeepSpeedCPUAdam(self.parameters())
@@ -210,8 +210,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--deepspeed",
-        type=bool,
-        default=False,
+        type=str,
+        default="false",
         help="Enable deepspeed training",
     )
 
@@ -236,8 +236,7 @@ if __name__ == "__main__":
     dm.prepare_data()
     dm.setup(stage="fit")
 
-    print(f"\n\n Deepspeed : {dict_args['deepspeed']} \n\n")
-    if dict_args["deepspeed"]:
+    if str(dict_args["deepspeed"]).lower() != "false":
         deepspeed_config = {
             "zero_allow_untested_optimizer": True,
             "optimizer": {

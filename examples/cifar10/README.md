@@ -17,6 +17,11 @@ Run the following command to train the cifar10 model
 CPU: `mlflow run . -P max_epochs=5`
 GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp`
 
+To train the model with deepspeed
+
+GPU: `mlflow run . -P max_epochs=5 -P gpus=2 -P accelerator=ddp -P deepspeed=true`
+
+
 At the end of the training, Cifar10 model will be saved as state dict (resnet.pth) in the current working directory
 
 ## Starting torchserve
