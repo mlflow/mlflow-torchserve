@@ -50,6 +50,11 @@ To run it in gpu, use the following command
 mlflow run . -P gpus=2 -P accelerator="ddp"
 ```
 
+To run it with deepspeed, use the following command
+```
+mlflow run . -P gpus=2 -P accelerator="ddp" -P deepspeed="true"
+```
+
 Run the `news_classifier.py` script which will fine tune the model based on news dataset. 
 
 By default,  the script exports the model file as `state_dict.pth` and generates a sample input file `input.json`

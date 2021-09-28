@@ -10,6 +10,7 @@ entry_points:
       num_samples: {type: int, default: 15000}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
       accelerator: {type str, default: None}
+      deepspeed: {type str, default: false}
 
     command: |
           python news_classifier.py \
@@ -17,4 +18,4 @@ entry_points:
             --gpus {gpus} \
             --num_samples {num_samples} \
             --vocab_file {vocab_file} \
-            --accelerator={accelerator}
+            --deepspeed {deepspeed}

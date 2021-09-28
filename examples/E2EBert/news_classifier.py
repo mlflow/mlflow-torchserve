@@ -429,8 +429,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--deepspeed",
-        type=bool,
-        default=False,
+        type=str,
+        default="false",
         help="Enable deepspeed training",
     )
 
@@ -459,7 +459,7 @@ if __name__ == "__main__":
     )
     lr_logger = LearningRateMonitor()
 
-    if dict_args["deepspeed"]:
+    if str(dict_args["deepspeed"]).lower() != "false":
         deepspeed_config = {
             "zero_allow_untested_optimizer": True,
             "optimizer": {
@@ -483,7 +483,6 @@ if __name__ == "__main__":
         }
         from pytorch_lightning.plugins import DeepSpeedPlugin
 
-    if dict_args["deepspeed"]:
         trainer = pl.Trainer.from_argparse_args(
             args,
             callbacks=[lr_logger, early_stopping, checkpoint_callback],
