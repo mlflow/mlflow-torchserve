@@ -22,3 +22,5 @@ The examples in the folder illustrates training and deploying models using `mlfl
 6.`TextClassification` - Demonstrates training of TextClassification example and deployment of the model using using MLflow-torchserve **python plugin**  
 
 7.`Titanic` - Demonstrates training of titanic dataset using pytorch and deploying the model using mlflow-torchserve plugin. This example illustrates the validation using `captum` library.
+
+8. `cifar10` - Training and deploying image classification model with cifar10 dataset using mlflow-torchserve plugin.  
