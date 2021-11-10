@@ -295,7 +295,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(args)
 
     trainer.fit(model, dm)
-    trainer.test()
+    trainer.test(datamodule=dm)
 
     run = mlflow.active_run()
     if dict_args["register"] == "true":

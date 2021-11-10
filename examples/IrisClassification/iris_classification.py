@@ -214,7 +214,7 @@ if __name__ == "__main__":
     model = IrisClassification(**dict_args)
     trainer = pl.Trainer.from_argparse_args(args)
     trainer.fit(model, dm)
-    trainer.test()
+    trainer.test(datamodule=dm)
 
     input_schema = Schema(
         [
