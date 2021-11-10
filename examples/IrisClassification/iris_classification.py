@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from mlflow.models.signature import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
 from pytorch_lightning import seed_everything
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader, random_split, TensorDataset
 

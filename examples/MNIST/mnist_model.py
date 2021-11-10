@@ -23,7 +23,7 @@ from torch.nn.parallel import (
     DataParallel,
 )
 from pytorch_lightning import seed_everything
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms

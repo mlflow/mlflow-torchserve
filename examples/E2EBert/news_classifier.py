@@ -16,7 +16,7 @@ from pytorch_lightning.callbacks import (
     ModelCheckpoint,
     LearningRateMonitor,
 )
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import Dataset, DataLoader

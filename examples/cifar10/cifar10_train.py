@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from argparse import ArgumentParser
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from torch import nn
 from torchvision import models
 
