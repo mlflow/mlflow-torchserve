@@ -108,7 +108,7 @@ if __name__ == "__main__":
     dm.setup("fit")
     trainer.fit(model, dm)
     testloader = dm.setup("test")
-    trainer.test(datamodule=testloader)
+    trainer.test(datamodule=dm)
     if trainer.global_rank == 0:
         scripted_model = torch.jit.script(model)
         torch.jit.save(scripted_model, "iris_ts.pt")

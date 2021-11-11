@@ -16,7 +16,7 @@ from pytorch_lightning.callbacks import (
     ModelCheckpoint,
     LearningRateMonitor,
 )
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
@@ -450,6 +450,6 @@ if __name__ == "__main__":
         args, callbacks=[lr_logger, early_stopping, checkpoint_callback], checkpoint_callback=True
     )
     trainer.fit(model, dm)
-    trainer.test()
+    trainer.test(datamodule=dm)
     if trainer.global_rank == 0:
         torch.save(model.state_dict(), "state_dict.pth")

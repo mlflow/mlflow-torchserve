@@ -23,7 +23,7 @@ from torch.nn.parallel import (
     DataParallel,
 )
 from pytorch_lightning import seed_everything
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(args)
 
     trainer.fit(model, dm)
-    trainer.test()
+    trainer.test(datamodule=dm)
 
     run = mlflow.active_run()
     if dict_args["register"] == "true":

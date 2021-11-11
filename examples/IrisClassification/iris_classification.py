@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from mlflow.models.signature import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
 from pytorch_lightning import seed_everything
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader, random_split, TensorDataset
 
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     model = IrisClassification(**dict_args)
     trainer = pl.Trainer.from_argparse_args(args)
     trainer.fit(model, dm)
-    trainer.test()
+    trainer.test(datamodule=dm)
 
     input_schema = Schema(
         [

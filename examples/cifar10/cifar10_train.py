@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from argparse import ArgumentParser
-from pytorch_lightning.metrics import Accuracy
+from torchmetrics import Accuracy
 from torch import nn
 from torchvision import models
 
@@ -224,6 +224,6 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(args)
 
     trainer.fit(model, dm)
-    trainer.test()
+    trainer.test(datamodule=dm)
 
     torch.save(trainer.lightning_module.state_dict(), "resnet.pth")
