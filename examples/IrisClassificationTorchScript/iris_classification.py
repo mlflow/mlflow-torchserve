@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--max_epochs",
-        default=3,
+        default=20,
         help="Describes the number of times a neural network has to be trained",
     )
     parser.add_argument(
