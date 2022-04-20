@@ -1,9 +1,9 @@
 import os
 import pytest
 import shutil
-import subprocess
 from mlflow import cli
 from click.testing import CliRunner
+from mlflow.utils import process
 
 EXAMPLES_DIR = "examples"
 
@@ -18,8 +18,8 @@ def clean_envs_and_cache():
     yield
 
     if get_free_disk_space() < 7.0:  # unit: GiB
-        p = subprocess.Popen(["./utils/remove-conda-envs.sh"])
-        assert 0 == p.wait()
+        process.exec_cmd(["./utils/remove-conda-envs.sh"])
+
 
 @pytest.mark.parametrize(
     "directory, params",
