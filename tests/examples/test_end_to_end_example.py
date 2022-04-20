@@ -28,7 +28,7 @@ def test_mnist_example():
 
     predict_command = ["python", "predict.py"]
     res = process._exec_cmd(predict_command, cwd=mnist_dir)
-    assert "ONE" in res[1]
+    assert "ONE" in res.stdout
 
 
 @pytest.mark.usefixtures("start_torchserve")
@@ -64,4 +64,4 @@ def test_iris_example(tmpdir):
         os.path.join(iris_dir, "sample.json"),
     ]
     res = process._exec_cmd(predict_command, cwd=home_dir)
-    assert "SETOSA" in res[1]
+    assert "SETOSA" in res.stdout
