@@ -18,7 +18,7 @@ from pytorch_lightning.callbacks import (
 )
 from sklearn.metrics import accuracy_score
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torch.utils.data.dataset import IterDataPipe, random_split
 from torchtext.data.functional import to_map_style_dataset
 from torchtext.datasets import AG_NEWS

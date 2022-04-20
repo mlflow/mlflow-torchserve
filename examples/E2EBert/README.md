@@ -67,15 +67,14 @@ The parameters can be overridden via the command line:
 
 For example:
 ```
-mlflow run . -P max_epochs=5 -P num_samples=50000
+mlflow run . -P max_epochs=5
 ```
 
 Or to run the training script directly with custom parameters:
 
 ```
 python news_classifier.py \
-    --max_epochs 5 \
-    --num_samples 50000 \
+    --max_epochs 5
 ```
 
 ## Starting TorchServe
