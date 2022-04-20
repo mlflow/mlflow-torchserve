@@ -18,7 +18,7 @@ def clean_envs_and_cache():
     yield
 
     if get_free_disk_space() < 7.0:  # unit: GiB
-        process.exec_cmd(["./utils/remove-conda-envs.sh"])
+        process._exec_cmd(["./utils/remove-conda-envs.sh"])
 
 
 @pytest.mark.parametrize(
