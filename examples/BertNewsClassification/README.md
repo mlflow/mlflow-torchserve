@@ -60,19 +60,20 @@ Command:
 The parameters can be overridden via the command line:
 
 1. max_epochs - Number of epochs to train models. Training can be interrupted early via Ctrl+C
-2. num_samples -Number of input samples required for training
+2. train_num_samples -Number of input samples required for training
+3. val_num_samples -Number of input samples required for validation
+4. test_num_samples -Number of input samples required for test
 
 
 For example:
 ```
-mlflow run . -P max_epochs=5 -P num_samples=50000
+mlflow run . -P max_epochs=5
 ```
 
 Or to run the training script directly with custom parameters:
 ```
 python news_classifier.py \
     --max_epochs 5 \
-    --num_samples 50000 \
     --model_save_path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
 ```
 

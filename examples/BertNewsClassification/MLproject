@@ -6,13 +6,17 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 1}
-      num_samples: {type: int, default: 15000}
+      train_num_samples: {type:int, default: 2000}
+      val_num_samples: {type:int, default: 200}
+      test_num_samples: {type:int, default: 200}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
       model_save_path: {type: str, default: 'models'}
 
     command: |
           python news_classifier.py \
             --max_epochs {max_epochs} \
-            --num_samples {num_samples} \
+            --train_num_samples {train_num_samples} \
+            --val_num_samples {val_num_samples} \
+            --test_num_samples {test_num_samples} \
             --vocab_file {vocab_file} \
             --model_save_path {model_save_path}
