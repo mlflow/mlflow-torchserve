@@ -3,7 +3,6 @@
 # pylint: disable=E1102
 # pylint: disable=W0223
 import argparse
-import logging
 import math
 import os
 import shutil
@@ -14,7 +13,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torch.utils.data.dataset import IterDataPipe, random_split
 from torchtext.data.functional import to_map_style_dataset
 from torchtext.datasets import AG_NEWS
