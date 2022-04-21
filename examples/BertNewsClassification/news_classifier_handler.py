@@ -20,7 +20,7 @@ class NewsClassifierHandler(object):
         self.device = None
         self.initialized = False
         self.class_mapping_file = None
-        self.VOCAB_FILE = None
+        self.VOCAB_FILE = "bert-base-uncased"
 
     def initialize(self, ctx):
         """
@@ -41,10 +41,6 @@ class NewsClassifierHandler(object):
         model_def_path = os.path.join(model_dir, "news_classifier.py")
         if not os.path.isfile(model_def_path):
             raise RuntimeError("Missing the model definition file")
-
-        self.VOCAB_FILE = os.path.join(model_dir, "bert_base_uncased_vocab.txt")
-        if not os.path.isfile(self.VOCAB_FILE):
-            raise RuntimeError("Missing the vocab file")
 
         self.class_mapping_file = os.path.join(model_dir, "class_mapping.json")
 
@@ -70,7 +66,7 @@ class NewsClassifierHandler(object):
 
         text = text.decode("utf-8")
 
-        tokenizer = BertTokenizer(self.VOCAB_FILE)  # .from_pretrained("bert-base-cased")
+        tokenizer = BertTokenizer.from_pretrained(self.VOCAB_FILE)
         encoding = tokenizer.encode_plus(
             text,
             max_length=32,
