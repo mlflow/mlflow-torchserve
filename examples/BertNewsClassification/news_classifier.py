@@ -14,7 +14,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader
-from torch.utils.data.dataset import IterDataPipe, random_split
+from torch.utils.data.dataset import random_split
+from torchdata.datapipes.iter import IterDataPipe
 from torchtext.data.functional import to_map_style_dataset
 from torchtext.datasets import AG_NEWS
 from tqdm import tqdm
