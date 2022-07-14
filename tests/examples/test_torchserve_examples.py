@@ -41,17 +41,17 @@ def clean_envs_and_cache():
             ],
         ),
         (
-           "E2EBert",
-           [
-               "-P",
-               "max_epochs=1",
-               "-P",
-               "train_num_samples=100",
-               "-P",
-               "val_num_samples=100",
-               "-P",
-               "test_num_samples=100",
-           ],
+            "E2EBert",
+            [
+                "-P",
+                "max_epochs=1",
+                "-P",
+                "train_num_samples=100",
+                "-P",
+                "val_num_samples=100",
+                "-P",
+                "test_num_samples=100",
+            ],
         ),
         ("Titanic", ["-P", "max_epochs=10", "-P", "lr=0.1"]),
         (
