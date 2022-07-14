@@ -25,8 +25,8 @@ def clean_envs_and_cache():
     "directory, params",
     [
         ("IrisClassification", ["-P", "max_epochs=10"]),
-        #("MNIST", ["-P", "max_epochs=1", "-P", "register=false"]),
-        #("IrisClassificationTorchScript", ["-P", "max_epochs=10"]),
+        ("MNIST", ["-P", "max_epochs=1", "-P", "register=false"]),
+        ("IrisClassificationTorchScript", ["-P", "max_epochs=10"]),
         #(
         #    "BertNewsClassification",
         #    [
@@ -53,20 +53,20 @@ def clean_envs_and_cache():
         #        "test_num_samples=100",
         #    ],
         #),
-        #("Titanic", ["-P", "max_epochs=100", "-P", "lr=0.1"]),
-        #(
-        #    "cifar10",
-        #    [
-        #        "-P",
-        #        "max_epochs=1",
-        #        "-P",
-        #        "num_samples_train=1",
-        #        "-P",
-        #        "num_samples_val=1",
-        #        "-P",
-        #        "num_samples_test=1",
-        #    ],
-        #),
+        ("Titanic", ["-P", "max_epochs=100", "-P", "lr=0.1"]),
+        (
+            "cifar10",
+            [
+                "-P",
+                "max_epochs=1",
+                "-P",
+                "num_samples_train=1",
+                "-P",
+                "num_samples_val=1",
+                "-P",
+                "num_samples_test=1",
+            ],
+        ),
     ],
 )
 def test_mlflow_run_example(directory, params):

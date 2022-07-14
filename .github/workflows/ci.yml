@@ -77,4 +77,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests --color=yes --verbose --durations=5
+          pytest tests --color=yes --verbose --durations=5 -sv
