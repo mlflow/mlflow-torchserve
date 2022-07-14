@@ -24,7 +24,7 @@ def clean_envs_and_cache():
 @pytest.mark.parametrize(
     "directory, params",
     [
-        ("IrisClassification", ["-P", "max_epochs=10"]),
+        # ("IrisClassification", ["-P", "max_epochs=10"]),
         ("MNIST", ["-P", "max_epochs=1", "-P", "register=false"]),
         ("IrisClassificationTorchScript", ["-P", "max_epochs=10"]),
         (
@@ -40,19 +40,19 @@ def clean_envs_and_cache():
                 "test_num_samples=100",
             ],
         ),
-        #(
-        #    "E2EBert",
-        #    [
-        #        "-P",
-        #        "max_epochs=1",
-        #        "-P",
-        #        "train_num_samples=100",
-        #        "-P",
-        #        "val_num_samples=100",
-        #        "-P",
-        #        "test_num_samples=100",
-        #    ],
-        #),
+        (
+           "E2EBert",
+           [
+               "-P",
+               "max_epochs=1",
+               "-P",
+               "train_num_samples=100",
+               "-P",
+               "val_num_samples=100",
+               "-P",
+               "test_num_samples=100",
+           ],
+        ),
         ("Titanic", ["-P", "max_epochs=100", "-P", "lr=0.1"]),
         (
             "cifar10",
