@@ -2,15 +2,19 @@
 # pylint: disable=unused-argument
 # pylint: disable=abstract-method
 
-import glob
 import logging
 import math
 import os
 from argparse import ArgumentParser
 
+import mlflow.pytorch
+import numpy as np
+import pandas as pd
 import pytorch_lightning as pl
+import requests
 import torch
 import torch.nn.functional as F
+import torchtext.datasets as td
 from pytorch_lightning.callbacks import (
     EarlyStopping,
     ModelCheckpoint,
@@ -18,7 +22,7 @@ from pytorch_lightning.callbacks import (
 )
 from sklearn.metrics import accuracy_score
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.dataset import random_split
 from torchdata.datapipes.iter import IterDataPipe
 from torchtext.data.functional import to_map_style_dataset
@@ -26,17 +30,33 @@ from torchtext.datasets import AG_NEWS
 from transformers import BertModel, BertTokenizer, AdamW
 
 
+def get_ag_news(num_samples):
+    # reading the input
+    td.AG_NEWS(root="data", split=("train", "test"))
+    train_csv_path = "data/AG_NEWS/train.csv"
+    return (
+        pd.read_csv(train_csv_path, usecols=[0, 2], names=["label", "description"])
+        .assign(label=lambda df: df["label"] - 1)  # make labels zero-based
+        .sample(n=num_samples)
+    )
+
+
 class NewsDataset(IterDataPipe):
-    def __init__(self, tokenizer, source_datapipe, max_length, num_samples=None):
+    def __init__(self, tokenizer, source, max_length, num_samples):
+        """
+        Custom Dataset - Converts the input text and label to tensor
+        :param tokenizer: bert tokenizer
+        :param source: data source - Either a dataframe or DataPipe
+        :param max_length: maximum length of the news text
+        :param num_samples: number of samples to load
+        :param dataset: Dataset type - 20newsgroups or ag_news
+        """
         super(NewsDataset, self).__init__()
-        self.source_datapipe = source_datapipe
+        self.source = source
         self.start = 0
         self.tokenizer = tokenizer
         self.max_length = max_length
-        if num_samples:
-            self.end = num_samples
-        else:
-            self.end = len(self.source_datapipe)
+        self.end = num_samples
 
     def __iter__(self):
         worker_info = torch.utils.data.get_worker_info()
@@ -50,8 +70,8 @@ class NewsDataset(IterDataPipe):
             iter_end = min(iter_start + per_worker, self.end)
 
         for idx in range(iter_start, iter_end):
-            target, review = self.source_datapipe[idx]
-            # print(target, review)
+            target, review = self.source[idx]
+            target -= 1
             encoding = self.tokenizer.encode_plus(
                 review,
                 add_special_tokens=True,
@@ -62,7 +82,6 @@ class NewsDataset(IterDataPipe):
                 return_tensors="pt",
                 truncation=True,
             )
-            target -= 1
 
             yield {
                 "review_text": review,
@@ -82,57 +101,64 @@ class BertDataModule(pl.LightningDataModule):
         self.train_dataset = None
         self.val_dataset = None
         self.test_dataset = None
-        self.train_data_loader = None
-        self.val_data_loader = None
-        self.test_data_loader = None
         self.MAX_LEN = 100
         self.encoding = None
         self.tokenizer = None
         self.args = kwargs
+        self.train_count = None
+        self.val_count = None
+        self.test_count = None
+        self.RANDOM_SEED = 42
+        self.VOCAB_FILE_URL = self.args["vocab_file"]
+        self.VOCAB_FILE = "bert_base_uncased_vocab.txt"
 
     def prepare_data(self):
         """
-        Downloads the data, parse it and split the data into train, test, validation data
-        :param stage: Stage - training or testing
+        Downloads the ag_news or 20newsgroup dataset and initializes bert tokenizer
         """
+        np.random.seed(self.RANDOM_SEED)
+        torch.manual_seed(self.RANDOM_SEED)
+
         train_iter, test_iter = AG_NEWS()
         self.train_dataset = to_map_style_dataset(train_iter)
         self.test_dataset = to_map_style_dataset(test_iter)
 
-        num_train = int(len(self.train_dataset) * 0.95)
-        self.train_dataset, self.val_dataset = random_split(
-            self.train_dataset, [num_train, len(self.train_dataset) - num_train]
-        )
-
-        logging.debug("Total train samples: {}".format(len(self.train_dataset)))
-        logging.debug("Total validation samples: {}".format(len(self.val_dataset)))
-        logging.debug("Total test samples: {}".format(len(self.test_dataset)))
-        logging.debug(
-            "Number of samples to be used for training: {}".format(
-                self.args.get("train_num_samples", None)
-            )
-        )
-        logging.debug(
-            "Number of samples to be used for validation: {}".format(
-                self.args.get("val_num_samples", None)
-            )
-        )
-        logging.debug(
-            "Number of samples to be used for test: {}".format(
-                self.args.get("test_num_samples", None)
-            )
-        )
-        self.tokenizer = BertTokenizer.from_pretrained(self.PRE_TRAINED_MODEL_NAME)
+        if not os.path.isfile(self.VOCAB_FILE):
+            filePointer = requests.get(self.VOCAB_FILE_URL, allow_redirects=True)
+            if filePointer.ok:
+                with open(self.VOCAB_FILE, "wb") as f:
+                    f.write(filePointer.content)
+            else:
+                raise RuntimeError("Error in fetching the vocab file")
+        self.tokenizer = BertTokenizer.from_pretrained(self.VOCAB_FILE)
 
     def setup(self, stage=None):
-        pass
+        """
+        Split the data into train, test, validation data
+        :param stage: Stage - training or testing
+        """
+        if stage == "fit":
+
+            num_train = int(len(self.train_dataset) * 0.95)
+            self.train_dataset, self.val_dataset = random_split(
+                self.train_dataset, [num_train, len(self.train_dataset) - num_train]
+            )
+
+            self.train_count = self.args.get("num_samples")
+            self.val_count = int(self.train_count / 10)
+            self.test_count = int(self.train_count / 10)
+            self.train_count = self.train_count - (self.val_count + self.test_count)
+
+            print("Number of samples used for training: {}".format(self.train_count))
+            print("Number of samples used for validation: {}".format(self.val_count))
+            print("Number of samples used for test: {}".format(self.test_count))
 
     @staticmethod
     def add_model_specific_args(parent_parser):
         """
         Returns the review text and the targets of the specified item
         :param parent_parser: Application specific parser
-        :return: Returns the augmented arugument parser
+        :return: Returns the augmented argument parser
         """
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument(
@@ -151,19 +177,18 @@ class BertDataModule(pl.LightningDataModule):
         )
         return parser
 
-    def create_data_loader(self, source, tokenizer, max_len, batch_size, num_samples=None):
+    def create_data_loader(self, source, count):
         """
         Generic data loader function
         :param df: Input dataframe
         :param tokenizer: bert tokenizer
-        :param max_len: Max length of the news datapoint
-        :param batch_size: Batch size for training
         :return: Returns the constructed dataloader
         """
         ds = NewsDataset(
-            source_datapipe=source,
-            tokenizer=tokenizer,
-            max_length=max_len,
+            source=source,
+            tokenizer=self.tokenizer,
+            max_length=self.MAX_LEN,
+            num_samples=count,
         )
 
         return DataLoader(
@@ -174,48 +199,19 @@ class BertDataModule(pl.LightningDataModule):
         """
         :return: output - Train data loader for the given input
         """
-        ds = NewsDataset(
-            source_datapipe=self.train_dataset,
-            tokenizer=self.tokenizer,
-            max_length=self.MAX_LEN,
-            num_samples=self.args.get("train_num_samples", None),
-        )
-
-        self.train_data_loader = DataLoader(
-            ds, batch_size=self.args["batch_size"], num_workers=self.args["num_workers"]
-        )
-        return self.train_data_loader
+        return self.create_data_loader(source=self.train_dataset, count=self.train_count)
 
     def val_dataloader(self):
         """
         :return: output - Validation data loader for the given input
         """
-        ds = NewsDataset(
-            source_datapipe=self.val_dataset,
-            tokenizer=self.tokenizer,
-            max_length=self.MAX_LEN,
-            num_samples=self.args.get("val_num_samples", None),
-        )
-
-        self.val_data_loader = DataLoader(
-            ds, batch_size=self.args["batch_size"], num_workers=self.args["num_workers"]
-        )
-        return self.val_data_loader
+        return self.create_data_loader(source=self.val_dataset, count=self.val_count)
 
     def test_dataloader(self):
         """
         :return: output - Test data loader for the given input
         """
-        ds = NewsDataset(
-            source_datapipe=self.test_dataset,
-            tokenizer=self.tokenizer,
-            max_length=self.MAX_LEN,
-            num_samples=self.args.get("test_num_samples", None),
-        )
-        self.test_data_loader = DataLoader(
-            ds, batch_size=self.args["batch_size"], num_workers=self.args["num_workers"]
-        )
-        return self.test_data_loader
+        return self.create_data_loader(source=self.test_dataset, count=self.test_count)
 
 
 class BertNewsClassifier(pl.LightningModule):
@@ -284,7 +280,6 @@ class BertNewsClassifier(pl.LightningModule):
         """
         :param input_ids: Input data
         :param attention_maks: Attention mask value
-
         :return: output - Type of news for the given news snippet
         """
         embedding_input = self.bert_model.embeddings(input_ids)
@@ -300,7 +295,7 @@ class BertNewsClassifier(pl.LightningModule):
         """
         Returns the review text and the targets of the specified item
         :param parent_parser: Application specific parser
-        :return: Returns the augmented arugument parser
+        :return: Returns the augmented argument parser
         """
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument(
@@ -399,36 +394,17 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Bert-News Classifier Example")
 
     parser.add_argument(
-        "--train_num_samples",
+        "--num_samples",
         type=int,
         default=2000,
         metavar="N",
-        help="Number of samples to be used for training",
-    )
-    parser.add_argument(
-        "--val_num_samples",
-        type=int,
-        default=200,
-        metavar="N",
-        help="Number of samples to be used for validation",
-    )
-    parser.add_argument(
-        "--test_num_samples",
-        type=int,
-        default=200,
-        metavar="N",
-        help="Number of samples to be used for testing",
+        help="Number of samples to be used for training and evaluation steps (default: 15000) Maximum:100000",
     )
 
     parser.add_argument(
-        "--save_every_n_epoch", default=5, type=int, help="Number of epochs between checkpoints"
-    )
-
-    parser.add_argument(
-        "--resume",
-        default=False,
-        type=bool,
-        help="Set to True for resuming from previous checkpoint",
+        "--vocab_file",
+        default="https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt",
+        help="Custom vocab file",
     )
 
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
@@ -438,9 +414,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
 
-    if "accelerator" in dict_args:
-        if dict_args["accelerator"] == "None":
-            dict_args["accelerator"] = None
+    if "strategy" in dict_args:
+        if dict_args["strategy"] == "None":
+            dict_args["strategy"] = None
 
     dm = BertDataModule(**dict_args)
     dm.prepare_data()
@@ -450,34 +426,40 @@ if __name__ == "__main__":
 
     checkpoint_callback = ModelCheckpoint(
         dirpath=os.getcwd(),
-        every_n_epochs=dict_args["save_every_n_epoch"],
+        save_top_k=1,
+        verbose=True,
+        monitor="val_loss",
+        mode="min",
     )
+
     lr_logger = LearningRateMonitor()
 
-    resume_from_checkpoint = False
+    trainer = pl.Trainer.from_argparse_args(
+        args,
+        callbacks=[lr_logger, early_stopping, checkpoint_callback],
+        enable_checkpointing=True,
+    )
 
-    if dict_args["resume"]:
-        resume_from_checkpoint = True
+    # It is safe to use `mlflow.pytorch.autolog` in DDP training, as below condition invokes
+    # autolog with only rank 0 gpu.
 
-    if resume_from_checkpoint:
-        checkpoint_list = glob.glob("epoch=*-step=*.ckpt")
-        if len(checkpoint_list) == 0:
-            raise Exception("Checkpoint doesn't exist")
-        else:
-            trainer = pl.Trainer.from_argparse_args(
-                args,
-                callbacks=[lr_logger, early_stopping, checkpoint_callback],
-                resume_from_checkpoint=checkpoint_list[0],
-                checkpoint_callback=True,
-            )
+    # For CPU Training
+    if dict_args["gpus"] is None or int(dict_args["gpus"]) == 0:
+        mlflow.pytorch.autolog()
+    elif int(dict_args["gpus"]) >= 1 and trainer.global_rank == 0:
+        # In case of multi gpu training, the training script is invoked multiple times,
+        # The following condition is needed to avoid multiple copies of mlflow runs.
+        # When one or more gpus are used for training, it is enough to save
+        # the model and its parameters using rank 0 gpu.
+        mlflow.pytorch.autolog()
     else:
-        trainer = pl.Trainer.from_argparse_args(
-            args,
-            callbacks=[lr_logger, early_stopping, checkpoint_callback],
-            checkpoint_callback=True,
-        )
+        # This condition is met only for multi-gpu training when the global rank is non zero.
+        # Since the parameters are already logged using global rank 0 gpu, it is safe to ignore
+        # this condition.
+        logging.info("Active run exists.. ")
 
     trainer.fit(model, dm)
-    trainer.test(model, dm)
+    trainer.test(model, datamodule=dm)
+
     if trainer.global_rank == 0:
         torch.save(model.state_dict(), "state_dict.pth")
