@@ -10,6 +10,7 @@ from collections import defaultdict
 
 import mlflow.pytorch
 import numpy as np
+import requests
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -28,16 +29,20 @@ class_names = ["World", "Sports", "Business", "Sci/Tech"]
 
 
 class NewsDataset(IterDataPipe):
-    def __init__(self, tokenizer, source_datapipe, max_length, num_samples=None):
+    def __init__(self, tokenizer, source, max_length, num_samples):
+        """
+        Custom Dataset - Converts the input text and label to tensor
+        :param tokenizer: bert tokenizer
+        :param source: data source - Either a dataframe or DataPipe
+        :param max_length: maximum length of the news text
+        :param num_samples: number of samples to load
+        """
         super(NewsDataset, self).__init__()
-        self.source_datapipe = source_datapipe
+        self.source = source
         self.start = 0
         self.tokenizer = tokenizer
         self.max_length = max_length
-        if num_samples:
-            self.end = num_samples
-        else:
-            self.end = len(self.source_datapipe)
+        self.end = num_samples
 
     def __iter__(self):
         worker_info = torch.utils.data.get_worker_info()
@@ -51,8 +56,8 @@ class NewsDataset(IterDataPipe):
             iter_end = min(iter_start + per_worker, self.end)
 
         for idx in range(iter_start, iter_end):
-            target, review = self.source_datapipe[idx]
-            # print(target, review)
+            target, review = self.source[idx]
+            target -= 1
             encoding = self.tokenizer.encode_plus(
                 review,
                 add_special_tokens=True,
@@ -63,7 +68,6 @@ class NewsDataset(IterDataPipe):
                 return_tensors="pt",
                 truncation=True,
             )
-            target -= 1
 
             yield {
                 "review_text": review,
@@ -97,6 +101,7 @@ class NewsClassifier(nn.Module):
         n_classes = len(class_names)
         self.VOCAB_FILE_URL = args.vocab_file
         self.VOCAB_FILE = "bert_base_uncased_vocab.txt"
+        self.train_dataset = None
 
         self.drop = nn.Dropout(p=0.2)
         self.bert = BertModel.from_pretrained(self.PRE_TRAINED_MODEL_NAME)
@@ -123,21 +128,24 @@ class NewsClassifier(nn.Module):
         rating = int(rating)
         return rating - 1
 
-    def create_data_loader(self, source, tokenizer, max_len, num_samples):
+    def create_data_loader(self, source, count):
         """
-        :param df: DataFrame input
-        :param tokenizer: Bert tokenizer
-        :param max_len: maximum length of the input sentence
-        :param batch_size: Input batch size
+        :param source: Iterable source
+        :param count: Number of samples
 
         :return: output - Corresponding data loader for the given input
         """
         ds = NewsDataset(
-            source_datapipe=source, tokenizer=tokenizer, max_length=max_len, num_samples=num_samples
+            source=source,
+            tokenizer=self.tokenizer,
+            max_length=self.MAX_LEN,
+            num_samples=count,
         )
 
         return DataLoader(
-            ds, batch_size=self.BATCH_SIZE, num_workers=self.args.get("num_workers", 3)
+            ds,
+            batch_size=self.args.get("batch_size", self.BATCH_SIZE),
+            num_workers=self.args.get("num_workers", 3),
         )
 
     def prepare_data(self):
@@ -146,53 +154,38 @@ class NewsClassifier(nn.Module):
         """
         train_iter, test_iter = AG_NEWS()
         self.train_dataset = to_map_style_dataset(train_iter)
-        self.test_dataset = to_map_style_dataset(test_iter)
+        test_dataset = to_map_style_dataset(test_iter)
+
+        if not os.path.isfile(self.VOCAB_FILE):
+            filePointer = requests.get(self.VOCAB_FILE_URL, allow_redirects=True)
+            if filePointer.ok:
+                with open(self.VOCAB_FILE, "wb") as f:
+                    f.write(filePointer.content)
+            else:
+                raise RuntimeError("Error in fetching the vocab file")
+        self.tokenizer = BertTokenizer.from_pretrained(self.VOCAB_FILE)
 
         num_train = int(len(self.train_dataset) * 0.95)
-        self.train_dataset, self.val_dataset = random_split(
+        self.train_dataset, val_dataset = random_split(
             self.train_dataset, [num_train, len(self.train_dataset) - num_train]
         )
 
-        print("Total train samples: {}".format(len(self.train_dataset)))
-        print("Total validation samples: {}".format(len(self.val_dataset)))
-        print("Total test samples: {}".format(len(self.test_dataset)))
-        print(
-            "Number of samples to be used for training: {}".format(
-                self.args.get("train_num_samples", None)
-            )
-        )
-        print(
-            "Number of samples to be used for validation: {}".format(
-                self.args.get("val_num_samples", None)
-            )
-        )
-        print(
-            "Number of samples to be used for test: {}".format(
-                self.args.get("test_num_samples", None)
-            )
-        )
-        self.tokenizer = BertTokenizer.from_pretrained(self.PRE_TRAINED_MODEL_NAME)
+        train_count = self.args.get("num_samples")
+        val_count = int(train_count / 10)
+        test_count = int(train_count / 10)
+        train_count = train_count - (val_count + test_count)
+
+        print("Number of samples used for training: {}".format(train_count))
+        print("Number of samples used for validation: {}".format(val_count))
+        print("Number of samples used for test: {}".format(test_count))
 
         self.train_data_loader = self.create_data_loader(
-            source=self.train_dataset,
-            tokenizer=self.tokenizer,
-            max_len=self.MAX_LEN,
-            num_samples=self.args.get("train_num_samples", None),
+            source=self.train_dataset, count=train_count
         )
 
-        self.val_data_loader = self.create_data_loader(
-            source=self.val_dataset,
-            tokenizer=self.tokenizer,
-            max_len=self.MAX_LEN,
-            num_samples=self.args.get("val_num_samples", None),
-        )
+        self.val_data_loader = self.create_data_loader(source=val_dataset, count=val_count)
 
-        self.test_data_loader = self.create_data_loader(
-            source=self.test_dataset,
-            tokenizer=self.tokenizer,
-            max_len=self.MAX_LEN,
-            num_samples=self.args.get("test_num_samples", None),
-        )
+        self.test_data_loader = self.create_data_loader(source=test_dataset, count=test_count)
 
     def setOptimizer(self):
         """
@@ -359,27 +352,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--train_num_samples",
+        "--num_samples",
         type=int,
         default=2000,
         metavar="N",
-        help="Train num samples (default: 2000)",
-    )
-
-    parser.add_argument(
-        "--val_num_samples",
-        type=int,
-        default=200,
-        metavar="N",
-        help="Train num samples (default: 200)",
-    )
-
-    parser.add_argument(
-        "--test_num_samples",
-        type=int,
-        default=200,
-        metavar="N",
-        help="Train num samples (default: 200)",
+        help="Number of samples to be used for training "
+        "and evaluation steps (default: 2000)",
     )
 
     parser.add_argument(
