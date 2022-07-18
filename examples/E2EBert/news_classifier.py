@@ -399,7 +399,7 @@ if __name__ == "__main__":
         default=2000,
         metavar="N",
         help="Number of samples to be used for training "
-             "and evaluation steps (default: 15000) Maximum:100000",
+        "and evaluation steps (default: 15000) Maximum:100000",
     )
 
     parser.add_argument(
