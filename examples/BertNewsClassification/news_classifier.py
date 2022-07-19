@@ -353,7 +353,7 @@ def ddp_main(rank, world_size, args):
     model.startTraining(model)
     if os.path.exists(args.model_save_path):
         shutil.rmtree(args.model_save_path)
-    if rank == 0:
+    if rank == 0 or rank == "cpu":
         mlflow.pytorch.save_model(
             model,
             path=args.model_save_path,

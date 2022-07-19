@@ -66,9 +66,8 @@ Command:
 The parameters can be overridden via the command line:
 
 1. max_epochs - Number of epochs to train models. Training can be interrupted early via Ctrl+C
-2. train_num_samples -Number of input samples required for training
-3. val_num_samples -Number of input samples required for validation
-4. test_num_samples -Number of input samples required for test
+2. num_train_samples -Number of input samples required for training
+4. num_test_samples -Number of input samples required for test
 
 
 For example:
