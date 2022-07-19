@@ -33,11 +33,9 @@ def clean_envs_and_cache():
                 "-P",
                 "max_epochs=1",
                 "-P",
-                "train_num_samples=100",
+                "num_train_samples=100",
                 "-P",
-                "val_num_samples=100",
-                "-P",
-                "test_num_samples=100",
+                "num_test_samples=100",
             ],
         ),
         (
