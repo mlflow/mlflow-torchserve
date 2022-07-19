@@ -5,8 +5,8 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      max_epochs: {type: int, default: 1}
-      num_train_samples: {type:int, default: 200}
+      max_epochs: {type: int, default: 5}
+      num_train_samples: {type:int, default: 2000}
       num_test_samples: {type:int, default: 200}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
       model_save_path: {type: str, default: 'models'}
