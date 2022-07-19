@@ -1,10 +1,11 @@
-torch==1.9.0
-mlflow>=1.12.0
+torch
+mlflow
 torchserve
 torch-model-archiver
 numpy
 transformers
 sklearn
 tqdm
-torchtext==0.10.0
+torchtext
 pandas
+datasets

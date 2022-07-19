@@ -47,6 +47,12 @@ mlflow run . --no-conda
 
 ```
 
+Run the following command to train in the distributed mode
+
+```
+torchrun --nnodes 1 --nproc_per_node 4 news_classifier.py --max_epochs 1 --num_train_samples 2000 --num_test_samples 200
+```
+
 Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log_model` are optional.
 
 Run the `news_classifier.py` script which will fine tune the model based on the news dataset.
