@@ -358,7 +358,7 @@ def ddp_main(rank, world_size, args):
             model,
             path=args.model_save_path,
             requirements_file="requirements.txt",
-            extra_files=["class_mapping.json"],
+            extra_files=["class_mapping.json", "bert_base_uncased_vocab.txt"],
         )
 
     # mlflow.end_run()
