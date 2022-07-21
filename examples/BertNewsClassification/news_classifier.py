@@ -12,6 +12,7 @@ import mlflow.pytorch
 import numpy as np
 import requests
 import torch
+import torch.distributed as dist
 import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader
@@ -26,7 +27,7 @@ from transformers import (
 )
 
 class_names = ["World", "Sports", "Business", "Sci/Tech"]
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = int(os.environ["LOCAL_RANK"]) if "LOCAL_RANK" in os.environ else "cpu"
 
 
 class NewsDataset(IterDataPipe):
@@ -346,16 +347,29 @@ def get_predictions(model, test_data_loader):
     return review_texts, predictions, prediction_probs, real_values
 
 
-def main(args):
+def setup(rank, world_size):
+    # initialize the process group
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+
+
+def cleanup():
+    dist.destroy_process_group()
+
+
+def ddp_main(rank, world_size, args):
     """
     Orchestrates the training, validation, testing process and saves the model
     :param model: Instance of the NewsClassifier class
     """
+    if device != "cpu":
+        setup(rank, world_size)
     mlflow.start_run()
 
     tokenizer, train_data_loader, val_data_loader, test_data_loader = prepare_data(args=args)
 
     model = NewsClassifier()
+
+    model = model.to(device)
 
     optimizer, scheduler, loss_fn = setOptimizer(args, model)
 
@@ -377,18 +391,22 @@ def main(args):
 
     get_predictions(model=model, test_data_loader=test_data_loader)
 
-    print("\n\n\n SAVING MODEL")
+    if device == "cpu" or rank == 0:
+        print("\n\n\n SAVING MODEL")
+        if os.path.exists(args["model_save_path"]):
+            shutil.rmtree(args["model_save_path"])
 
-    if os.path.exists(args["model_save_path"]):
-        shutil.rmtree(args["model_save_path"])
-    mlflow.pytorch.save_model(
-        model,
-        path=args["model_save_path"],
-        pip_requirements="requirements.txt",
-        extra_files=["class_mapping.json"],
-    )
+        mlflow.pytorch.save_model(
+            model,
+            path=args["model_save_path"],
+            pip_requirements="requirements.txt",
+            extra_files=["class_mapping.json", "bert_base_uncased_vocab.txt"],
+        )
 
     mlflow.end_run()
+
+    if device != "cpu":
+        cleanup()
 
 
 if __name__ == "__main__":
@@ -425,4 +443,16 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(vars(args))
+    WORLD_SIZE = int(os.environ.get("WORLD_SIZE", torch.cuda.device_count()))
+    # When gpus are available
+    if torch.cuda.device_count() > 0:
+        if "LOCAL_RANK" in os.environ:
+            rank = int(os.environ["LOCAL_RANK"])
+        else:
+            rank = "cpu"
+
+    else:
+        # No gpus available . Set the rank to cpu
+        rank = "cpu"
+    # rank = int(os.environ.get("LOCAL_RANK", "cpu")) if torch.cuda.device_count() > 0 else "cpu"
+    ddp_main(rank, WORLD_SIZE, vars(args))
