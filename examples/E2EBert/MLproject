@@ -7,9 +7,9 @@ entry_points:
     parameters:
       max_epochs: {type: int, default: 5}
       gpus: {type: int, default: 0}
-      num_samples: {type: int, default: 15000}
+      num_samples: {type: int, default: 1000}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
-      accelerator: {type str, default: None}
+      strategy: {type str, default: None}
 
     command: |
           python news_classifier.py \
@@ -17,4 +17,4 @@ entry_points:
             --gpus {gpus} \
             --num_samples {num_samples} \
             --vocab_file {vocab_file} \
-            --accelerator={accelerator}
+            --strategy={strategy}

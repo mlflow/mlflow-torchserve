@@ -31,9 +31,6 @@ class IRISDataModule(pl.LightningDataModule):
 
             data_set = TensorDataset(data, labels)
             self.train_set, self.val_set = random_split(data_set, [130, 20])
-
-        # Assign test dataset for use in dataloader(s)
-        if stage == "test" or stage is None:
             self.train_set, self.test_set = random_split(self.train_set, [110, 20])
 
     def train_dataloader(self):

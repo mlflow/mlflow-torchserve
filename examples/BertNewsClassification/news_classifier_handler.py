@@ -25,7 +25,6 @@ class NewsClassifierHandler(object):
     def initialize(self, ctx):
         """
         First try to load torchscript else load eager mode state_dict based model
-
         :param ctx: System properties
         """
 
@@ -58,9 +57,7 @@ class NewsClassifierHandler(object):
     def preprocess(self, data):
         """
         Receives text in form of json and converts it into an encoding for the inference stage
-
         :param data: Input to be passed through the layers for prediction
-
         :return: output - preprocessed encoding
         """
 
@@ -70,7 +67,7 @@ class NewsClassifierHandler(object):
 
         text = text.decode("utf-8")
 
-        tokenizer = BertTokenizer(self.VOCAB_FILE)  # .from_pretrained("bert-base-cased")
+        tokenizer = BertTokenizer(self.VOCAB_FILE)
         encoding = tokenizer.encode_plus(
             text,
             max_length=32,
@@ -87,9 +84,7 @@ class NewsClassifierHandler(object):
     def inference(self, encoding):
         """
         Predict the class whether it is Positive / Neutral / Negative
-
         :param encoding: Input encoding to be passed through the layers for prediction
-
         :return: output - predicted output
         """
 
@@ -103,9 +98,7 @@ class NewsClassifierHandler(object):
     def postprocess(self, inference_output):
         """
         Does postprocess after inference to be returned to user
-
         :param inference_output: Output of inference
-
         :return: output - Output after post processing
         """
         if self.class_mapping_file:
@@ -123,10 +116,8 @@ _service = NewsClassifierHandler()
 def handle(data, context):
     """
     Default function that is called when predict is invoked
-
     :param data: Input to be passed through the layers for prediction
     :param context: dict containing system properties
-
     :return: output - Output after postprocess
     """
     if not _service.initialized:

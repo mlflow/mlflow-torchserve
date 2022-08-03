@@ -2,53 +2,67 @@
 # pylint: disable=W0613
 # pylint: disable=E1102
 # pylint: disable=W0223
-import shutil
-from collections import defaultdict
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn.functional as F
-from sklearn.model_selection import train_test_split
-from torch import nn
-from torch.utils.data import Dataset, DataLoader
-from transformers import (
-    BertModel,
-    BertTokenizer,
-    AdamW,
-    get_linear_schedule_with_warmup,
-)
 import argparse
 import os
+import shutil
+from collections import defaultdict
+
+import mlflow
+import numpy as np
+import torch
+import torch.distributed as dist
+import torch.nn.functional as F
+from datasets import load_dataset
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
-import requests
-import torchtext.datasets as td
-import mlflow.pytorch
+from transformers import BertModel, BertTokenizer, AdamW
+from transformers import (
+    get_linear_schedule_with_warmup,
+)
+
+print("PyTorch version: ", torch.__version__)
 
 class_names = ["World", "Sports", "Business", "Sci/Tech"]
 
 
-class AGNewsDataset(Dataset):
-    """
-    Constructs the encoding with the dataset
+class NewsDataset(Dataset):
+    """Ag News Dataset
+    Args:
+        Dataset
     """
 
-    def __init__(self, reviews, targets, tokenizer, max_len):
-        self.reviews = reviews
-        self.targets = targets
+    def __init__(self, dataset, tokenizer):
+        """Performs initialization of tokenizer.
+        Args:
+             dataset: dataframe
+             tokenizer: bert tokenizer
+        """
+        self.dataset = dataset
+        self.max_length = 100
         self.tokenizer = tokenizer
-        self.max_len = max_len
 
     def __len__(self):
-        return len(self.reviews)
+        """
+        Returns:
+             returns the number of datapoints in the dataframe
+        """
+        return len(self.dataset)
 
     def __getitem__(self, item):
-        review = str(self.reviews[item])
-        target = self.targets[item]
-
+        """Returns the review text and the targets of the specified item.
+        Args:
+             item: Index of sample review
+        Returns:
+             Returns the dictionary of review text,
+             input ids, attention mask, targets
+        """
+        review = str(self.dataset[item]["text"])
+        target = self.dataset[item]["label"]
         encoding = self.tokenizer.encode_plus(
             review,
             add_special_tokens=True,
-            max_length=self.max_len,
+            max_length=self.max_length,
             return_token_type_ids=False,
             padding="max_length",
             return_attention_mask=True,
@@ -59,22 +73,24 @@ class AGNewsDataset(Dataset):
         return {
             "review_text": review,
             "input_ids": encoding["input_ids"].flatten(),
-            "attention_mask": encoding["attention_mask"].flatten(),
-            "targets": torch.tensor(target, dtype=torch.long),
+            "attention_mask": encoding["attention_mask"].flatten(),  # pylint: disable=not-callable
+            "targets": torch.tensor(
+                target, dtype=torch.long
+            ),  # pylint: disable=no-member,not-callable
         }
 
 
 class NewsClassifier(nn.Module):
     def __init__(self, args):
         super(NewsClassifier, self).__init__()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = int(os.environ["LOCAL_RANK"]) if torch.cuda.device_count() > 0 else "cpu"
         self.PRE_TRAINED_MODEL_NAME = "bert-base-uncased"
+        self.args = vars(args)
         self.EPOCHS = args.max_epochs
         self.df = None
         self.tokenizer = None
-        self.df_train = None
-        self.df_val = None
-        self.df_test = None
+        self.train_dataset = None
         self.train_data_loader = None
         self.val_data_loader = None
         self.test_data_loader = None
@@ -84,7 +100,6 @@ class NewsClassifier(nn.Module):
         self.loss_fn = None
         self.BATCH_SIZE = 16
         self.MAX_LEN = 160
-        self.NUM_SAMPLES_COUNT = args.num_samples
         n_classes = len(class_names)
         self.VOCAB_FILE_URL = args.vocab_file
         self.VOCAB_FILE = "bert_base_uncased_vocab.txt"
@@ -100,7 +115,6 @@ class NewsClassifier(nn.Module):
         """
         :param input_ids: Input sentences from the batch
         :param attention_mask: Attention mask returned by the encoder
-
         :return: output - label for the input text
         """
         pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask).pooler_output
@@ -114,81 +128,58 @@ class NewsClassifier(nn.Module):
         rating = int(rating)
         return rating - 1
 
-    def create_data_loader(self, df, tokenizer, max_len, batch_size):
+    def create_data_loader(self, dataset, tokenizer):
         """
-        :param df: DataFrame input
+        :param dataset: DataFrame input
         :param tokenizer: Bert tokenizer
-        :param max_len: maximum length of the input sentence
-        :param batch_size: Input batch size
-
         :return: output - Corresponding data loader for the given input
         """
-        ds = AGNewsDataset(
-            reviews=df.description.to_numpy(),
-            targets=df.label.to_numpy(),
+        dataset = NewsDataset(
+            dataset=dataset,
             tokenizer=tokenizer,
-            max_len=max_len,
         )
 
-        return DataLoader(ds, batch_size=batch_size, num_workers=4)
+        return DataLoader(
+            dataset,
+            batch_size=self.args.get("batch_size", 4),
+            num_workers=self.args.get("num_workers", 1),
+        )
 
     def prepare_data(self):
         """
         Creates train, valid and test dataloaders from the csv data
         """
-        td.AG_NEWS(root="data", split=("train", "test"))
-        extracted_files = os.listdir("data/AG_NEWS")
+        dataset = load_dataset("ag_news")
+        num_train_samples = self.args["num_train_samples"]
 
-        train_csv_path = None
-        for fname in extracted_files:
-            if fname.endswith("train.csv"):
-                train_csv_path = os.path.join(os.getcwd(), "data/AG_NEWS", fname)
-
-        self.df = pd.read_csv(train_csv_path)
-
-        self.df.columns = ["label", "title", "description"]
-        self.df.sample(frac=1)
-        self.df = self.df.iloc[: self.NUM_SAMPLES_COUNT]
-
-        self.df["label"] = self.df.label.apply(self.process_label)
-
-        if not os.path.isfile(self.VOCAB_FILE):
-            filePointer = requests.get(self.VOCAB_FILE_URL, allow_redirects=True)
-            if filePointer.ok:
-                with open(self.VOCAB_FILE, "wb") as f:
-                    f.write(filePointer.content)
-            else:
-                raise RuntimeError("Error in fetching the vocab file")
-
-        self.tokenizer = BertTokenizer(self.VOCAB_FILE)
-
-        RANDOM_SEED = 42
-        np.random.seed(RANDOM_SEED)
-        torch.manual_seed(RANDOM_SEED)
-
-        self.df_train, self.df_test = train_test_split(
-            self.df, test_size=0.1, random_state=RANDOM_SEED, stratify=self.df["label"]
+        num_val_samples = int(num_train_samples * 0.1)
+        num_train_samples -= num_val_samples
+        self.train_dataset = dataset["train"].train_test_split(
+            train_size=num_train_samples, test_size=num_val_samples
         )
-        self.df_val, self.df_test = train_test_split(
-            self.df_test, test_size=0.5, random_state=RANDOM_SEED, stratify=self.df_test["label"]
-        )
+        val_data = self.train_dataset["test"]
+        self.train_dataset = self.train_dataset["train"]
 
-        self.train_data_loader = self.create_data_loader(
-            self.df_train, self.tokenizer, self.MAX_LEN, self.BATCH_SIZE
-        )
-        self.val_data_loader = self.create_data_loader(
-            self.df_val, self.tokenizer, self.MAX_LEN, self.BATCH_SIZE
-        )
-        self.test_data_loader = self.create_data_loader(
-            self.df_test, self.tokenizer, self.MAX_LEN, self.BATCH_SIZE
-        )
+        test_data = dataset["test"]
+        num_test_samples = self.args["num_test_samples"]
+        remaining = len(test_data) - num_test_samples
+        test_data = dataset["train"].train_test_split(
+            train_size=remaining, test_size=num_test_samples
+        )["test"]
 
-    def setOptimizer(self):
+        self.tokenizer = BertTokenizer.from_pretrained(self.PRE_TRAINED_MODEL_NAME)
+
+        self.train_data_loader = self.create_data_loader(self.train_dataset, self.tokenizer)
+
+        self.val_data_loader = self.create_data_loader(val_data, self.tokenizer)
+        self.test_data_loader = self.create_data_loader(test_data, self.tokenizer)
+
+    def setOptimizer(self, model):
         """
         Sets the optimizer and scheduler functions
         """
         self.optimizer = AdamW(model.parameters(), lr=1e-3, correct_bias=False)
-        self.total_steps = len(self.train_data_loader) * self.EPOCHS
+        self.total_steps = len(self.train_dataset) * self.EPOCHS
 
         self.scheduler = get_linear_schedule_with_warmup(
             self.optimizer, num_warmup_steps=0, num_training_steps=self.total_steps
@@ -199,7 +190,6 @@ class NewsClassifier(nn.Module):
     def startTraining(self, model):
         """
         Initialzes the Traning step with the model initialized
-
         :param model: Instance of the NewsClassifier class
         """
         history = defaultdict(list)
@@ -228,17 +218,16 @@ class NewsClassifier(nn.Module):
     def train_epoch(self, model):
         """
         Training process happens and accuracy is returned as output
-
         :param model: Instance of the NewsClassifier class
-
         :result: output - Accuracy of the model after training
         """
-
+        model = model.to(self.device)
         model = model.train()
         losses = []
         correct_predictions = 0
-
+        iterations = 0
         for data in tqdm(self.train_data_loader):
+            iterations += 1
             input_ids = data["input_ids"].to(self.device)
             attention_mask = data["attention_mask"].to(self.device)
             targets = data["targets"].to(self.device)
@@ -258,26 +247,26 @@ class NewsClassifier(nn.Module):
             self.optimizer.zero_grad()
 
         return (
-            correct_predictions.double() / len(self.train_data_loader) / self.BATCH_SIZE,
+            correct_predictions.double() / iterations / self.BATCH_SIZE,
             np.mean(losses),
         )
 
     def eval_model(self, model, data_loader):
         """
         Validation process happens and validation / test accuracy is returned as output
-
         :param model: Instance of the NewsClassifier class
         :param data_loader: Data loader for either test / validation dataset
-
         :result: output - Accuracy of the model after testing
         """
         model = model.eval()
 
         losses = []
         correct_predictions = 0
+        iterations = 0
 
         with torch.no_grad():
             for d in data_loader:
+                iterations += 1
                 input_ids = d["input_ids"].to(self.device)
                 attention_mask = d["attention_mask"].to(self.device)
                 targets = d["targets"].to(self.device)
@@ -289,16 +278,14 @@ class NewsClassifier(nn.Module):
                 correct_predictions += torch.sum(preds == targets)
                 losses.append(loss.item())
 
-        return correct_predictions.double() / len(data_loader) / self.BATCH_SIZE, np.mean(losses)
+        return correct_predictions.double() / iterations / self.BATCH_SIZE, np.mean(losses)
 
     def get_predictions(self, model, data_loader):
 
         """
         Prediction after the training step is over
-
         :param model: Instance of the NewsClassifier class
         :param data_loader: Data loader for either test / validation dataset
-
         :result: output - Returns prediction results,
                           prediction probablities and corresponding values
         """
@@ -332,6 +319,56 @@ class NewsClassifier(nn.Module):
         return review_texts, predictions, prediction_probs, real_values
 
 
+def setup(rank, world_size):
+    """
+    calls init process group in case of distributed training
+    :param rank: local rank of gpu
+    :param world_size: total number of gpus available
+    """
+    # initialize the process group
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+
+
+def cleanup():
+    """
+    destroys the process group at the end of distributed training
+    """
+    dist.destroy_process_group()
+
+
+def ddp_main(rank, world_size, args):
+    """
+    orchestrate training and testing process
+    :param rank: Local rank of gpu
+    :param world_size: Total number of gpus available
+    :param args: Trainer specific arguments
+    """
+    if world_size > 0:
+        setup(rank, world_size)
+    args.rank = rank
+    model = NewsClassifier(args)
+    model = model.to(rank)
+    model.prepare_data()
+    model.setOptimizer(model)
+    model.startTraining(model)
+    if os.path.exists(args.model_save_path):
+        shutil.rmtree(args.model_save_path)
+    if rank == 0 or rank == "cpu":
+        mlflow.pytorch.save_model(
+            model,
+            path=args.model_save_path,
+            requirements_file="requirements.txt",
+            extra_files=["class_mapping.json", "bert_base_uncased_vocab.txt"],
+        )
+
+    # mlflow.end_run()
+    test_acc, _ = model.eval_model(model, model.test_data_loader)
+    print(test_acc.item())
+
+    if world_size > 0:
+        cleanup()
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="PyTorch BERT Example")
@@ -345,12 +382,19 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--num_samples",
+        "--num_train_samples",
         type=int,
-        default=15000,
+        default=2000,
         metavar="N",
-        help="Number of samples to be used for training "
-        "and evaluation steps (default: 15000) Maximum:100000",
+        help="Train num samples (default: 2000)",
+    )
+
+    parser.add_argument(
+        "--num_test_samples",
+        type=int,
+        default=200,
+        metavar="N",
+        help="Train num samples (default: 200)",
     )
 
     parser.add_argument(
@@ -364,33 +408,7 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    mlflow.start_run()
 
-    model = NewsClassifier(args)
-    model = model.to(model.device)
-    model.prepare_data()
-    model.setOptimizer()
-    model.startTraining(model)
-
-    print("TRAINING COMPLETED!!!")
-
-    test_acc, _ = model.eval_model(model, model.test_data_loader)
-
-    print(test_acc.item())
-
-    y_review_texts, y_pred, y_pred_probs, y_test = model.get_predictions(
-        model, model.test_data_loader
-    )
-
-    print("\n\n\n SAVING MODEL")
-
-    if os.path.exists(args.model_save_path):
-        shutil.rmtree(args.model_save_path)
-    mlflow.pytorch.save_model(
-        model,
-        path=args.model_save_path,
-        requirements_file="requirements.txt",
-        extra_files=["class_mapping.json", "bert_base_uncased_vocab.txt"],
-    )
-
-    mlflow.end_run()
+    WORLD_SIZE = int(os.environ.get("WORLD_SIZE", torch.cuda.device_count()))
+    rank = int(os.environ["LOCAL_RANK"]) if torch.cuda.device_count() > 0 else "cpu"
+    ddp_main(rank, WORLD_SIZE, args)

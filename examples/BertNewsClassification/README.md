@@ -47,6 +47,12 @@ mlflow run . --no-conda
 
 ```
 
+Run the following command to train in the distributed mode
+
+```
+torchrun --nnodes 1 --nproc_per_node 4 news_classifier.py --max_epochs 1 --num_train_samples 2000 --num_test_samples 200
+```
+
 Note: The arguments `requirements_file` and `extra_files` in `mlflow.pytorch.log_model` are optional.
 
 Run the `news_classifier.py` script which will fine tune the model based on the news dataset.
@@ -60,19 +66,19 @@ Command:
 The parameters can be overridden via the command line:
 
 1. max_epochs - Number of epochs to train models. Training can be interrupted early via Ctrl+C
-2. num_samples -Number of input samples required for training
+2. num_train_samples -Number of input samples required for training
+4. num_test_samples -Number of input samples required for test
 
 
 For example:
 ```
-mlflow run . -P max_epochs=5 -P num_samples=50000
+mlflow run . -P max_epochs=5
 ```
 
 Or to run the training script directly with custom parameters:
 ```
 python news_classifier.py \
     --max_epochs 5 \
-    --num_samples 50000 \
     --model_save_path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
 ```
 

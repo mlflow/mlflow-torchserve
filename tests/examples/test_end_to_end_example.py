@@ -10,7 +10,7 @@ def test_mnist_example():
     home_dir = os.getcwd()
     mnist_dir = "examples/MNIST"
     example_command = ["python", "mnist_model.py", "--max_epochs", "1", "--register", "false"]
-    process.exec_cmd(example_command, cwd=mnist_dir)
+    process._exec_cmd(example_command, cwd=mnist_dir)
 
     assert os.path.exists(os.path.join(mnist_dir, "model.pth"))
     create_deployment_command = [
@@ -22,13 +22,13 @@ def test_mnist_example():
         "model.pth",
     ]
 
-    process.exec_cmd(create_deployment_command, cwd=mnist_dir)
+    process._exec_cmd(create_deployment_command, cwd=mnist_dir)
 
     assert os.path.exists(os.path.join(home_dir, "model_store", "mnist_classification.mar"))
 
     predict_command = ["python", "predict.py"]
-    res = process.exec_cmd(predict_command, cwd=mnist_dir)
-    assert "ONE" in res[1]
+    res = process._exec_cmd(predict_command, cwd=mnist_dir)
+    assert "ONE" in res.stdout
 
 
 @pytest.mark.usefixtures("start_torchserve")
@@ -40,7 +40,7 @@ def test_iris_example(tmpdir):
         os.path.join(iris_dir, "index_to_name.json"),
         os.path.join(home_dir, "model/MLmodel"),
     )
-    process.exec_cmd(example_command, cwd=home_dir)
+    process._exec_cmd(example_command, cwd=home_dir)
     create_deployment_command = [
         "python",
         os.path.join(iris_dir, "create_deployment.py"),
@@ -54,7 +54,7 @@ def test_iris_example(tmpdir):
         extra_files,
     ]
 
-    process.exec_cmd(create_deployment_command, cwd=home_dir)
+    process._exec_cmd(create_deployment_command, cwd=home_dir)
     mlflow.end_run()
     assert os.path.exists(os.path.join(home_dir, "model_store", "iris_classification.mar"))
     predict_command = [
@@ -63,5 +63,5 @@ def test_iris_example(tmpdir):
         "--input_file_path",
         os.path.join(iris_dir, "sample.json"),
     ]
-    res = process.exec_cmd(predict_command, cwd=home_dir)
-    assert "SETOSA" in res[1]
+    res = process._exec_cmd(predict_command, cwd=home_dir)
+    assert "SETOSA" in res.stdout
