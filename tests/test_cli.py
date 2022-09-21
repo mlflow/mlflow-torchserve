@@ -273,7 +273,7 @@ def test_predict_cli_failure(deployment_name):
     assert (
         res.exit_code == 2
         and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-        "Error: Missing option '--name'.\n"
+        "Error: Must specify exactly one of --name or --endpoint.\n"
     )
     res = runner.invoke(
         cli.predict,
