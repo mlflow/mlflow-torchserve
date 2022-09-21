@@ -14,5 +14,5 @@ entry_points:
           python mnist_model.py \
             --max_epochs {max_epochs} \
             --gpus {gpus} \
-            --strategy {accelerator} \
+            --strategy {strategy} \
             --registration_name {registration_name} \
