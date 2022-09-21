@@ -79,11 +79,7 @@ class CIFAR10Classifier(
         output = self.forward(x_var)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, y_var)
-        accelerator = self.args.get("accelerator", None)
-        if accelerator is not None:
-            self.log("test_loss", loss, sync_dist=True)
-        else:
-            self.log("test_loss", loss)
+        self.log("test_loss", loss, sync_dist=True)
         self.test_acc(y_hat, y_var)
         self.preds += y_hat.tolist()
         self.target += y_var.tolist()
@@ -104,11 +100,7 @@ class CIFAR10Classifier(
         output = self.forward(x_var)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, y_var)
-        accelerator = self.args.get("accelerator", None)
-        if accelerator is not None:
-            self.log("val_loss", loss, sync_dist=True)
-        else:
-            self.log("val_loss", loss)
+        self.log("val_loss", loss, sync_dist=True)
         self.val_acc(y_hat, y_var)
         self.log("val_acc", self.val_acc.compute())
         return {"val_step_loss": loss, "val_loss": loss}
@@ -209,9 +201,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
 
-    if "accelerator" in dict_args:
-        if dict_args["accelerator"] == "None":
-            dict_args["accelerator"] = None
+    if "strategy" in dict_args:
+        if dict_args["strategy"] == "None":
+            dict_args["strategy"] = None
 
     mlflow.pytorch.autolog()
 

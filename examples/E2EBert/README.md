@@ -47,7 +47,7 @@ mlflow run . --no-conda
 To run it in gpu, use the following command
 
 ```
-mlflow run . -P gpus=2 -P accelerator="ddp"
+mlflow run . -P devices=2 -P strategy="ddp"
 ```
 
 Run the `news_classifier.py` script which will fine tune the model based on news dataset. 

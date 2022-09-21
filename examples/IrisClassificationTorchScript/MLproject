@@ -6,11 +6,11 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 100}
-      gpus: {type: int, default: 0}
-      accelerator: {type str, default: "None"}
+      devices: {type: int, default: None}
+      strategy: {type str, default: "None"}
 
     command: |
           python iris_classification.py \
             --max_epochs {max_epochs} \
-            --gpus {gpus} \
-            --accelerator {accelerator}
+            --devices {devices} \
+            --strategy {strategy}

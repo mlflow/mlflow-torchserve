@@ -83,21 +83,7 @@ class IrisClassification(pl.LightningModule):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--max_epochs",
-        default=20,
-        help="Describes the number of times a neural network has to be trained",
-    )
-    parser.add_argument(
-        "--gpus", type=int, default=0, help="Number of gpus - by default runs on CPU"
-    )
-    parser.add_argument(
-        "--accelerator",
-        type=lambda x: None if x == "None" else x,
-        default=None,
-        help="Accelerator - (default: None)",
-    )
+    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     args = parser.parse_args()
     mlflow.pytorch.autolog()
     trainer = pl.Trainer(max_epochs=int(args.max_epochs))

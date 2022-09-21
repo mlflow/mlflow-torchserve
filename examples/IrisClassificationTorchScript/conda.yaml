@@ -11,5 +11,5 @@ dependencies:
       - mlflow
       - scikit-learn
       - torchvision
-      - pytorch-lightning>=1.3.5
+      - pytorch-lightning>=1.7.6
 

@@ -12,6 +12,6 @@ dependencies:
   - transformers
   - torch>=1.9.0
   - torchtext>=0.10.0
-  - pytorch-lightning>=1.4.0
+  - pytorch-lightning>=1.7.6
   - torchvision>=0.10.0
   - torchdata
