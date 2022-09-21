@@ -13,11 +13,6 @@ from argparse import ArgumentParser
 import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
-
-# from pytorch_lightning.overrides.data_parallel import (
-#     LightningDistributedDataParallel,
-#     LightningDataParallel,
-# )
 from torch.nn.parallel import (
     DistributedDataParallel,
     DataParallel,
@@ -280,9 +275,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
 
-    if "accelerator" in dict_args:
-        if dict_args["accelerator"] == "None":
-            dict_args["accelerator"] = None
+    if "strategy" in dict_args:
+        if dict_args["strategy"] == "None":
+            dict_args["strategy"] = None
 
     mlflow.pytorch.autolog()
 
