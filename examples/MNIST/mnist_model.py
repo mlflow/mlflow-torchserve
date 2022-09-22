@@ -208,7 +208,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         loss = self.cross_entropy_loss(logits, y)
         _, y_hat = torch.max(logits, dim=1)
         self.val_acc(y_hat, y)
-        self.log("val_acc", self.val_acc.compute())
+        self.log("val_acc", self.val_acc.compute(), sync_dist=True)
         self.log("val_loss", loss, sync_dist=True)
 
     def test_step(self, test_batch, batch_idx):
