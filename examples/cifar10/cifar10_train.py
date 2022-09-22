@@ -201,9 +201,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
 
-    if "strategy" in dict_args:
-        if dict_args["strategy"] == "None":
-            dict_args["strategy"] = None
+    for argument in ["strategy", "accelerator", "devices"]:
+        if dict_args[argument] == "None":
+            dict_args[argument] = None
 
     mlflow.pytorch.autolog()
 
