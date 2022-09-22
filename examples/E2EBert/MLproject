@@ -10,6 +10,7 @@ entry_points:
       num_samples: {type: int, default: 1000}
       vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
       strategy: {type str, default: None}
+      accelerator: {type str, default: None}
 
     command: |
           python news_classifier.py \
@@ -17,4 +18,5 @@ entry_points:
             --devices {devices} \
             --num_samples {num_samples} \
             --vocab_file {vocab_file} \
-            --strategy={strategy}
+            --strategy={strategy} \
+            --accelerator={accelerator}
