@@ -15,7 +15,7 @@ Python scripts `create_deployment.py` and `predict.py` have been used for this p
 Run the following command to train the MNIST model
 
 CPU: `mlflow run . -P max_epochs=5`
-GPU: `mlflow run . -P max_epochs=5 -P devices=2 -P strategy=ddp`
+GPU: `mlflow run . -P max_epochs=5 -P devices=2 -P strategy=ddp -P accelerator=gpu`
 
 At the end of the training, MNIST model will be saved as state dict in the current working directory
 
