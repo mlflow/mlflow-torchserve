@@ -8,9 +8,11 @@ entry_points:
       max_epochs: {type: int, default: 100}
       devices: {type: int, default: None}
       strategy: {type str, default: "None"}
+      accelerator: {type str, default: "None"}
 
     command: |
           python iris_classification.py \
             --max_epochs {max_epochs} \
             --devices {devices} \
-            --strategy {strategy}
+            --strategy {strategy} \
+            --accelerator {accelerator}
