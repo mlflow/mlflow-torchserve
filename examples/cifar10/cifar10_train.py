@@ -178,11 +178,6 @@ class CIFAR10Classifier(
         """
         self.show_activations(self.reference_image)
 
-        # Logging graph
-        if self.current_epoch == 0:
-            sample_img = torch.rand((1, 3, 64, 64))
-            self.logger.experiment.add_graph(CIFAR10Classifier(), sample_img)
-
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Cifar10 Example")
@@ -210,7 +205,6 @@ if __name__ == "__main__":
     model = CIFAR10Classifier(**dict_args)
 
     dm = CIFAR10DataModule(**dict_args)
-    dm.prepare_data()
     dm.setup(stage="fit")
 
     trainer = pl.Trainer.from_argparse_args(args)
