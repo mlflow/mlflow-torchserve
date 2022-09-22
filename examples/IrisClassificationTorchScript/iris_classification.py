@@ -85,15 +85,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     args = parser.parse_args()
+    dict_args = vars(args)
+
+    for argument in ["strategy", "accelerator", "devices"]:
+        if dict_args[argument] == "None":
+            dict_args[argument] = None
+
     mlflow.pytorch.autolog()
-    trainer = pl.Trainer(max_epochs=int(args.max_epochs))
     model = IrisClassification()
     import iris_datamodule
 
     dm = iris_datamodule.IRISDataModule()
+    dm.prepare_data()
     dm.setup("fit")
+
+    trainer = pl.Trainer.from_argparse_args(args)
     trainer.fit(model, dm)
-    testloader = dm.setup("test")
+    trainer.test(datamodule=dm)
     trainer.test(datamodule=dm)
     if trainer.global_rank == 0:
         scripted_model = torch.jit.script(model)
