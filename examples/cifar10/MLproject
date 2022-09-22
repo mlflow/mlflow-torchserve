@@ -21,4 +21,4 @@ entry_points:
             --num_samples_val {num_samples_val} \
             --num_samples_test {num_samples_test} \
             --strategy {strategy} \
-            --accelerator {strategy}
+            --accelerator {accelerator}
