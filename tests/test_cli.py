@@ -246,48 +246,47 @@ def test_predict_cli_success(deployment_name):
     assert res.exit_code == 0
 
 
-# Uncomment test case once https://github.com/mlflow/mlflow/issues/6173 is resolved
-# @pytest.mark.parametrize("deployment_name", [f_deployment_name_version, f_deployment_id])
-# def test_predict_cli_failure(deployment_name):
-#     res = runner.invoke(
-#         cli.predict,
-#         ["--name", deployment_name, "--target", f_target],
-#     )
-#     assert (
-#         res.exit_code == 2
-#         and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-#         "Error: Missing option '--input-path' / '-I'.\n"
-#     )
-#     res = runner.invoke(
-#         cli.predict,
-#         ["--name", deployment_name, "--input-path", sample_input_file],
-#     )
-#     assert (
-#         res.exit_code == 2
-#         and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-#         "Error: Missing option '--target' / '-t'.\n"
-#     )
-#     res = runner.invoke(
-#         cli.predict,
-#         ["--target", f_target, "--input-path", sample_input_file],
-#     )
-#     assert (
-#         res.exit_code == 2
-#         and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
-#         "Error: Missing option '--name'.\n"
-#     )
-#     res = runner.invoke(
-#         cli.predict,
-#         [
-#             "--name",
-#             deployment_name,
-#             "--target",
-#             f_target,
-#             "--input-path",
-#             sample_incorrect_input_file,
-#         ],
-#     )
-#     assert res.exception
+@pytest.mark.parametrize("deployment_name", [f_deployment_name_version, f_deployment_id])
+def test_predict_cli_failure(deployment_name):
+    res = runner.invoke(
+        cli.predict,
+        ["--name", deployment_name, "--target", f_target],
+    )
+    assert (
+        res.exit_code == 2
+        and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
+        "Error: Missing option '--input-path' / '-I'.\n"
+    )
+    res = runner.invoke(
+        cli.predict,
+        ["--name", deployment_name, "--input-path", sample_input_file],
+    )
+    assert (
+        res.exit_code == 2
+        and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
+        "Error: Missing option '--target' / '-t'.\n"
+    )
+    res = runner.invoke(
+        cli.predict,
+        ["--target", f_target, "--input-path", sample_input_file],
+    )
+    assert (
+        res.exit_code == 2
+        and res.output == "Usage: predict [OPTIONS]\nTry 'predict --help' for help.\n\n"
+        "Error: Must specify exactly one of --name or --endpoint.\n"
+    )
+    res = runner.invoke(
+        cli.predict,
+        [
+            "--name",
+            deployment_name,
+            "--target",
+            f_target,
+            "--input-path",
+            sample_incorrect_input_file,
+        ],
+    )
+    assert res.exception
 
 
 @pytest.mark.parametrize("deployment_name", [f_deployment_name_version, f_deployment_id])
