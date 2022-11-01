@@ -7,8 +7,7 @@ dependencies:
 - pip
 - pip:
   - sklearn
-  - pytorch-lightning
+  - pytorch-lightning>=1.7.6
   - torch
   - torchvision
   - mlflow
-

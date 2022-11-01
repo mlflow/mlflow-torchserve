@@ -6,7 +6,8 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 1}
-      gpus: {type: int, default: 0}
+      devices: {type: int, default: None}
+      strategy: {type: str, default: "None"}
       accelerator: {type: str, default: "None"}
       num_samples_train: {type: int, default: 39}
       num_samples_val: {type: int, default: 9}
@@ -15,8 +16,9 @@ entry_points:
     command: |
           python cifar10_train.py \
             --max_epochs {max_epochs} \
-            --gpus {gpus} \
+            --devices {devices} \
             --num_samples_train {num_samples_train} \
             --num_samples_val {num_samples_val} \
             --num_samples_test {num_samples_test} \
+            --strategy {strategy} \
             --accelerator {accelerator}

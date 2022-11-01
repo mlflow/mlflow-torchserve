@@ -183,29 +183,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Iris Classification model")
 
     parser.add_argument(
-        "--max_epochs", type=int, default=100, help="number of epochs to run (default: 100)"
-    )
-    parser.add_argument(
-        "--gpus", type=int, default=0, help="Number of gpus - by default runs on CPU"
-    )
-    parser.add_argument(
         "--save-model",
         type=bool,
         default=True,
         help="For Saving the current Model",
     )
-    parser.add_argument(
-        "--accelerator",
-        type=lambda x: None if x == "None" else x,
-        default=None,
-        help="Accelerator - (default: None)",
-    )
 
+    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
     parser = IrisClassification.add_model_specific_args(parent_parser=parser)
     parser = IrisDataModule.add_model_specific_args(parent_parser=parser)
 
     args = parser.parse_args()
     dict_args = vars(args)
+
+    for argument in ["strategy", "accelerator", "devices"]:
+        if dict_args[argument] == "None":
+            dict_args[argument] = None
 
     dm = IrisDataModule(**dict_args)
     dm.prepare_data()
@@ -216,14 +209,15 @@ if __name__ == "__main__":
     trainer.fit(model, dm)
     trainer.test(datamodule=dm)
 
-    input_schema = Schema(
-        [
-            ColSpec("double", "sepal length (cm)"),
-            ColSpec("double", "sepal width (cm)"),
-            ColSpec("double", "petal length (cm)"),
-            ColSpec("double", "petal width (cm)"),
-        ]
-    )
-    output_schema = Schema([ColSpec("long")])
-    signature = ModelSignature(inputs=input_schema, outputs=output_schema)
-    mlflow.pytorch.save_model(trainer.lightning_module, "model", signature=signature)
+    if trainer.global_rank == 0:
+        input_schema = Schema(
+            [
+                ColSpec("double", "sepal length (cm)"),
+                ColSpec("double", "sepal width (cm)"),
+                ColSpec("double", "petal length (cm)"),
+                ColSpec("double", "petal width (cm)"),
+            ]
+        )
+        output_schema = Schema([ColSpec("long")])
+        signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+        mlflow.pytorch.save_model(trainer.lightning_module, "model", signature=signature)

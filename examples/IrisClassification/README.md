@@ -33,7 +33,7 @@ mlflow run . --no-conda
 To run it in gpu, use the following command
 
 ```
-mlflow run . -P gpus=2 -P accelerator="ddp"
+mlflow run . -P devices=2 -P strategy="ddp -P accelerator=gpu"
 ```
 
 At the end of the training process, the model and its signature is saved in `model` directory.

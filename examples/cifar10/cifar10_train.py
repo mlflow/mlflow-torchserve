@@ -79,11 +79,7 @@ class CIFAR10Classifier(
         output = self.forward(x_var)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, y_var)
-        accelerator = self.args.get("accelerator", None)
-        if accelerator is not None:
-            self.log("test_loss", loss, sync_dist=True)
-        else:
-            self.log("test_loss", loss)
+        self.log("test_loss", loss, sync_dist=True)
         self.test_acc(y_hat, y_var)
         self.preds += y_hat.tolist()
         self.target += y_var.tolist()
@@ -104,11 +100,7 @@ class CIFAR10Classifier(
         output = self.forward(x_var)
         _, y_hat = torch.max(output, dim=1)
         loss = F.cross_entropy(output, y_var)
-        accelerator = self.args.get("accelerator", None)
-        if accelerator is not None:
-            self.log("val_loss", loss, sync_dist=True)
-        else:
-            self.log("val_loss", loss)
+        self.log("val_loss", loss, sync_dist=True)
         self.val_acc(y_hat, y_var)
         self.log("val_acc", self.val_acc.compute())
         return {"val_step_loss": loss, "val_loss": loss}
@@ -186,11 +178,6 @@ class CIFAR10Classifier(
         """
         self.show_activations(self.reference_image)
 
-        # Logging graph
-        if self.current_epoch == 0:
-            sample_img = torch.rand((1, 3, 64, 64))
-            self.logger.experiment.add_graph(CIFAR10Classifier(), sample_img)
-
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="PyTorch Cifar10 Example")
@@ -209,16 +196,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
 
-    if "accelerator" in dict_args:
-        if dict_args["accelerator"] == "None":
-            dict_args["accelerator"] = None
+    for argument in ["strategy", "accelerator", "devices"]:
+        if dict_args[argument] == "None":
+            dict_args[argument] = None
 
     mlflow.pytorch.autolog()
 
     model = CIFAR10Classifier(**dict_args)
 
     dm = CIFAR10DataModule(**dict_args)
-    dm.prepare_data()
     dm.setup(stage="fit")
 
     trainer = pl.Trainer.from_argparse_args(args)

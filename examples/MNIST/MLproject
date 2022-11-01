@@ -1,4 +1,4 @@
-name: mnist-example1
+name: mnist-example
 
 conda_env: conda.yaml
 
@@ -6,13 +6,15 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 5}
-      gpus: {type: int, default: 0}
+      devices: {type: int, default: "None"}
+      strategy: {type: str, default: "None"}
       accelerator: {type: str, default: "None"}
       registration_name: {type: str, default: "mnist_classifier"}
 
     command: |
           python mnist_model.py \
             --max_epochs {max_epochs} \
-            --gpus {gpus} \
+            --devices {devices} \
+            --strategy {strategy} \
             --accelerator {accelerator} \
-            --registration_name {registration_name} \
+            --registration_name {registration_name}

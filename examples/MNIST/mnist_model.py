@@ -13,11 +13,6 @@ from argparse import ArgumentParser
 import mlflow.pytorch
 import pytorch_lightning as pl
 import torch
-
-# from pytorch_lightning.overrides.data_parallel import (
-#     LightningDistributedDataParallel,
-#     LightningDataParallel,
-# )
 from torch.nn.parallel import (
     DistributedDataParallel,
     DataParallel,
@@ -213,7 +208,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         loss = self.cross_entropy_loss(logits, y)
         _, y_hat = torch.max(logits, dim=1)
         self.val_acc(y_hat, y)
-        self.log("val_acc", self.val_acc.compute())
+        self.log("val_acc", self.val_acc.compute(), sync_dist=True)
         self.log("val_loss", loss, sync_dist=True)
 
     def test_step(self, test_batch, batch_idx):
@@ -280,9 +275,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dict_args = vars(args)
 
-    if "accelerator" in dict_args:
-        if dict_args["accelerator"] == "None":
-            dict_args["accelerator"] = None
+    for argument in ["strategy", "accelerator", "devices"]:
+        if dict_args[argument] == "None":
+            dict_args[argument] = None
 
     mlflow.pytorch.autolog()
 
