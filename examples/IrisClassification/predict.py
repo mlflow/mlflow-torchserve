@@ -30,7 +30,8 @@ def predict(parser_args):
         df[column] = df[column].astype("double")
 
     prediction = plugin.predict(deployment_name=parser_args["deployment_name"], df=input_data)
-    print("Prediction Result {}".format(prediction))
+
+    print("Prediction Result {}".format(prediction.to_json()))
 
 
 if __name__ == "__main__":

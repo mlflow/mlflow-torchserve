@@ -279,8 +279,6 @@ if __name__ == "__main__":
         if dict_args[argument] == "None":
             dict_args[argument] = None
 
-    mlflow.pytorch.autolog()
-
     model = LightningMNISTClassifier(**dict_args)
 
     dm = MNISTDataModule(**dict_args)
@@ -289,11 +287,14 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer.from_argparse_args(args)
 
-    trainer.fit(model, dm)
-    trainer.test(datamodule=dm)
-
-    run = mlflow.active_run()
+    mlflow.pytorch.autolog()
+    with mlflow.start_run() as run:
+        trainer.fit(model, dm)
+        trainer.test(datamodule=dm)
+        active_run = mlflow.active_run()
     if dict_args["register"] == "true":
-        mlflow.register_model(model_uri=run.info.artifact_uri, name=dict_args["registration_name"])
+        mlflow.register_model(
+            model_uri=active_run.info.artifact_uri, name=dict_args["registration_name"]
+        )
     else:
         torch.save(trainer.lightning_module.state_dict(), "model.pth")

@@ -12,13 +12,30 @@ import requests
 from mlflow_torchserve.config import Config
 
 from mlflow.deployments import BaseDeploymentClient, get_deploy_client
+from mlflow.deployments import PredictionsResponse
 from mlflow.tracking.artifact_utils import _download_artifact_from_uri
 from mlflow.models.model import Model
+from mlflow.utils.proto_json_utils import NumpyEncoder, _get_jsonable_obj
 
 _logger = logging.getLogger(__name__)
 
 _DEFAULT_TORCHSERVE_LOCAL_INFERENCE_PORT = "8080"
 _DEFAULT_TORCHSERVE_LOCAL_MANAGEMENT_PORT = "8081"
+
+
+class CustomPredictionsResponse(PredictionsResponse):
+    def __init__(self, resp):
+        super(CustomPredictionsResponse, self).__init__(self)
+        self.resp = resp
+
+    def to_json(self, path=None):
+        if path is not None:
+            with open(path, "w") as f:
+                json.dump(dict(self), f)
+        elif self.resp is not None:
+            return self.resp
+        else:
+            return json.dumps(dict(self))
 
 
 class TorchServePlugin(BaseDeploymentClient):
@@ -268,7 +285,6 @@ class TorchServePlugin(BaseDeploymentClient):
 
         :return: output - Returns the predicted value
         """
-
         url = "{api}/{predictions}/{name}".format(
             api=self.inference_api, predictions="predictions", name=deployment_name
         )
@@ -286,14 +302,14 @@ class TorchServePlugin(BaseDeploymentClient):
                 raise ValueError("Unable to parse input json string: {}".format(e))
 
         resp = requests.post(url, data)
+        cust_resp = CustomPredictionsResponse(resp.text)
         if resp.status_code != 200:
             raise Exception(
                 "Unable to infer the results for the name %s. "
                 "Server returned status code %s and response: %s"
                 % (deployment_name, resp.status_code, resp.content)
             )
-
-        return resp.text
+        return cust_resp
 
     def explain(self, deployment_name, df):
         """
@@ -330,7 +346,6 @@ class TorchServePlugin(BaseDeploymentClient):
                 "Server returned status code %s and response: %s"
                 % (deployment_name, resp.status_code, resp.content)
             )
-
         return resp.text
 
     def __generate_mar_file(

@@ -82,6 +82,13 @@ python news_classifier.py \
     --model_save_path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
 ```
 
+To run the training script in GPU environment:
+```
+torchrun news_classifier.py \
+    --max_epochs 5 \
+    --model_save_path /home/ubuntu/mlflow-torchserve/examples/BertNewsClassification/models
+```
+
 ## Starting TorchServe
 
 create an empty directory `model_store` and run the following command to start torchserve.
