@@ -120,9 +120,9 @@ class LightningMNISTClassifier(pl.LightningModule):
         """
         super(LightningMNISTClassifier, self).__init__()
 
-        self.train_acc = Accuracy(task="multiclass")
-        self.val_acc = Accuracy(task="multiclass")
-        self.test_acc = Accuracy(task="multiclass")
+        self.train_acc = Accuracy(task="multiclass", num_classes=10)
+        self.val_acc = Accuracy(task="multiclass", num_classes=10)
+        self.test_acc = Accuracy(task="multiclass", num_classes=10)
 
         # mnist images are (1, 28, 28) (channels, width, height)
         self.layer_1 = torch.nn.Linear(28 * 28, 128)

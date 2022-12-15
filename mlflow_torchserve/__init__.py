@@ -31,11 +31,9 @@ class CustomPredictionsResponse(PredictionsResponse):
     def to_json(self, path=None):
         if path is not None:
             with open(path, "w") as f:
-                json.dump(dict(self), f)
-        elif self.resp is not None:
-            return self.resp
+                json.dump(self.resp, f)
         else:
-            return json.dumps(dict(self))
+            return self.resp
 
 
 class TorchServePlugin(BaseDeploymentClient):
