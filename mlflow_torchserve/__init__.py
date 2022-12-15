@@ -1,21 +1,20 @@
-import docker
 import json
-import subprocess
-import time
 import logging
 import os
-import pandas as pd
-import torch
+import subprocess
+import time
 from pathlib import Path
 
+import docker
+import pandas as pd
 import requests
-from mlflow_torchserve.config import Config
-
+import torch
 from mlflow.deployments import BaseDeploymentClient, get_deploy_client
 from mlflow.deployments import PredictionsResponse
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
 from mlflow.models.model import Model
-from mlflow.utils.proto_json_utils import NumpyEncoder, _get_jsonable_obj
+from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+
+from mlflow_torchserve.config import Config
 
 _logger = logging.getLogger(__name__)
 
