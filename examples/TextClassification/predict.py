@@ -10,7 +10,7 @@ def predict(parser_args):
         text = fp.read()
         plugin = get_deploy_client(parser_args["target"])
         prediction = plugin.predict(parser_args["deployment_name"], json.dumps(text))
-        print("Prediction Result {}".format(prediction))
+        print("Prediction Result {}".format(prediction.to_json()))
 
 
 if __name__ == "__main__":

@@ -48,7 +48,7 @@ mlflow run . --no-conda
  * Step - 3: Create an empty directory model_store and run the following command to start torchserve.
  
     ```bash
-    torchserve --start --model-store model_store/ --ts-config config.properties
+    torchserve --start --model-store model_store/
     ```
    
 ## Creating a new deployment
@@ -67,13 +67,17 @@ For testing, we are going to use a sample test record placed in test_data folder
 
 Run the following command to invoke prediction on test record, whose output is stored in output.json file.
 
-`mlflow deployments predict --name titanic --target torchserve --input-path test_data/input.json  --output-path output.json`
+```
+mlflow deployments predict --name titanic --target torchserve --input-path test_data/input.json  --output-path output.json
+```
 
 This model will classify the test record as survived or not survived and store it in `output.json`
 
 
 Run the below command to invoke explain for feature importance attributions on test record. It will save the attribution image attributions_imp.png in test_data folder.
 
-` mlflow deployments explain -t torchserve --name titanic --input-path  test_data/input.json`
+```
+mlflow deployments explain -t torchserve --name titanic --input-path  test_data/input.json
+```
 
 this explanations command give us the average attribution for each feature. From the feature attribution information, we obtain some interesting insights regarding the importance of various features.

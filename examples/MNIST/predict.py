@@ -15,7 +15,7 @@ def predict(parser_args):
 
     image_tensor = mnist_transforms(img)
     prediction = plugin.predict(parser_args["deployment_name"], image_tensor)
-    print("Prediction Result {}".format(prediction))
+    print("Prediction Result {}".format(prediction.to_json()))
 
 
 if __name__ == "__main__":
