@@ -22,9 +22,9 @@ _DEFAULT_TORCHSERVE_LOCAL_INFERENCE_PORT = "8080"
 _DEFAULT_TORCHSERVE_LOCAL_MANAGEMENT_PORT = "8081"
 
 
-class CustomPredictionsResponse(PredictionsResponse):
+class TorchServePredictionsResponse(PredictionsResponse):
     def __init__(self, resp):
-        super(CustomPredictionsResponse, self).__init__(self)
+        super(TorchServePredictionsResponse, self).__init__(self)
         self.resp = resp
 
     def to_json(self, path=None):
@@ -299,7 +299,7 @@ class TorchServePlugin(BaseDeploymentClient):
                 raise ValueError("Unable to parse input json string: {}".format(e))
 
         resp = requests.post(url, data)
-        cust_resp = CustomPredictionsResponse(resp.text)
+        cust_resp = TorchServePredictionsResponse(resp.text)
         if resp.status_code != 200:
             raise Exception(
                 "Unable to infer the results for the name %s. "
