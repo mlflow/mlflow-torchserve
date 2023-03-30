@@ -14,8 +14,14 @@ Python scripts `create_deployment.py` and `predict.py` have been used for this p
 
 Run the following command to train the cifar10 model
 
-CPU: `mlflow run . -P max_epochs=5`
-GPU: `mlflow run . -P max_epochs=5 -P devices=2 -P strategy=ddp -P accelerator=gpu`
+CPU: 
+```
+mlflow run . -P max_epochs=5 --env-manager local
+```
+GPU: 
+```
+mlflow run . -P max_epochs=5 -P devices=2 -P strategy=ddp -P accelerator=gpu --env-manager local
+```
 
 At the end of the training, Cifar10 model will be saved as state dict (resnet.pth) in the current working directory
 
@@ -23,7 +29,9 @@ At the end of the training, Cifar10 model will be saved as state dict (resnet.pt
 
 create an empty directory `model_store` and run the following command to start torchserve.
 
-`torchserve --start --model-store model_store`
+```
+torchserve --start --model-store model_store
+```
 
 ## Creating a new deployment
 
@@ -31,7 +39,9 @@ This example uses image path as input for prediction.
 
 To create a new deployment, run the following command
 
-`python create_deployment.py`
+```
+python create_deployment.py
+```
 
 It will create a new deployment named `cifar_test`.
 
@@ -48,19 +58,25 @@ can be passed as input using `--export_path` argument.
 
 For example:
 
-`python create_deployment.py --deployment_name cifar_test1 --export_path /home/ubuntu/model_store`
+```
+python create_deployment.py --deployment_name cifar_test1 --export_path /home/ubuntu/model_store
+```
 
 ## Predicting deployed model
 
 To perform prediction, run the following script
 
-`python inference.py`
+```
+python inference.py
+```
 
 The prediction results will be printed in the console. 
 
 to save the inference output in file run the following command
 
-`python inference.py --output_file_path prediction_result.json`
+```
+python inference.py --output_file_path prediction_result.json
+```
 
 Following are the arguments which can be passed to predict_deployment script
 
@@ -73,11 +89,15 @@ Following are the arguments which can be passed to predict_deployment script
 
 To perform explain request, run the following script
 
-`python inferene.py --inference_type explanation`
+```
+python inferene.py --inference_type explanation
+```
 
 to save the explanation output in file run the following command
 
-`python inference.py --inference_type explanation --output_file_path explanation_result.json`
+```
+python inference.py --inference_type explanation --output_file_path explanation_result.json
+```
 
 
 ## Viewing captum results

@@ -19,7 +19,7 @@ def predict(parser_args):
     else:
         result = plugin.predict(parser_args["deployment_name"], json.dumps(request))
 
-    print("Prediction Result {}".format(result))
+    print("Prediction Result {}".format(result.to_json()))
 
     output_path = parser_args["output_file_path"]
     if output_path:
