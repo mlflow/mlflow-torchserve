@@ -35,7 +35,7 @@ where X is your desired value for max_epochs.
 If you have the required modules for the file and would like to skip the creation of a conda environment, add the argument --no-conda.
 
 ```
-mlflow run . --no-conda
+mlflow run . --env-manager local
 ```
 
 # Above commands will train the titanic model for further use.
