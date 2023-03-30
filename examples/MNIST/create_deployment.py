@@ -64,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--registered_model_uri",
         type=str,
-        default="models:/mnist_classifier/3",
+        default="models:/mnist_classifier/1",
         help="Registered model name (default: models:/mnist_classifier/1)",
     )
 

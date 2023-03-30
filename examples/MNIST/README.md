@@ -14,8 +14,20 @@ Python scripts `create_deployment.py` and `predict.py` have been used for this p
 
 Run the following command to train the MNIST model
 
-CPU: `mlflow run . -P max_epochs=5`
-GPU: `mlflow run . -P max_epochs=5 -P devices=2 -P strategy=ddp -P accelerator=gpu`
+CPU: 
+```
+mlflow run . -P max_epochs=5
+```
+
+GPU: 
+```
+mlflow run . -P max_epochs=5 -P devices=2 -P strategy=ddp -P accelerator=gpu
+```
+
+To perform model registration process 
+```
+mlflow run . -P register=true --env-manager local
+```
 
 At the end of the training, MNIST model will be saved as state dict in the current working directory
 
@@ -32,7 +44,9 @@ the steps in [remote-deployment.rst](../../docs/remote-deployment.rst) under `do
 
 create an empty directory `model_store` and run the following command to start torchserve.
 
-`torchserve --start --model-store model_store`
+```
+torchserve --start --model-store model_store
+```
 
 ## Creating a new deployment
 
@@ -40,7 +54,9 @@ This example uses image path as input for prediction.
 
 To create a new deployment, run the following command
 
-`python create_deployment.py`
+```
+python create_deployment.py --registered_model_uri model.pth
+```
 
 It will create a new deployment named `mnist_classification`.
 
@@ -53,7 +69,9 @@ Following are the arguments which can be passed to create_deployment script
 
 For example, to create another deployment the script can be triggered as
 
-`python create_deployment.py --deployment_name mnist_deployment1`
+```
+python create_deployment.py --deployment_name mnist_deployment1
+```
 
 Note:
 
@@ -62,13 +80,17 @@ can be passed as input using `--export_path` argument.
 
 For example:
 
-`python create_deployment.py --deployment_name mnist_deployment1 --export_path /home/ubuntu/model_store`
+```
+python create_deployment.py --deployment_name mnist_deployment1 --export_path /home/ubuntu/model_store
+```
 
 ## Predicting deployed model
 
 To perform prediction, run the following script
 
-`python predict.py`
+```
+python predict.py
+```
 
 The prediction results will be printed in the console. 
 
@@ -79,4 +101,6 @@ Following are the arguments which can be passed to predict_deployment script
 
 For example, to perform prediction on the second deployment which we created. Run the following command
 
-`python predict.py --deployment_name mnist_deployment1 --input_file_path test_data/one.png`
+```
+python predict.py --deployment_name mnist_deployment1 --input_file_path test_data/one.png
+```
