@@ -7,7 +7,8 @@ dependencies:
 - pip
 - pip:
   - sklearn
-  - pytorch-lightning>=1.7.6
-  - torch
-  - torchvision
+  - lightning>=2.0.0
+  - jsonargparse[signatures]>=4.17.0
+  - torch>=2.0
+  - torchvision>=0.15.1
   - mlflow
