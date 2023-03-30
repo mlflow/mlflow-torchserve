@@ -10,11 +10,11 @@ a completely different language.
 To run the example via MLflow, navigate to the `examples/IrisClassificationTorchScript/` directory and run the command
 
 ```
-mlflow run .
+mlflow run . --env-manager conda
 
 ```
 
-This will run `iris_classification.py` with the default set of parameters such as `--max_epochs=100`. You can see the default value in the MLproject file.
+This will run `iris_classification.py` with the default set of parameters such as `--trainer.max_epochs=100`. You can see the default value in the MLproject file.
 
 In order to run the file with custom parameters, run the command
 
@@ -27,7 +27,7 @@ where X is your desired value for max_epochs.
 If you have the required modules for the file and would like to skip the creation of a conda environment, add the argument --no-conda.
 
 ```
-mlflow run . --no-conda
+mlflow run . --env-manager local
 ```
 
 After the training, we will convert the model to a TorchScript model using the function `torch.jit.script`.
@@ -37,7 +37,9 @@ At the end of the training process, scripted model is stored as `iris_ts.pt`
 
 create an empty directory `model_store` and run the following command to start torchserve.
 
-`torchserve --start --model-store model_store`
+```
+torchserve --start --model-store model_store
+```
 
 Note:
 mlflow-torchserve plugin generates the mar file inside the "model_store" directory. If the `model_store` directory is not present under the current folder, 
@@ -49,10 +51,14 @@ if the torchserve is already running with a different "model_store" location, en
 
 Run the following command to create a new deployment named `iris_test`
 
-`mlflow deployments  create --name iris_test --target torchserve --model-uri iris_ts.pt -C "HANDLER=iris_handler.py"  -C "EXTRA_FILES=index_to_name.json"`
+```
+mlflow deployments  create --name iris_test --target torchserve --model-uri iris_ts.pt -C "HANDLER=iris_handler.py"  -C "EXTRA_FILES=index_to_name.json"
+```
 
 ## Running prediction based on deployed model
 
 Run the following command to invoke prediction of our sample input, where input.json is the sample input file and output.json stores the predicted outcome.
 
-`mlflow deployments predict --name iris_test --target torchserve --input-path sample.json  --output-path output.json`
+```
+mlflow deployments predict --name iris_test --target torchserve --input-path sample.json  --output-path output.json
+```
