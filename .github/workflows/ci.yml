@@ -46,7 +46,7 @@ jobs:
 
       - name: Install pytorch lightning
         run: |
-          pip install lightning>=2.0
+          pip install lightning>=2.0 jsonargparse[signatures]
 
       - name: Add permissions for remove conda utility file
         run: |
