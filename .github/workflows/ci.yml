@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install pytest==6.1.1 torchvision scikit-learn gorilla transformers torchtext matplotlib captum
+          pip install pytest==7.2.2 torchvision scikit-learn gorilla transformers torchtext matplotlib captum
 
       - name: Install pytorch lightning
         run: |

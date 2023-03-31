@@ -8,20 +8,14 @@
 # pylint: disable=unused-argument
 # pylint: disable=abstract-method
 
-from argparse import ArgumentParser
-
-import mlflow.pytorch
 import lightning as L
-from lightning.pytorch.cli import LightningCLI
+import mlflow.pytorch
 import torch
-from torch.nn.parallel import (
-    DistributedDataParallel,
-    DataParallel,
-)
 from lightning import seed_everything
-from torchmetrics import Accuracy
+from lightning.pytorch.cli import LightningCLI
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
+from torchmetrics import Accuracy
 from torchvision import datasets, transforms
 
 
