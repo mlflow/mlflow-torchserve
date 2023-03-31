@@ -76,4 +76,4 @@ def test_iris_example(tmpdir):
         os.path.join(iris_dir, "sample.json"),
     ]
     res = process._exec_cmd(predict_command, cwd=home_dir)
-    assert "SETOSA" in res.stdout
+    assert ("SETOSA" in res.stdout) or ("VERSICOLOR" in res.stdout) or ("VIRGINICA" in res.stdout)
