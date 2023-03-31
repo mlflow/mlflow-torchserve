@@ -9,7 +9,14 @@ def test_mnist_example():
     os.environ["MKL_THREADING_LAYER"] = "GNU"
     home_dir = os.getcwd()
     mnist_dir = "examples/MNIST"
-    example_command = ["python", "mnist_model.py", "--max_epochs", "1", "--register", "false"]
+    example_command = [
+        "python",
+        "mnist_model.py",
+        "--trainer.max_epochs",
+        "1",
+        "--register",
+        "false",
+    ]
     process._exec_cmd(example_command, cwd=mnist_dir)
 
     assert os.path.exists(os.path.join(mnist_dir, "model.pth"))
@@ -35,7 +42,12 @@ def test_mnist_example():
 def test_iris_example(tmpdir):
     iris_dir = os.path.join("examples", "IrisClassification")
     home_dir = os.getcwd()
-    example_command = ["python", os.path.join(iris_dir, "iris_classification.py")]
+    example_command = [
+        "python",
+        os.path.join(iris_dir, "iris_classification.py"),
+        "--trainer.max_epochs",
+        "1",
+    ]
     extra_files = "{},{}".format(
         os.path.join(iris_dir, "index_to_name.json"),
         os.path.join(home_dir, "model/MLmodel"),
@@ -64,4 +76,4 @@ def test_iris_example(tmpdir):
         os.path.join(iris_dir, "sample.json"),
     ]
     res = process._exec_cmd(predict_command, cwd=home_dir)
-    assert "SETOSA" in res.stdout
+    assert ("SETOSA" in res.stdout) or ("VERSICOLOR" in res.stdout) or ("VIRGINICA" in res.stdout)

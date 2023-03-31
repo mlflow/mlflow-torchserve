@@ -1,19 +1,24 @@
-import argparse
-
-import mlflow.pytorch
-import pytorch_lightning as pl
+import lightning as L
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from lightning import seed_everything
+from lightning.pytorch.cli import LightningCLI
+from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
-from torch.nn import functional as F
+from torch.utils.data import TensorDataset
+from torch.utils.data import random_split
+from torch.utils.data.dataloader import DataLoader
 
 
-class IrisClassification(pl.LightningModule):
+class IrisClassification(L.LightningModule):
     def __init__(self):
         super(IrisClassification, self).__init__()
         self.fc1 = nn.Linear(4, 10)
         self.fc2 = nn.Linear(10, 10)
         self.fc3 = nn.Linear(10, 3)
+        self.val_outputs = []
+        self.test_outputs = []
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -44,15 +49,16 @@ class IrisClassification(pl.LightningModule):
         x, y = val_batch
         logits = self.forward(x)
         loss = self.cross_entropy_loss(logits, y)
-        return {"val_loss": loss}
+        self.val_outputs.append(loss)
+        return {"val_step_loss": loss}
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         """
-        Computes average validation accuracy
+        Computes average validation loss
         """
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        tensorboard_logs = {"val_loss": avg_loss}
-        return {"avg_val_loss": avg_loss, "log": tensorboard_logs}
+        avg_loss = torch.stack(self.val_outputs).mean()
+        self.log("val_loss", avg_loss, sync_dist=True)
+        self.val_outputs.clear()
 
     def test_step(self, test_batch, batch_idx):
         """
@@ -63,14 +69,16 @@ class IrisClassification(pl.LightningModule):
         output = self.forward(x)
         a, y_hat = torch.max(output, dim=1)
         test_acc = accuracy_score(y_hat.cpu(), y.cpu())
+        self.test_outputs.append(torch.tensor(test_acc))
         return {"test_acc": torch.tensor(test_acc)}
 
-    def test_epoch_end(self, outputs):
+    def on_test_epoch_end(self):
         """
         Computes average test accuracy score
         """
-        avg_test_acc = torch.stack([x["test_acc"] for x in outputs]).mean()
-        return {"avg_test_acc": avg_test_acc}
+        avg_test_acc = torch.stack(self.test_outputs).mean()
+        self.log("avg_test_acc", avg_test_acc, sync_dist=True)
+        self.test_outputs.clear()
 
     def configure_optimizers(self):
         """
@@ -81,28 +89,55 @@ class IrisClassification(pl.LightningModule):
         return self.optimizer
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
-    args = parser.parse_args()
-    dict_args = vars(args)
+class IrisDataModule(L.LightningDataModule):
+    def __init__(self):
+        super().__init__()
 
-    for argument in ["strategy", "accelerator", "devices"]:
-        if dict_args[argument] == "None":
-            dict_args[argument] = None
+    def prepare_data(self):
+        """
+        Implementation of abstract class
+        """
 
-    mlflow.pytorch.autolog()
-    model = IrisClassification()
-    import iris_datamodule
+    def setup(self, stage=None):
 
-    dm = iris_datamodule.IRISDataModule()
-    dm.prepare_data()
-    dm.setup("fit")
+        # Assign train/val datasets for use in dataloaders
+        if stage == "fit" or stage is None:
+            iris = load_iris()
+            df = iris.data
+            target = iris["target"]
 
-    trainer = pl.Trainer.from_argparse_args(args)
-    trainer.fit(model, dm)
-    trainer.test(datamodule=dm)
-    trainer.test(datamodule=dm)
-    if trainer.global_rank == 0:
-        scripted_model = torch.jit.script(model)
+            data = torch.Tensor(df).float()
+            labels = torch.Tensor(target).long()
+            RANDOM_SEED = 42
+            seed_everything(RANDOM_SEED)
+
+            data_set = TensorDataset(data, labels)
+            self.train_set, self.val_set = random_split(data_set, [130, 20])
+            self.train_set, self.test_set = random_split(self.train_set, [110, 20])
+
+    def train_dataloader(self):
+        return DataLoader(self.train_set, batch_size=4)
+
+    def val_dataloader(self):
+        return DataLoader(self.val_set, batch_size=4)
+
+    def test_dataloader(self):
+        return DataLoader(self.test_set, batch_size=4)
+
+
+def cli_main():
+    cli = LightningCLI(
+        IrisClassification,
+        IrisDataModule,
+        run=False,
+        save_config_callback=None,
+    )
+    cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+    cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)
+    if cli.trainer.global_rank == 0:
+        scripted_model = torch.jit.script(cli.trainer.model)
         torch.jit.save(scripted_model, "iris_ts.pt")
+
+
+if __name__ == "__main__":
+    cli_main()

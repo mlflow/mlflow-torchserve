@@ -1,15 +1,14 @@
 channels:
-  - defaults
-  - conda-forge
-  - pytorch
+- defaults
+- conda-forge
+- pytorch
 dependencies:
-  - python=3.8.2
-  - pip
-  - pip:
-      - mlflow
-      - scikit-learn
-      - torchvision
-      - torch>=1.9.0
-      - torchvision
-      - pytorch-lightning>=1.7.6
-
+- python=3.8.2
+- pip
+- pip:
+  - sklearn
+  - lightning>=2.0.0
+  - jsonargparse[signatures]>=4.17.0
+  - torch>=2.0
+  - torchvision>=0.15.1
+  - mlflow

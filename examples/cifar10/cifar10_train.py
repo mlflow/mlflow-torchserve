@@ -1,18 +1,19 @@
 """Cifar10 training module."""
-import mlflow.pytorch
+import os
+import lightning as L
 import matplotlib.pyplot as plt
 import numpy as np
-import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
-from argparse import ArgumentParser
-from torchmetrics import Accuracy
+from lightning.pytorch.cli import LightningCLI
 from torch import nn
+from torchmetrics import Accuracy
 from torchvision import models
+from lightning.pytorch.loggers import TensorBoardLogger
 
 
 class CIFAR10Classifier(
-    pl.LightningModule
+    L.LightningModule
 ):  # pylint: disable=too-many-ancestors,too-many-instance-attributes
     """Cifar10 model class."""
 
@@ -30,9 +31,9 @@ class CIFAR10Classifier(
         self.optimizer = None
         self.args = kwargs
 
-        self.train_acc = Accuracy()
-        self.val_acc = Accuracy()
-        self.test_acc = Accuracy()
+        self.train_acc = Accuracy(task="multiclass", num_classes=10)
+        self.val_acc = Accuracy(task="multiclass", num_classes=10)
+        self.test_acc = Accuracy(task="multiclass", num_classes=10)
 
         self.preds = []
         self.target = []
@@ -171,45 +172,27 @@ class CIFAR10Classifier(
         c_grid = self.makegrid(out, 4)
         self.logger.experiment.add_image("layer 1", c_grid, self.current_epoch, dataformats="HW")
 
-    def training_epoch_end(self, outputs):
-        """Training epoch end.
-        Args:
-             outputs: outputs of train end
-        """
+    def on_train_epoch_end(self):
+        """Training epoch end."""
         self.show_activations(self.reference_image)
 
 
-if __name__ == "__main__":
-    parser = ArgumentParser(description="PyTorch Cifar10 Example")
-    parser.add_argument(
-        "--download_path",
-        type=str,
-        default="output/processing",
-        help="Path to write cifar10 dataset",
-    )
-    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
-
+def cli_main():
     from cifar10_datamodule import CIFAR10DataModule
 
-    parser = CIFAR10DataModule.add_model_specific_args(parent_parser=parser)
+    tensorboard_logger = TensorBoardLogger(os.getcwd())
+    cli = LightningCLI(
+        CIFAR10Classifier,
+        CIFAR10DataModule,
+        run=False,
+        save_config_callback=None,
+        trainer_defaults={"logger": tensorboard_logger},
+    )
+    cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+    cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)
 
-    args = parser.parse_args()
-    dict_args = vars(args)
+    torch.save(cli.trainer.lightning_module.state_dict(), "resnet.pth")
 
-    for argument in ["strategy", "accelerator", "devices"]:
-        if dict_args[argument] == "None":
-            dict_args[argument] = None
 
-    mlflow.pytorch.autolog()
-
-    model = CIFAR10Classifier(**dict_args)
-
-    dm = CIFAR10DataModule(**dict_args)
-    dm.setup(stage="fit")
-
-    trainer = pl.Trainer.from_argparse_args(args)
-
-    trainer.fit(model, dm)
-    trainer.test(datamodule=dm)
-
-    torch.save(trainer.lightning_module.state_dict(), "resnet.pth")
+if __name__ == "__main__":
+    cli_main()

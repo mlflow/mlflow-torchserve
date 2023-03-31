@@ -6,15 +6,17 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 5}
-      devices: {type: int, default: "None"}
-      strategy: {type: str, default: "None"}
-      accelerator: {type: str, default: "None"}
+      devices: {type: int, default: "auto"}
+      strategy: {type: str, default: "auto"}
+      accelerator: {type: str, default: "auto"}
       registration_name: {type: str, default: "mnist_classifier"}
+      register: {type: str, default: "false"}
 
     command: |
           python mnist_model.py \
-            --max_epochs {max_epochs} \
-            --devices {devices} \
-            --strategy {strategy} \
-            --accelerator {accelerator} \
-            --registration_name {registration_name}
+            --trainer.max_epochs {max_epochs} \
+            --trainer.devices {devices} \
+            --trainer.strategy {strategy} \
+            --trainer.accelerator {accelerator} \
+            --registration_name {registration_name} \
+            --register {register}

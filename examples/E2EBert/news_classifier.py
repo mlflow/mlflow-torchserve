@@ -2,24 +2,21 @@
 # pylint: disable=unused-argument
 # pylint: disable=abstract-method
 
-import logging
 import math
 import os
-from argparse import ArgumentParser
 
+import lightning as L
 import mlflow.pytorch
 import numpy as np
-import pandas as pd
-import pytorch_lightning as pl
 import requests
 import torch
 import torch.nn.functional as F
-import torchtext.datasets as td
-from pytorch_lightning.callbacks import (
+from lightning.pytorch.callbacks import (
     EarlyStopping,
     ModelCheckpoint,
     LearningRateMonitor,
 )
+from lightning.pytorch.cli import LightningCLI
 from sklearn.metrics import accuracy_score
 from torch import nn
 from torch.utils.data import DataLoader
@@ -28,17 +25,6 @@ from torchdata.datapipes.iter import IterDataPipe
 from torchtext.data.functional import to_map_style_dataset
 from torchtext.datasets import AG_NEWS
 from transformers import BertModel, BertTokenizer, AdamW
-
-
-def get_ag_news(num_samples):
-    # reading the input
-    td.AG_NEWS(root="data", split=("train", "test"))
-    train_csv_path = "data/AG_NEWS/train.csv"
-    return (
-        pd.read_csv(train_csv_path, usecols=[0, 2], names=["label", "description"])
-        .assign(label=lambda df: df["label"] - 1)  # make labels zero-based
-        .sample(n=num_samples)
-    )
 
 
 class NewsDataset(IterDataPipe):
@@ -91,8 +77,8 @@ class NewsDataset(IterDataPipe):
             }
 
 
-class BertDataModule(pl.LightningDataModule):
-    def __init__(self, **kwargs):
+class BertDataModule(L.LightningDataModule):
+    def __init__(self, batch_size=4, num_workers=3, num_samples=2000):
         """
         Initialization of inherited lightning data module
         """
@@ -104,12 +90,16 @@ class BertDataModule(pl.LightningDataModule):
         self.MAX_LEN = 100
         self.encoding = None
         self.tokenizer = None
-        self.args = kwargs
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.num_samples = num_samples
         self.train_count = None
         self.val_count = None
         self.test_count = None
         self.RANDOM_SEED = 42
-        self.VOCAB_FILE_URL = self.args["vocab_file"]
+        self.VOCAB_FILE_URL = (
+            "https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt"
+        )
         self.VOCAB_FILE = "bert_base_uncased_vocab.txt"
 
     def prepare_data(self):
@@ -144,7 +134,7 @@ class BertDataModule(pl.LightningDataModule):
                 self.train_dataset, [num_train, len(self.train_dataset) - num_train]
             )
 
-            self.train_count = self.args.get("num_samples")
+            self.train_count = self.num_samples
             self.val_count = int(self.train_count / 10)
             self.test_count = int(self.train_count / 10)
             self.train_count = self.train_count - (self.val_count + self.test_count)
@@ -152,30 +142,6 @@ class BertDataModule(pl.LightningDataModule):
             print("Number of samples used for training: {}".format(self.train_count))
             print("Number of samples used for validation: {}".format(self.val_count))
             print("Number of samples used for test: {}".format(self.test_count))
-
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        """
-        Returns the review text and the targets of the specified item
-        :param parent_parser: Application specific parser
-        :return: Returns the augmented argument parser
-        """
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument(
-            "--batch_size",
-            type=int,
-            default=16,
-            metavar="N",
-            help="input batch size for training (default: 16)",
-        )
-        parser.add_argument(
-            "--num_workers",
-            type=int,
-            default=3,
-            metavar="N",
-            help="number of workers (default: 3)",
-        )
-        return parser
 
     def create_data_loader(self, source, count):
         """
@@ -191,9 +157,7 @@ class BertDataModule(pl.LightningDataModule):
             num_samples=count,
         )
 
-        return DataLoader(
-            ds, batch_size=self.args["batch_size"], num_workers=self.args["num_workers"]
-        )
+        return DataLoader(ds, batch_size=self.batch_size, num_workers=self.num_workers)
 
     def train_dataloader(self):
         """
@@ -214,8 +178,8 @@ class BertDataModule(pl.LightningDataModule):
         return self.create_data_loader(source=self.test_dataset, count=self.test_count)
 
 
-class BertNewsClassifier(pl.LightningModule):
-    def __init__(self, **kwargs):
+class BertNewsClassifier(L.LightningModule):
+    def __init__(self, learning_rate=0.001):
         """
         Initializes the network, optimizer and scheduler
         """
@@ -234,7 +198,9 @@ class BertNewsClassifier(pl.LightningModule):
 
         self.scheduler = None
         self.optimizer = None
-        self.args = kwargs
+        self.learning_rate = learning_rate
+        self.val_outputs = []
+        self.test_outputs = []
 
     def compute_bert_outputs(
         self, model_bert, embedding_input, attention_mask=None, head_mask=None
@@ -290,23 +256,6 @@ class BertNewsClassifier(pl.LightningModule):
         output = self.out(output)
         return output
 
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        """
-        Returns the review text and the targets of the specified item
-        :param parent_parser: Application specific parser
-        :return: Returns the augmented argument parser
-        """
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument(
-            "--lr",
-            type=float,
-            default=0.001,
-            metavar="LR",
-            help="learning rate (default: 0.001)",
-        )
-        return parser
-
     def training_step(self, train_batch, batch_idx):
         """
         Training the data as batches and returns training loss on each batch
@@ -322,21 +271,6 @@ class BertNewsClassifier(pl.LightningModule):
         self.log("train_loss", loss)
         return {"loss": loss}
 
-    def test_step(self, test_batch, batch_idx):
-        """
-        Performs test and computes the accuracy of the model
-        :param test_batch: Batch data
-        :param batch_idx: Batch indices
-        :return: output - Testing accuracy
-        """
-        input_ids = test_batch["input_ids"].to(self.device)
-        attention_mask = test_batch["attention_mask"].to(self.device)
-        targets = test_batch["targets"].to(self.device)
-        output = self.forward(input_ids, attention_mask)
-        _, y_hat = torch.max(output, dim=1)
-        test_acc = accuracy_score(y_hat.cpu(), targets.cpu())
-        return {"test_acc": torch.tensor(test_acc)}
-
     def validation_step(self, val_batch, batch_idx):
         """
         Performs validation of data in batches
@@ -350,32 +284,48 @@ class BertNewsClassifier(pl.LightningModule):
         targets = val_batch["targets"].to(self.device)
         output = self.forward(input_ids, attention_mask)
         loss = F.cross_entropy(output, targets)
+        self.val_outputs.append(loss)
         return {"val_step_loss": loss}
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         """
         Computes average validation accuracy
-        :param outputs: outputs after every epoch end
-        :return: output - average valid loss
         """
-        avg_loss = torch.stack([x["val_step_loss"] for x in outputs]).mean()
+        avg_loss = torch.stack(self.val_outputs).mean()
         self.log("val_loss", avg_loss, sync_dist=True)
+        self.val_outputs.clear()
 
-    def test_epoch_end(self, outputs):
+    def test_step(self, test_batch, batch_idx):
+        """
+        Performs test and computes the accuracy of the model
+        :param test_batch: Batch data
+        :param batch_idx: Batch indices
+        :return: output - Testing accuracy
+        """
+        input_ids = test_batch["input_ids"].to(self.device)
+        attention_mask = test_batch["attention_mask"].to(self.device)
+        targets = test_batch["targets"].to(self.device)
+        output = self.forward(input_ids, attention_mask)
+        _, y_hat = torch.max(output, dim=1)
+        test_acc = accuracy_score(y_hat.cpu(), targets.cpu())
+        self.test_outputs.append(torch.tensor(test_acc))
+        return {"test_acc": torch.tensor(test_acc)}
+
+    def on_test_epoch_end(self):
         """
         Computes average test accuracy score
-        :param outputs: outputs after every epoch end
-        :return: output - average test loss
         """
-        avg_test_acc = torch.stack([x["test_acc"] for x in outputs]).mean()
+        print(self.test_outputs)
+        avg_test_acc = torch.stack(self.test_outputs).mean()
         self.log("avg_test_acc", avg_test_acc)
+        self.test_outputs.clear()
 
     def configure_optimizers(self):
         """
         Initializes the optimizer and learning rate scheduler
         :return: output - Initialized optimizer and scheduler
         """
-        self.optimizer = AdamW(self.parameters(), lr=self.args["lr"])
+        self.optimizer = AdamW(self.parameters(), lr=self.learning_rate)
         self.scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
                 self.optimizer,
@@ -390,77 +340,30 @@ class BertNewsClassifier(pl.LightningModule):
         return [self.optimizer], [self.scheduler]
 
 
-if __name__ == "__main__":
-    parser = ArgumentParser(description="Bert-News Classifier Example")
-
-    parser.add_argument(
-        "--num_samples",
-        type=int,
-        default=2000,
-        metavar="N",
-        help="Number of samples to be used for training "
-        "and evaluation steps (default: 15000) Maximum:100000",
+def cli_main():
+    early_stopping = EarlyStopping(
+        monitor="val_loss",
     )
-
-    parser.add_argument(
-        "--vocab_file",
-        default="https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt",
-        help="Custom vocab file",
-    )
-
-    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
-    parser = BertNewsClassifier.add_model_specific_args(parent_parser=parser)
-    parser = BertDataModule.add_model_specific_args(parent_parser=parser)
-
-    args = parser.parse_args()
-    dict_args = vars(args)
-
-    for argument in ["strategy", "accelerator", "devices"]:
-        if dict_args[argument] == "None":
-            dict_args[argument] = None
-
-    dm = BertDataModule(**dict_args)
-    dm.prepare_data()
-
-    model = BertNewsClassifier(**dict_args)
-    early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True)
 
     checkpoint_callback = ModelCheckpoint(
-        dirpath=os.getcwd(),
-        save_top_k=1,
-        verbose=True,
-        monitor="val_loss",
-        mode="min",
+        dirpath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min"
     )
-
     lr_logger = LearningRateMonitor()
-
-    trainer = pl.Trainer.from_argparse_args(
-        args,
-        callbacks=[lr_logger, early_stopping, checkpoint_callback],
-        enable_checkpointing=True,
+    cli = LightningCLI(
+        BertNewsClassifier,
+        BertDataModule,
+        run=False,
+        save_config_callback=None,
+        trainer_defaults={"callbacks": [early_stopping, checkpoint_callback, lr_logger]},
     )
-
-    # It is safe to use `mlflow.pytorch.autolog` in DDP training, as below condition invokes
-    # autolog with only rank 0 gpu.
-
-    # For CPU Training
-    if dict_args["devices"] is None or int(dict_args["devices"]) == 0:
+    if cli.trainer.global_rank == 0:
         mlflow.pytorch.autolog()
-    elif int(dict_args["devices"]) >= 1 and trainer.global_rank == 0:
-        # In case of multi gpu training, the training script is invoked multiple times,
-        # The following condition is needed to avoid multiple copies of mlflow runs.
-        # When one or more gpus are used for training, it is enough to save
-        # the model and its parameters using rank 0 gpu.
-        mlflow.pytorch.autolog()
-    else:
-        # This condition is met only for multi-gpu training when the global rank is non zero.
-        # Since the parameters are already logged using global rank 0 gpu, it is safe to ignore
-        # this condition.
-        logging.info("Active run exists.. ")
+    cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+    cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)
 
-    trainer.fit(model, dm)
-    trainer.test(model, datamodule=dm)
+    if cli.trainer.global_rank == 0:
+        torch.save(cli.model.state_dict(), "state_dict.pth")
 
-    if trainer.global_rank == 0:
-        torch.save(model.state_dict(), "state_dict.pth")
+
+if __name__ == "__main__":
+    cli_main()

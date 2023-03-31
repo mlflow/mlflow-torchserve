@@ -1,10 +1,9 @@
 """Cifar10 data module."""
 import os
 import subprocess
-from argparse import ArgumentParser
 from pathlib import Path
 
-import pytorch_lightning as pl
+import lightning as L
 import torchvision
 import webdataset as wds
 from sklearn.model_selection import train_test_split
@@ -12,13 +11,16 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 
-class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-instance-attributes
+class CIFAR10DataModule(L.LightningDataModule):  # pylint: disable=too-many-instance-attributes
     """Data module class."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, num_samples_train=39, num_samples_val=9, num_samples_test=9):
         """Initialization of inherited lightning data module."""
         super(CIFAR10DataModule, self).__init__()  # pylint: disable=super-with-arguments
 
+        self.num_samples_train = num_samples_train
+        self.num_samples_val = num_samples_val
+        self.num_samples_test = num_samples_test
         self.train_dataset = None
         self.valid_dataset = None
         self.test_dataset = None
@@ -41,11 +43,10 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
                 self.normalize,
             ]
         )
-        self.args = kwargs
 
     def prepare_data(self):
         """Implementation of abstract class."""
-        output_path = self.args.get("download_path", "output/processing")
+        output_path = "output/processing"
         Path(output_path).mkdir(parents=True, exist_ok=True)
 
         trainset = torchvision.datasets.CIFAR10(root="./", train=True, download=True)
@@ -82,36 +83,6 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         """
         return len(os.listdir(input_path)) - 1
 
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        """
-        Returns the review text and the targets of the specified item
-
-        :param parent_parser: Application specific parser
-
-        :return: Returns the augmented arugument parser
-        """
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument(
-            "--num_samples_train",
-            type=int,
-            help="Number of samples for training (max: 39)",
-        )
-
-        parser.add_argument(
-            "--num_samples_val",
-            type=int,
-            help="Number of samples for Validation (max: 9)",
-        )
-
-        parser.add_argument(
-            "--num_samples_test",
-            type=int,
-            help="Number of samples for Testing (max: 9)",
-        )
-
-        return parser
-
     def setup(self, stage=None):
         """Downloads the data, parse it and split the data into train, test,
         validation data.
@@ -119,15 +90,15 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
             stage: Stage - training or testing
         """
 
-        data_path = self.args.get("train_glob", "output/processing")
+        data_path = "output/processing"
 
         train_base_url = data_path + "/train"
         val_base_url = data_path + "/val"
         test_base_url = data_path + "/test"
 
-        train_count = self.args["num_samples_train"]
-        val_count = self.args["num_samples_val"]
-        test_count = self.args["num_samples_test"]
+        train_count = self.num_samples_train
+        val_count = self.num_samples_val
+        test_count = self.num_samples_test
 
         if not train_count:
             train_count = self.get_num_files(train_base_url)
@@ -143,9 +114,7 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         test_url = "{}/{}-{}".format(test_base_url, "test", "{0.." + str(test_count) + "}.tar")
 
         self.train_dataset = (
-            wds.WebDataset(
-                train_url, handler=wds.warn_and_continue, nodesplitter=wds.shardlists.split_by_node
-            )
+            wds.WebDataset(train_url, handler=wds.warn_and_continue)
             .shuffle(100)
             .decode("pil")
             .rename(image="ppm;jpg;jpeg;png", info="cls")
@@ -155,9 +124,7 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         )
 
         self.valid_dataset = (
-            wds.WebDataset(
-                valid_url, handler=wds.warn_and_continue, nodesplitter=wds.shardlists.split_by_node
-            )
+            wds.WebDataset(valid_url, handler=wds.warn_and_continue)
             .shuffle(100)
             .decode("pil")
             .rename(image="ppm", info="cls")
@@ -167,9 +134,7 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
         )
 
         self.test_dataset = (
-            wds.WebDataset(
-                test_url, handler=wds.warn_and_continue, nodesplitter=wds.shardlists.split_by_node
-            )
+            wds.WebDataset(test_url, handler=wds.warn_and_continue)
             .shuffle(100)
             .decode("pil")
             .rename(image="ppm", info="cls")
@@ -188,9 +153,9 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
              output - Train data loader for the given input
         """
         self.train_data_loader = self.create_data_loader(
-            self.train_dataset,
-            self.args.get("train_batch_size", None),
-            self.args.get("train_num_workers", 4),
+            dataset=self.train_dataset,
+            batch_size=None,
+            num_workers=3,
         )
         return self.train_data_loader
 
@@ -200,9 +165,9 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
              output - Validation data loader for the given input
         """
         self.val_data_loader = self.create_data_loader(
-            self.valid_dataset,
-            self.args.get("val_batch_size", None),
-            self.args.get("val_num_workers", 4),
+            dataset=self.valid_dataset,
+            batch_size=None,
+            num_workers=3,
         )
         return self.val_data_loader
 
@@ -212,8 +177,8 @@ class CIFAR10DataModule(pl.LightningDataModule):  # pylint: disable=too-many-ins
              output - Test data loader for the given input
         """
         self.test_data_loader = self.create_data_loader(
-            self.test_dataset,
-            self.args.get("val_batch_size", None),
-            self.args.get("val_num_workers", 4),
+            dataset=self.test_dataset,
+            batch_size=None,
+            num_workers=3,
         )
         return self.test_data_loader

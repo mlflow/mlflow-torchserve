@@ -17,7 +17,9 @@ Ensure to install the `mlflow-torchserve` [prerequisites](https://github.com/mlf
 
 Install the required packages using the following command
 
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
  
  
  ### Running the code
@@ -40,7 +42,7 @@ where `X` is your desired value for `max_epochs`.
 If you have the required modules for the file and would like to skip the creation of a conda environment, add the argument `--no-conda`.
 
 ```
-mlflow run . --no-conda
+mlflow run . --env-manager local
 
 ```
 
@@ -74,27 +76,33 @@ Or to run the training script directly with custom parameters:
 
 ```
 python news_classifier.py \
-    --max_epochs 5
+    --trainer.max_epochs 5
 ```
 
 ## Starting TorchServe
 
 Create an empty directory `model_store` and run the following command to start TorchServe.
 
-`torchserve --start --model-store model_store`
+```
+torchserve --start --model-store model_store
+```
 
 ## Creating a new deployment
 
 Run the following command to create a new deployment named `news_classification_test`
 
-`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt,wrapper.py"`
+```
+mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt,wrapper.py"
+```
 
 Note: TorchServe plugin determines the version number by itself based on the deployment name. hence, version number 
 is not a mandatory argument for the plugin. For example, the above command will create a deployment `news_classification_test` with version 1.
 
 If needed, version number can also be explicitly mentioned as a config variable.
 
-`mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt,wrapper.py"`
+```
+mlflow deployments create -t torchserve -m state_dict.pth --name news_classification_test -C "VERSION=1.0" -C "MODEL_FILE=news_classifier.py" -C "HANDLER=news_classifier_handler.py" -C "EXTRA_FILES=class_mapping.json,bert_base_uncased_vocab.txt,wrapper.py"
+```
 
 Note:
 
@@ -110,11 +118,15 @@ For testing the fine tuned model, a sample input text is placed in `input.json`
 
 Run the following command to invoke prediction of our sample input 
 
-`mlflow deployments predict --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
+```
+mlflow deployments predict --name news_classification_test --target torchserve --input-path input.json  --output-path output.json
+```
 
 Run the following command to invoke explain of our sample input 
 
 
-`mlflow deployments explain --name news_classification_test --target torchserve --input-path input.json  --output-path output.json`
+```
+mlflow deployments explain --name news_classification_test --target torchserve --input-path input.json  --output-path output.json
+```
 
 All the captum Insights visualization can be seen in the jupyter notebook added in this example

@@ -5,18 +5,16 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      max_epochs: {type: int, default: 5}
-      devices: {type: int, default: None}
-      num_samples: {type: int, default: 1000}
-      vocab_file: {type: str, default: 'https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt'}
-      strategy: {type str, default: None}
-      accelerator: {type str, default: None}
+      max_epochs: {type: int, default: 1}
+      devices: {type: int, default: "auto"}
+      num_samples: {type: int, default: 2000}
+      strategy: {type str, default: "auto"}
+      accelerator: {type str, default: "auto"}
 
     command: |
           python news_classifier.py \
-            --max_epochs {max_epochs} \
-            --devices {devices} \
-            --num_samples {num_samples} \
-            --vocab_file {vocab_file} \
-            --strategy={strategy} \
-            --accelerator={accelerator}
+            --trainer.max_epochs {max_epochs} \
+            --trainer.devices {devices} \
+            --data.num_samples {num_samples} \
+            --trainer.strategy={strategy} \
+            --trainer.accelerator={accelerator}

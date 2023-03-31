@@ -8,24 +8,19 @@
 # pylint: disable=unused-argument
 # pylint: disable=abstract-method
 
-from argparse import ArgumentParser
-
+import lightning as L
 import mlflow.pytorch
-import pytorch_lightning as pl
 import torch
-from torch.nn.parallel import (
-    DistributedDataParallel,
-    DataParallel,
-)
-from pytorch_lightning import seed_everything
-from torchmetrics import Accuracy
+from lightning import seed_everything
+from lightning.pytorch.cli import LightningCLI
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
+from torchmetrics import Accuracy
 from torchvision import datasets, transforms
 
 
-class MNISTDataModule(pl.LightningDataModule):
-    def __init__(self, **kwargs):
+class MNISTDataModule(L.LightningDataModule):
+    def __init__(self, batch_size=64, num_workers=3):
         """
         Initialization of inherited lightning data module
         """
@@ -36,7 +31,8 @@ class MNISTDataModule(pl.LightningDataModule):
         self.train_data_loader = None
         self.val_data_loader = None
         self.test_data_loader = None
-        self.args = kwargs
+        self.batch_size = batch_size
+        self.num_workers = num_workers
 
         # transforms for images
         self.transform = transforms.Compose(
@@ -61,25 +57,6 @@ class MNISTDataModule(pl.LightningDataModule):
             "dataset", download=True, train=False, transform=self.transform
         )
 
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument(
-            "--batch-size",
-            type=int,
-            default=64,
-            metavar="N",
-            help="input batch size for training (default: 64)",
-        )
-        parser.add_argument(
-            "--num-workers",
-            type=int,
-            default=3,
-            metavar="N",
-            help="number of workers (default: 3)",
-        )
-        return parser
-
     def create_data_loader(self, df):
         """
         Generic data loader function
@@ -90,8 +67,8 @@ class MNISTDataModule(pl.LightningDataModule):
         """
         return DataLoader(
             df,
-            batch_size=self.args["batch_size"],
-            num_workers=self.args["num_workers"],
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
         )
 
     def train_dataloader(self):
@@ -113,8 +90,8 @@ class MNISTDataModule(pl.LightningDataModule):
         return self.create_data_loader(self.df_test)
 
 
-class LightningMNISTClassifier(pl.LightningModule):
-    def __init__(self, **kwargs):
+class LightningMNISTClassifier(L.LightningModule):
+    def __init__(self, learning_rate=0.001):
         """mlflow.start_run()
         Initializes the network
         """
@@ -128,19 +105,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         self.layer_1 = torch.nn.Linear(28 * 28, 128)
         self.layer_2 = torch.nn.Linear(128, 256)
         self.layer_3 = torch.nn.Linear(256, 10)
-        self.args = kwargs
-
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument(
-            "--lr",
-            type=float,
-            default=0.001,
-            metavar="LR",
-            help="learning rate (default: 0.001)",
-        )
-        return parser
+        self.learning_rate = learning_rate
 
     def forward(self, x):
         """
@@ -239,7 +204,7 @@ class LightningMNISTClassifier(pl.LightningModule):
 
         :return: output - Initialized optimizer and scheduler
         """
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.args["lr"])
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         scheduler = {
             "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer,
@@ -254,47 +219,41 @@ class LightningMNISTClassifier(pl.LightningModule):
         return [optimizer], [scheduler]
 
 
-def get_model(trainer):
-    is_dp_module = isinstance(trainer.model, (DistributedDataParallel, DataParallel))
-    model = trainer.model.module if is_dp_module else trainer.model
-    return model
+class MnistLightningCLI(LightningCLI):
+    def add_arguments_to_parser(self, parser):
+        parser.add_argument(
+            "--registration_name",
+            type=str,
+            default="mnist_classifier",
+            help="Model registration name",
+        )
+        parser.add_argument(
+            "--register", type=str, default="false", help="To enable/disable model registration"
+        )
 
 
-if __name__ == "__main__":
-    parser = ArgumentParser(description="PyTorch Autolog Mnist Example")
-    parser.add_argument(
-        "--registration_name", type=str, default="mnist_classifier", help="Model registration name"
+def cli_main():
+    cli = MnistLightningCLI(
+        LightningMNISTClassifier,
+        MNISTDataModule,
+        run=False,
+        save_config_callback=None,
     )
-    parser.add_argument(
-        "--register", type=str, default="true", help="To enable/disable model registration"
-    )
-    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
-    parser = LightningMNISTClassifier.add_model_specific_args(parent_parser=parser)
-    parser = MNISTDataModule.add_model_specific_args(parent_parser=parser)
+    if cli.trainer.global_rank == 0:
+        mlflow.pytorch.autolog()
 
-    args = parser.parse_args()
-    dict_args = vars(args)
-
-    for argument in ["strategy", "accelerator", "devices"]:
-        if dict_args[argument] == "None":
-            dict_args[argument] = None
-
-    model = LightningMNISTClassifier(**dict_args)
-
-    dm = MNISTDataModule(**dict_args)
-    dm.prepare_data()
-    dm.setup(stage="fit")
-
-    trainer = pl.Trainer.from_argparse_args(args)
-
-    mlflow.pytorch.autolog()
-    with mlflow.start_run() as run:
-        trainer.fit(model, dm)
-        trainer.test(datamodule=dm)
+    with mlflow.start_run():
+        cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+        cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)
         active_run = mlflow.active_run()
+    dict_args = vars(cli.parser.parse_args())
     if dict_args["register"] == "true":
         mlflow.register_model(
             model_uri=active_run.info.artifact_uri, name=dict_args["registration_name"]
         )
     else:
-        torch.save(trainer.lightning_module.state_dict(), "model.pth")
+        torch.save(cli.trainer.lightning_module.state_dict(), "model.pth")
+
+
+if __name__ == "__main__":
+    cli_main()

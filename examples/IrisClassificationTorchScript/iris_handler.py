@@ -1,6 +1,8 @@
 import ast
+import json
 import logging
 import os
+
 import numpy as np
 import torch
 from ts.torch_handler.base_handler import BaseHandler
@@ -39,6 +41,11 @@ class IRISClassifierHandler(BaseHandler):
 
         logger.debug("Loading torchscript model")
         self.model = self._load_torchscript_model(model_pt_path)
+
+        mapping_file_path = os.path.join(model_dir, "index_to_name.json")
+        if os.path.exists(mapping_file_path):
+            with open(mapping_file_path) as fp:
+                self.mapping = json.load(fp)
 
         self.model.to(self.device)
         self.model.eval()

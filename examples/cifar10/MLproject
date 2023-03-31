@@ -6,19 +6,19 @@ entry_points:
   main:
     parameters:
       max_epochs: {type: int, default: 1}
-      devices: {type: int, default: None}
-      strategy: {type: str, default: "None"}
-      accelerator: {type: str, default: "None"}
-      num_samples_train: {type: int, default: 39}
-      num_samples_val: {type: int, default: 9}
-      num_samples_test: {type: int, default: 9}
+      devices: {type: int, default: "auto"}
+      strategy: {type: str, default: "auto"}
+      accelerator: {type: str, default: "auto"}
+      num_samples_train: {type: int, default: 5}
+      num_samples_val: {type: int, default: 1}
+      num_samples_test: {type: int, default: 1}
 
     command: |
           python cifar10_train.py \
-            --max_epochs {max_epochs} \
-            --devices {devices} \
-            --num_samples_train {num_samples_train} \
-            --num_samples_val {num_samples_val} \
-            --num_samples_test {num_samples_test} \
-            --strategy {strategy} \
-            --accelerator {accelerator}
+            --trainer.max_epochs {max_epochs} \
+            --trainer.devices {devices} \
+            --data.num_samples_train {num_samples_train} \
+            --data.num_samples_val {num_samples_val} \
+            --data.num_samples_test {num_samples_test} \
+            --trainer.strategy {strategy} \
+            --trainer.accelerator {accelerator}

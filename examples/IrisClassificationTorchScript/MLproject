@@ -5,14 +5,14 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      max_epochs: {type: int, default: 100}
-      devices: {type: int, default: None}
-      strategy: {type str, default: "None"}
-      accelerator: {type str, default: "None"}
+      max_epochs: {type: int, default: 50}
+      devices: {type: int, default: "auto"}
+      strategy: {type str, default: "auto"}
+      accelerator: {type str, default: "auto"}
 
     command: |
           python iris_classification.py \
-            --max_epochs {max_epochs} \
-            --devices {devices} \
-            --strategy {strategy} \
-            --accelerator {accelerator}
+            --trainer.max_epochs {max_epochs} \
+            --trainer.devices {devices} \
+            --trainer.strategy {strategy} \
+            --trainer.accelerator {accelerator}

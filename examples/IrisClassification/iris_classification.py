@@ -1,30 +1,32 @@
 # pylint: disable=W0221
 # pylint: disable=W0613
 # pylint: disable=W0223
-import argparse
+import os
+import shutil
 from argparse import ArgumentParser
 
+import lightning as L
 import mlflow
-import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from lightning import seed_everything
+from lightning.pytorch.cli import LightningCLI
 from mlflow.models.signature import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
-from pytorch_lightning import seed_everything
-from torchmetrics import Accuracy
 from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader, random_split, TensorDataset
+from torchmetrics import Accuracy
 
 
-class IrisClassification(pl.LightningModule):
-    def __init__(self, **kwargs):
+class IrisClassification(L.LightningModule):
+    def __init__(self, learning_rate=0.01):
         super(IrisClassification, self).__init__()
 
         self.train_acc = Accuracy(task="multiclass", num_classes=3)
         self.val_acc = Accuracy(task="multiclass", num_classes=3)
         self.test_acc = Accuracy(task="multiclass", num_classes=3)
-        self.args = kwargs
+        self.learning_rate = learning_rate
 
         self.fc1 = nn.Linear(4, 10)
         self.fc2 = nn.Linear(10, 10)
@@ -37,27 +39,8 @@ class IrisClassification(pl.LightningModule):
         x = F.relu(self.fc3(x))
         return x
 
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        """
-        Add model specific arguments like learning rate
-
-        :param parent_parser: Application specific parser
-
-        :return: Returns the augmented arugument parser
-        """
-        parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument(
-            "--lr",
-            type=float,
-            default=0.01,
-            metavar="LR",
-            help="learning rate (default: 0.001)",
-        )
-        return parser
-
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), self.args["lr"])
+        return torch.optim.Adam(self.parameters(), self.learning_rate)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -91,8 +74,8 @@ class IrisClassification(pl.LightningModule):
         self.log("test_acc", self.test_acc.compute())
 
 
-class IrisDataModule(pl.LightningDataModule):
-    def __init__(self, **kwargs):
+class IrisDataModule(L.LightningDataModule):
+    def __init__(self, batch_size=64, num_workers=3):
         """
         Initialization of inherited lightning data module
         """
@@ -101,7 +84,8 @@ class IrisDataModule(pl.LightningDataModule):
         self.train_set = None
         self.val_set = None
         self.test_set = None
-        self.args = kwargs
+        self.batch_size = batch_size
+        self.num_workers = num_workers
 
     def prepare_data(self):
         """
@@ -162,9 +146,7 @@ class IrisDataModule(pl.LightningDataModule):
         :return: Returns the constructed dataloader
         """
 
-        return DataLoader(
-            dataset, batch_size=self.args["batch_size"], num_workers=self.args["num_workers"]
-        )
+        return DataLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers)
 
     def train_dataloader(self):
         train_loader = self.create_data_loader(dataset=self.train_set)
@@ -179,37 +161,16 @@ class IrisDataModule(pl.LightningDataModule):
         return test_loader
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Iris Classification model")
-
-    parser.add_argument(
-        "--save-model",
-        type=bool,
-        default=True,
-        help="For Saving the current Model",
+def cli_main():
+    cli = LightningCLI(
+        IrisClassification,
+        IrisDataModule,
+        run=False,
+        save_config_callback=None,
     )
-
-    parser = pl.Trainer.add_argparse_args(parent_parser=parser)
-    parser = IrisClassification.add_model_specific_args(parent_parser=parser)
-    parser = IrisDataModule.add_model_specific_args(parent_parser=parser)
-
-    args = parser.parse_args()
-    dict_args = vars(args)
-
-    for argument in ["strategy", "accelerator", "devices"]:
-        if dict_args[argument] == "None":
-            dict_args[argument] = None
-
-    dm = IrisDataModule(**dict_args)
-    dm.prepare_data()
-    dm.setup(stage="fit")
-
-    model = IrisClassification(**dict_args)
-    trainer = pl.Trainer.from_argparse_args(args)
-    trainer.fit(model, dm)
-    trainer.test(datamodule=dm)
-
-    if trainer.global_rank == 0:
+    cli.trainer.fit(cli.model, datamodule=cli.datamodule)
+    cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)
+    if cli.trainer.global_rank == 0:
         input_schema = Schema(
             [
                 ColSpec("double", "sepal length (cm)"),
@@ -220,4 +181,11 @@ if __name__ == "__main__":
         )
         output_schema = Schema([ColSpec("long")])
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)
-        mlflow.pytorch.save_model(trainer.lightning_module, "model", signature=signature)
+
+        if os.path.exists("model"):
+            shutil.rmtree("model")
+        mlflow.pytorch.save_model(cli.trainer.lightning_module, "model", signature=signature)
+
+
+if __name__ == "__main__":
+    cli_main()

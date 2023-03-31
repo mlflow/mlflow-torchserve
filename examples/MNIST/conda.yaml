@@ -6,9 +6,10 @@ dependencies:
 - python=3.8.2
 - pip
 - pip:
-  - torch>=1.9.0
-  - torchvision
+  - torch>=2.0
+  - jsonargparse[signatures]>=4.17.0
+  - torchvision>=0.15.1
   - matplotlib
-  - pytorch-lightning>=1.7.6
-  - mlflow>=1.14.0
+  - lightning>2.0
+  - mlflow>=2.0
   - captum

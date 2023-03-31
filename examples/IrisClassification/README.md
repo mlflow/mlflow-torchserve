@@ -14,12 +14,12 @@ mlflow run .
 
 ```
 
-This will run `iris_classification.py` with the default set of parameters such as `--max_epochs=100`. You can see the default value in the MLproject file.
+This will run `iris_classification.py` with the default set of parameters such as `--trainer.max_epochs=50`. You can see the default value in the MLproject file.
 
 In order to run the file with custom parameters, run the command
 
 ```
-mlflow run . -P max_epochs=X
+mlflow run . -P max_epochs=X --env-manager conda
 ```
 
 where X is your desired value for max_epochs.
@@ -27,13 +27,13 @@ where X is your desired value for max_epochs.
 If you have the required modules for the file and would like to skip the creation of a conda environment, add the argument --no-conda.
 
 ```
-mlflow run . --no-conda
+mlflow run . --env-manager local
 ```
 
 To run it in gpu, use the following command
 
 ```
-mlflow run . -P devices=2 -P strategy="ddp -P accelerator=gpu"
+mlflow run . -P devices=2 -P strategy="ddp" -P accelerator="gpu"
 ```
 
 At the end of the training process, the model and its signature is saved in `model` directory.
@@ -42,13 +42,17 @@ At the end of the training process, the model and its signature is saved in `mod
 
 Create an empty directory `model_store` and run the following command to start torchserve.
 
-`torchserve --start --model-store model_store`
+```
+torchserve --start --model-store model_store
+```
 
 ## Creating a new deployment
 
 Run the following command to create a new deployment named `iris_classification`
 
-`python create_deployment.py --extra_files "index_to_name.json,model/MLmodel"`
+```
+python create_deployment.py --extra_files "index_to_name.json,model/MLmodel"
+```
 
 The default parameters are set in the create_deployment.py script. The arguments can be overriden by parser arguments. 
 
@@ -60,7 +64,9 @@ if the torchserve is already running with a different "model_store" location, en
 
 ## Running prediction based on deployed model
 
-`python create_deployment.py --deployment_name iris_classification_1 --serialized_file_path <MLFLOW_MODEL_URI>`
+```
+python create_deployment.py --deployment_name iris_classification_1 --serialized_file_path <MLFLOW_MODEL_URI>
+```
 
 Note:
 MLflow stores the model signature inside MLmodel file and it is important to pass the MLmodel path as an EXTRA_FILE argument to create_deployment script.
@@ -73,7 +79,9 @@ For testing [iris dataset](http://archive.ics.uci.edu/ml/datasets/Iris/), we are
 
 Run the following command to invoke prediction of our sample input, whose output is printed in the console.
 
-`python predict.py --input_file_path sample.json`
+```
+python predict.py --input_file_path sample.json
+```
 
 `mlflow-torchserve-plugin` validates the input data against the model signature saved during the training process. 
 
@@ -91,20 +99,30 @@ To know more about the model signature implementation in details, check the `iri
 
 The model will classify the flower species based on the input test data as one among the three types. A sample output is shown as below.
 
-```Prediction Result SETOSA```
+```
+Prediction Result SETOSA
+```
 
 
 To understand the model signature and its output, the following sample files are created. Run the following command to see the validation errors.
 
-`python predict.py --input_file_path sig_invalid_column_name.json`
+```
+python predict.py --input_file_path sig_invalid_column_name.json
+```
 
 When the input column name doesn't match with the model signature, validation exception is thrown as below.
 
-```mlflow.exceptions.MlflowException: Model is missing inputs ['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']. Note that there were extra inputs: ['length (cm)', 'width (cm)']```
+```
+mlflow.exceptions.MlflowException: Model is missing inputs ['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']. Note that there were extra inputs: ['length (cm)', 'width (cm)']
+```
 
 
-`python predict.py --input_file_path sig_invalid_data_type.json`
+```
+python predict.py --input_file_path sig_invalid_data_type.json
+```
 
 When the input data type doesn't match with the model signature, validation exception is thrown as below.
 
-```mlflow.exceptions.MlflowException: Incompatible input types for column sepal length (cm). Can not safely convert int64 to float64.```
+```
+mlflow.exceptions.MlflowException: Incompatible input types for column sepal length (cm). Can not safely convert int64 to float64.
+```
