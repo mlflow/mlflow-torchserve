@@ -46,7 +46,7 @@ jobs:
 
       - name: Install pytorch lightning
         run: |
-          pip install pytorch-lightning>=1.2.3
+          pip install lightning>=2.0
 
       - name: Add permissions for remove conda utility file
         run: |
