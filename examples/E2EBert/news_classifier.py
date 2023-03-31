@@ -2,19 +2,15 @@
 # pylint: disable=unused-argument
 # pylint: disable=abstract-method
 
-import logging
 import math
 import os
-from argparse import ArgumentParser
 
 import lightning as L
 import mlflow.pytorch
 import numpy as np
-import pandas as pd
 import requests
 import torch
 import torch.nn.functional as F
-import torchtext.datasets as td
 from lightning.pytorch.callbacks import (
     EarlyStopping,
     ModelCheckpoint,

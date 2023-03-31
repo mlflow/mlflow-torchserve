@@ -1,4 +1,5 @@
 """Cifar10 training module."""
+import os
 import lightning as L
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +9,7 @@ from lightning.pytorch.cli import LightningCLI
 from torch import nn
 from torchmetrics import Accuracy
 from torchvision import models
+from lightning.pytorch.loggers import TensorBoardLogger
 
 
 class CIFAR10Classifier(
@@ -178,11 +180,13 @@ class CIFAR10Classifier(
 def cli_main():
     from cifar10_datamodule import CIFAR10DataModule
 
+    tensorboard_logger = TensorBoardLogger(os.getcwd())
     cli = LightningCLI(
         CIFAR10Classifier,
         CIFAR10DataModule,
         run=False,
         save_config_callback=None,
+        trainer_defaults={"logger": tensorboard_logger},
     )
     cli.trainer.fit(cli.model, datamodule=cli.datamodule)
     cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)

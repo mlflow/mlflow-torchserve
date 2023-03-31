@@ -10,6 +10,7 @@ dependencies:
   - captum
   - sklearn
   - transformers
+  - portalocker
   - torch>=2.0
   - torchtext>=0.15.1
   - lightning>=2.0

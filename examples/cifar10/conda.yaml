@@ -10,6 +10,7 @@ dependencies:
   - torch>=2.0
   - lightning>=2.0
   - jsonargparse[signatures]>=4.17.0
+  - tensorboard
   - mlflow>=2.0
   - captum
   - webdataset
